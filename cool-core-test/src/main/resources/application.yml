@@ -1,0 +1,6 @@
+server:
+  port: 7032
+
+spring:
+  application:
+    name: cool-core-test
