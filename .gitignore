@@ -1,0 +1,8 @@
+## IntelliJ IDEA ##
+.idea
+*.iml
+target/
+out/
+logs/
+upload/
+.flattened-pom.xml

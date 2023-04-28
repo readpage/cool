@@ -1,0 +1,14 @@
+{
+  "properties": [
+    {
+      "name": "cool.core.include",
+      "type": "java.lang.String",
+      "description": "开启xss，敏感词拦截的路径."
+    },
+    {
+      "name": "cool.core.exclude",
+      "type": "java.lang.String",
+      "description": "排除xss，敏感词拦截的路径."
+    }
+  ]
+}
