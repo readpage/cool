@@ -23,42 +23,10 @@ public class DateUtils {
      * @param dateTime
      * @return java.time.LocalDateTime
      */
-    public static LocalDateTime strToDateTime(String dateTime) {
+    public static LocalDateTime toDateTime(String dateTime) {
         if (dateTime == null) return null;
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(dateTimeFormat);
-        LocalDateTime localDateTime = LocalDateTime.parse(dateTime, dateTimeFormatter);
-        return localDateTime;
-    }
-
-    /**
-     * 传日期时间格式化为字符串 yyyy-MM-dd HH:mm:ss
-     * @param localDateTime
-     * @return java.lang.String
-     */
-    public static String toString(LocalDateTime localDateTime) {
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(dateTimeFormat);
-        String format = dateTimeFormatter.format(localDateTime);
-        return format;
-    }
-
-    /**
-     * 传日期字符串返回日期
-     * @param dateTime
-     * @return java.time.LocalDate
-     */
-    public static LocalDate strToDate(String dateTime) {
-        if (dateTime == null) return null;
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(dateFormat);
-        LocalDate localDate= LocalDate.parse(dateTime, dateTimeFormatter);
-        return localDate;
-    }
-
-    /**
-     * 返回LocalDateTime当前时间，并格式化为yyyy-MM-dd HH:mm:ss
-     * @return java.lang.String
-     */
-    public static String now() {
-        return toString(LocalDateTime.now());
+        return LocalDateTime.parse(dateTime, dateTimeFormatter);
     }
 
     /**
@@ -73,16 +41,6 @@ public class DateUtils {
     }
 
     /**
-     * localDateTime转换为Date
-     * @param localDateTime
-     * @return java.util.Date
-     */
-    public static Date toDate(LocalDateTime localDateTime) {
-        Instant instant = localDateTime.atZone(ZoneId.systemDefault()).toInstant();
-        return Date.from(instant);
-    }
-
-    /**
      * 毫秒数转换为localdatetime
      * @param time
      * @return java.time.LocalDateTime
@@ -93,11 +51,52 @@ public class DateUtils {
 
     /**
      * localdatetime转换为毫秒数
-     * @param ldt
+     * @param localDateTime
      * @return long
      */
-    public static long toLong(LocalDateTime ldt) {
-        return ldt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+    public static long toLong(LocalDateTime localDateTime) {
+        return localDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+    }
+
+    /**
+     * 传日期时间格式化为字符串 yyyy-MM-dd HH:mm:ss
+     * @param localDateTime
+     * @return java.lang.String
+     */
+    public static String toString(LocalDateTime localDateTime) {
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(dateTimeFormat);
+        String format = dateTimeFormatter.format(localDateTime);
+        return format;
+    }
+
+    /**
+     * 返回LocalDateTime当前时间，并格式化为yyyy-MM-dd HH:mm:ss
+     * @return java.lang.String
+     */
+    public static String now() {
+        return toString(LocalDateTime.now());
+    }
+
+    /**
+     * 传日期字符串返回日期
+     * @param dateTime
+     * @return java.time.LocalDate
+     */
+    public static LocalDate toLocalDate(String dateTime) {
+        if (dateTime == null) return null;
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(dateFormat);
+        LocalDate localDate= LocalDate.parse(dateTime, dateTimeFormatter);
+        return localDate;
+    }
+
+    /**
+     * localDateTime转换为Date
+     * @param localDateTime
+     * @return java.util.Date
+     */
+    public static Date toDate(LocalDateTime localDateTime) {
+        Instant instant = localDateTime.atZone(ZoneId.systemDefault()).toInstant();
+        return Date.from(instant);
     }
 
     /**
@@ -119,30 +118,11 @@ public class DateUtils {
     }
 
     /**
-     * localDateTime转时间戳
-     * @param localDateTime
-     * @return long
-     */
-    public static long getTimeStamp(LocalDateTime localDateTime) {
-        ZoneId zoneId = ZoneId.systemDefault();
-        return localDateTime.atZone(zoneId).toInstant().toEpochMilli();
-    }
-
-    /**
-     * 时间戳转localDateTime
-     * @param stamp
-     * @return java.time.LocalDateTime
-     */
-    public static LocalDateTime stampToDateTime(long stamp) {
-        return Instant.ofEpochMilli(stamp).atZone(ZoneOffset.ofHours(8)).toLocalDateTime();
-    }
-
-    /**
      * localDate转时间戳
      * @param localDate
      * @return long
      */
-    public static long getTimeStamp(LocalDate localDate) {
+    public static long toLong(LocalDate localDate) {
         ZoneId zoneId = ZoneId.systemDefault();
         return localDate.atStartOfDay(zoneId).toInstant().toEpochMilli();
     }

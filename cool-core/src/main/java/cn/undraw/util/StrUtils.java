@@ -234,4 +234,59 @@ public class StrUtils {
         }
         return str;
     }
+
+    /**
+     * 根据字节长度截取字符串
+     * @param str 字符串
+     * @param len 字节长度
+     * @return java.lang.String
+     */
+    public static String substringByByte(String str, int len) {
+        if (str == null) {
+            return null;
+        }
+        if (len <= 0) {
+            return "";
+        }
+        byte[] bytes = str.getBytes();
+        if (len >= bytes.length) {
+            return str;
+        }
+        return new String(bytes, 0, len);
+    }
+
+
+    /**
+     * 根据文字数量截取字符串
+     * mysql: TEXT 可以存储最大 65535 个字符，而 LONGTEXT 可以存储最大 4294967295 个字符
+     * @param str
+     * @param len
+     * @return java.lang.String
+     */
+    public static String substringByChar(String str, int len) {
+        if (str == null) {
+            return null;
+        }
+        if (len <= 0) {
+            return "";
+        }
+        if (len >= str.length()) {
+            return str;
+        }
+        int count = 0;
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            if (c >= 0x4E00 && c <= 0x9FA5) { // 中文字符
+                count += 2;
+            } else {
+                count++;
+            }
+            if (count > len) {
+                break;
+            }
+            sb.append(c);
+        }
+        return sb.toString();
+    }
 }

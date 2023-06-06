@@ -3,6 +3,7 @@ package com.undraw;
 import cn.undraw.annotation.EnableCool;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableAsync;
 
 /**
  * @author readpage
@@ -11,6 +12,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 @EnableCool
+@EnableAsync
 public class CoolCoreTestApplication {
     public static void main(String[] args) {
         SpringApplication.run(CoolCoreTestApplication.class, args);

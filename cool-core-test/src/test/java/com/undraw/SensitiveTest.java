@@ -24,5 +24,7 @@ public class SensitiveTest {
 
     @Test
     public void test2() {
+        String str = SensitiveUtils.xor("李明");
+        System.out.println(str);
     }
 }

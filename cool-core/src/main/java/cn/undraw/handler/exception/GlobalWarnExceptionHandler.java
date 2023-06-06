@@ -67,7 +67,7 @@ public class GlobalWarnExceptionHandler {
     public R<?> argumentValidationException(HttpServletRequest req, Exception e) {
         BindingResult bindingResult = null;
         if (e instanceof BindException) {
-            bindingResult = ((BindException)e).getBindingResult();
+           return R.fail("类型转换错误");
         } else if (e instanceof MethodArgumentNotValidException) {
             bindingResult = ((MethodArgumentNotValidException)e).getBindingResult();
         } else {

@@ -17,6 +17,7 @@ public enum ResultEnum {
     TOKEN_IS_INVALID(406, "无效或过期token"),
     ACCOUNT_DISABLE(409, "账户已禁用"),
     FAIL(510, "操作失败"),
+    TIMEOUT(504, "连接超时"),
     ERROR(500, "系统异常"),
     ;
 
@@ -43,5 +44,13 @@ public enum ResultEnum {
 
     public void setMsg(String msg) {
         this.msg = msg;
+    }
+
+    public R getR() {
+        return R.ok(this);
+    }
+
+    public R getR(Throwable e) {
+        return R.error(this, e);
     }
 }

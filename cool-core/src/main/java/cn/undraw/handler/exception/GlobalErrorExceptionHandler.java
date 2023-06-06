@@ -2,6 +2,7 @@ package cn.undraw.handler.exception;
 
 import cn.undraw.util.log.annotation.ErrorLog;
 import cn.undraw.util.result.R;
+import cn.undraw.util.result.ResultEnum;
 import org.springframework.core.annotation.Order;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.BadSqlGrammarException;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import javax.servlet.http.HttpServletRequest;
+import java.net.ConnectException;
 
 /**
  * @author readpage
@@ -49,7 +51,10 @@ public class GlobalErrorExceptionHandler {
      */
     @ExceptionHandler(Exception.class)
     public R<?> otherException(HttpServletRequest req, Exception e) {
-       return R.error(e.getMessage(), e);
+        if (e.getCause() instanceof ConnectException) {
+            return ResultEnum.TIMEOUT.getR(e);
+        }
+        return ResultEnum.ERROR.getR(e);
     }
 
 }

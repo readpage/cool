@@ -177,4 +177,10 @@ public class R<T> implements Serializable {
         return error(msg, e);
     }
 
+    public static R error(ResultEnum resultEnum, Throwable e) {
+        return error(resultEnum.getCode(), resultEnum.getMsg(), ErrorUtils.getStackTrace(e));
+    }
+
+
+
 }

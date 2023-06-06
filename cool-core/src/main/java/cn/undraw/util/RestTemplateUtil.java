@@ -24,6 +24,20 @@ public class RestTemplateUtil {
     private RestTemplate restTemplate;
 
     /**
+     * 参数拼接到url上
+     * @param url 访问地址
+     * @param param 参数
+     * @return java.lang.String
+     */
+    public String join(String url, Map<String, ?> param) {
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
+        for (Map.Entry<String, ?> e : param.entrySet()) {
+            builder.queryParam(e.getKey(), e.getValue());
+        }
+        return builder.build().toString(); // 在此处拼接真实请求地址  "?pageNum=1&pageSize=5"
+    }
+
+    /**
      *
      * @param url
      * @param param
@@ -34,17 +48,12 @@ public class RestTemplateUtil {
     //其中<T>是为了定义当前我有一个 范型变量类型，类型名使用T来表示，
     //而第二部分T，表示method这个函数的返回值类型为T
     public <T> T get(String url, HttpHeaders headers, Map<String, ?> param, Class<T> type) {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
         if (headers.getAccept() == null) {
             headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
         }
-        for (Map.Entry<String, ?> e : param.entrySet()) {
-            builder.queryParam(e.getKey(), e.getValue());
-        }
-        String realUrl = builder.build().toString(); // 在此处拼接真实请求地址  "?pageNum=1&pageSize=5"
 
         HttpEntity<Map<String, ?>> httpEntity = new HttpEntity<>(null, headers);
-        return restTemplate.exchange(realUrl, HttpMethod.GET, httpEntity, type).getBody();
+        return restTemplate.exchange(this.join(url, param), HttpMethod.GET, httpEntity, type).getBody();
     }
     public String get(String url, HttpHeaders headers, Map<String, ?> param) {
         return get(url, headers, param, String.class);

@@ -98,7 +98,7 @@ public class OperateLogAop {
 
         // 打印日志
         print(operationLog);
-        operateLogWorkService.createLog(operationLog);
+        operateLogWorkService.createLog(operationLog, ServletUtils.getRequest());
     }
 
     public static <T extends Annotation> T getMethodAnnotation(JoinPoint joinPoint, Class<T> annotationClass) {
@@ -174,10 +174,17 @@ public class OperateLogAop {
                     } else if (arg instanceof String) {
                         argList.add(arg);
                     } else {
-                        argList.add(ConvertUtils.toJson(arg));
+                        argList.add(arg);
                     }
                 }
-                String s = ConvertUtils.toJson(argList);
+                String s = null;
+                if (argList != null) {
+                    if (argList.size() == 1) {
+                        s = ConvertUtils.toJson(argList.get(0));
+                    } else {
+                        s = ConvertUtils.toJson(argList);
+                    }
+                }
                 // 请求参数
                 operationLog.setRequestParam(s);
             } catch (Exception e) {
@@ -242,6 +249,8 @@ public class OperateLogAop {
         if (resultData != null && !resultData.equals("null")) {
             str += "\n----------------------------------------------------------------\n" +
                     operationLog.getResultData() + "\n";
+        } else {
+            str += "\n";
         }
 
         if (R.ok().getCode() == operationLog.getResultCode()) {

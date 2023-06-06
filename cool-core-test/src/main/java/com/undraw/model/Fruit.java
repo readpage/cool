@@ -1,24 +1,25 @@
 package com.undraw.model;
 
-import com.undraw.service.SystemLogService;
-import org.springframework.stereotype.Service;
+import cn.undraw.util.decimal.annotation.BigDecimalFormat;
+import cn.undraw.util.decimal.annotation.DecimalFormat;
+import lombok.*;
 
-import javax.annotation.Resource;
 import java.math.BigDecimal;
 
 /**
  * @author readpage
  * @date 2022-11-15 14:33
  */
-@Service
+@Getter
+@Setter
+@ToString
+@BigDecimalFormat
+@DecimalFormat
+@AllArgsConstructor
+@NoArgsConstructor
 public class Fruit {
     private BigDecimal price;
 
-    @Resource
-    private SystemLogService systemLogService;
+    private Double score;
 
-    public BigDecimal getPrice() {
-        System.out.println(systemLogService);
-        return price;
-    }
 }

@@ -1,8 +1,11 @@
 package cn.undraw.config;
 
 
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import cn.undraw.util.DateUtils;
+import cn.undraw.util.StrUtils;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
@@ -12,6 +15,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -19,7 +23,7 @@ import java.time.format.DateTimeFormatter;
 
 
 /**
- * 日期格式化
+ * 时间格式化
  * @author readpage
  * @date 2022-12-08 9:01
  */
@@ -40,6 +44,9 @@ public class TimeFormatConfig {
         return new Converter<String, LocalDateTime>() {
             @Override
             public LocalDateTime convert(String source) {
+                if (StrUtils.isNumber(source)) {
+                    return DateUtils.toDateTime(Long.parseLong(source));
+                }
                 return LocalDateTime.parse(source, DateTimeFormatter.ofPattern(DATE_TIME_PATTERN));
             }
         };
@@ -54,8 +61,10 @@ public class TimeFormatConfig {
         return new Converter<String, LocalDate>() {
             @Override
             public LocalDate convert(String source) {
-                return  LocalDate.parse(source, DateTimeFormatter.ofPattern(DATE_PATTERN));
-
+                if (StrUtils.isNumber(source)) {
+                    return DateUtils.toDateTime(Long.parseLong(source)).toLocalDate();
+                }
+                return LocalDate.parse(source, DateTimeFormatter.ofPattern(DATE_PATTERN));
             }
         };
     }
@@ -74,6 +83,39 @@ public class TimeFormatConfig {
         };
     }
 
+//    public static class LocalDateTimeSerializer extends JsonSerializer<LocalDateTime> {
+//        @Override
+//        public void serialize(LocalDateTime value, JsonGenerator gen, SerializerProvider serializers)
+//                throws IOException {
+//            if (value != null) {
+//                gen.writeNumber(value.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
+//            }
+//        }
+//    }
+
+    public static class LocalDateTimeDeserializer extends JsonDeserializer<LocalDateTime> {
+        @Override
+        public LocalDateTime deserialize(JsonParser parser, DeserializationContext deserializationContext) throws IOException {
+            String str = parser.getText();
+            if (StrUtils.isNumber(str)) {
+                return DateUtils.toDateTime(Long.parseLong(str));
+            }
+            return LocalDateTime.parse(parser.getText(), DateTimeFormatter.ofPattern(DATE_TIME_PATTERN));
+        }
+    }
+
+    public static class LocalDateDeserializer extends JsonDeserializer<LocalDate> {
+        @Override
+        public LocalDate deserialize(JsonParser parser, DeserializationContext deserializationContext) throws IOException {
+            String str = parser.getText();
+            if (StrUtils.isNumber(str)) {
+                return DateUtils.toDateTime(Long.parseLong(str)).toLocalDate();
+            }
+            return LocalDate.parse(str, DateTimeFormatter.ofPattern(DATE_PATTERN));
+        }
+    }
+
+
 
     /** 
      * 配置LocalDateTime类型序列化与反序列化
@@ -84,9 +126,9 @@ public class TimeFormatConfig {
         return builder -> builder
                 .simpleDateFormat(DATE_TIME_PATTERN)
                 .serializers(new LocalDateTimeSerializer(DateTimeFormatter.ofPattern(DATE_TIME_PATTERN)))
-                .deserializers(new LocalDateTimeDeserializer(DateTimeFormatter.ofPattern(DATE_TIME_PATTERN)))
+                .deserializerByType(LocalDateTime.class, new LocalDateTimeDeserializer())
                 .serializers(new LocalDateSerializer(DateTimeFormatter.ofPattern(DATE_PATTERN)))
-                .deserializers(new LocalDateDeserializer(DateTimeFormatter.ofPattern(DATE_PATTERN)))
+                .deserializerByType(LocalDate.class, new LocalDateDeserializer())
                 .serializers(new LocalTimeSerializer(DateTimeFormatter.ofPattern(TIME_PATTERN)))
                 .deserializers(new LocalTimeDeserializer(DateTimeFormatter.ofPattern(TIME_PATTERN)))
                 ;

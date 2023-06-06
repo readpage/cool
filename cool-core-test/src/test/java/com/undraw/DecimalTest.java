@@ -17,4 +17,12 @@ public class DecimalTest {
         System.out.println(DecimalUtils.toCurrency("1000000"));
         System.out.println(DecimalUtils.floor(0.235));
     }
+
+    @Test
+    public void test2() {
+        Double round = 480535617.050000;
+        System.out.println(round);
+        System.out.println(round);
+        System.out.println(DecimalUtils.toString(round));
+    }
 }

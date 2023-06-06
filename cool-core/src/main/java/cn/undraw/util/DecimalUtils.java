@@ -378,4 +378,11 @@ public class DecimalUtils {
     public static boolean isNotZero(BigDecimal val) {
         return val.compareTo(new BigDecimal("0.0")) != 0;
     }
+
+    public static String toString(Object o) {
+        if (!StrUtils.isNumber(o)) {
+            return null;
+        }
+        return new BigDecimal(String.valueOf(o)).toString();
+    }
 }

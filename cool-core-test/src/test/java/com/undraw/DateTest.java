@@ -6,6 +6,7 @@ import org.junit.Test;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
 /**
@@ -40,18 +41,18 @@ public class DateTest {
 
     @Test
     public void test3() {
-        LocalDate localDate = DateUtils.strToDate("2023-02-01");
-        System.out.println(DateUtils.getTimeStamp(localDate));
-        LocalDate localDate2 = DateUtils.strToDate("2023-03-07");
-        System.out.println(DateUtils.getTimeStamp(localDate2));
-        log.info("时间戳转localDateTime-->" + DateUtils.stampToDateTime(1669046400000L));
-        log.info(DateUtils.stampToDateTime(4261046399000L).toString());
+        LocalDateTime localDateTime = DateUtils.toDateTime("2023-02-01 00:00:00");
+        System.out.println(DateUtils.toLong(localDateTime));
+        LocalDate localDate2 = DateUtils.toLocalDate("2023-02-01");
+        System.out.println(DateUtils.toLong(localDate2));
+        log.info("时间戳转localDateTime-->" + DateUtils.toDateTime(1669046400000L).toString());
+        log.info(DateUtils.toDateTime(4261046399000L).toString());
         System.out.println(Instant.ofEpochSecond(1659283200).atZone(ZoneOffset.ofHours(8)).toLocalDateTime());
     }
 
     @Test
     public void test4() {
-        System.out.println(DateUtils.getQuarter(DateUtils.strToDate("2023-12-23")));
+        System.out.println(DateUtils.getQuarter(DateUtils.toLocalDate("2023-12-23")));
     }
 
 }

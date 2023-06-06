@@ -18,6 +18,8 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -41,7 +43,13 @@ public class ErrorLogAop {
         HttpServletRequest req = null;
         Exception e = null;
 
+        Instant start = Instant.now();
         Object result = pjp.proceed();
+
+        Instant end = Instant.now();
+        // 计算程序耗时
+        long time = Duration.between(start, end).toMillis();
+        operationLog.setDuration(time);
 
         if (errorLog == null) {
             errorLog = OperateLogAop.getClassAnnotation(pjp, ErrorLog.class);
@@ -78,7 +86,7 @@ public class ErrorLogAop {
 
         // 打印日志
         print(operationLog);
-        operateLogWorkService.createLog(operationLog);
+        operateLogWorkService.createLog(operationLog, request);
     }
 
     /**
@@ -140,6 +148,8 @@ public class ErrorLogAop {
         if (resultData != null && !resultData.equals("null")) {
             str += "\n----------------------------------------------------------------\n" +
                     operationLog.getResultData() + "\n";
+        } else {
+            str += "\n";
         }
 
         if (R.error().getCode() == operationLog.getResultCode()) {
