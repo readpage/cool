@@ -32,7 +32,7 @@ public class ServletUtils {
         Browser browser = userAgent.getBrowser();
         //获取操作系统对象
         OperatingSystem os = userAgent.getOperatingSystem();
-        return browser.getName() + "|" + os.getName();
+        return browser.getName() + " | " + os.getName();
     }
 
     /**
