@@ -6,11 +6,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -30,13 +30,13 @@ import java.util.stream.Collectors;
 public class ConvertUtils {
 
     private static ObjectMapper mapper = new ObjectMapper();
-    @Autowired
+    @Resource
     private ObjectMapper objectMapper;
 
     // @PostConstruct: 加该注解会在项目启动的时候执行该方法，也可以理解为在spring容器初始化的时候执行该方法。
     @PostConstruct
     public void init(){
-        mapper  = objectMapper;
+        mapper = objectMapper;
     }
 
 

@@ -1,14 +1,24 @@
 {
   "properties": [
     {
-      "name": "cool.core.include",
+      "name": "cool-core.filter.include",
       "type": "java.lang.String",
       "description": "开启xss，敏感词拦截的路径."
     },
     {
-      "name": "cool.core.exclude",
+      "name": "cool-core.filter.exclude",
       "type": "java.lang.String",
       "description": "排除xss，敏感词拦截的路径."
+    },
+    {
+      "name": "cool-core.snowflake.workerId",
+      "type": "java.lang.Integer",
+      "description": "雪花算法参数，机器ID."
+    },
+    {
+      "name": "cool-core.snowflake.datacenterId",
+      "type": "java.lang.Integer",
+      "description": "雪花算法参数，数据标识ID."
     }
   ]
 }

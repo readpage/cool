@@ -24,10 +24,10 @@ public class XSSFilter implements Filter {
         this.filterConfig = filterConfig;
     }
 
-    @Value("${cool.core.include:}")
+    @Value("${cool-core.filter.include:}")
     private String include;
 
-    @Value("${cool.core.exclude:}")
+    @Value("${cool-core.filter.exclude:}")
     private String exclude;
 
 

@@ -66,6 +66,11 @@ mybatis-plus:
   mapper-locations: classpath*:mapper/*.xml
   # 实体类别名,无需添加完整包路径
   type-aliases-package: com.example.entity, com.example.output
-cool:
-  core:
+
+cool-core:
+  filter:
     include: /**
+  snowflake:
+    workerId: 1
+    datacenterId: 1
+

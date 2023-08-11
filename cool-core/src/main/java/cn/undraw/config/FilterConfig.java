@@ -18,7 +18,7 @@ public class FilterConfig {
     @Autowired
     private XSSFilter xssFilter;
 
-    @Value("${cool.core.include:}")
+    @Value("${cool-core.filter.include:}")
     private String include;
 
     @Bean

@@ -14,7 +14,7 @@ public enum ResultEnum {
     METHOD_NOT_ALLOWED(405, "请求方式不允许"),
     ACCOUNT_NOT_EXIST(406, "账号不存在"),
     PASSWORD_ERROR(407, "密码错误"),
-    TOKEN_IS_INVALID(406, "无效或过期token"),
+    TOKEN_IS_INVALID(408, "无效或过期token"),
     ACCOUNT_DISABLE(409, "账户已禁用"),
     FAIL(510, "操作失败"),
     TIMEOUT(504, "连接超时"),

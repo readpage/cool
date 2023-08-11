@@ -8,6 +8,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Date;
 
 /**
  * @author readpage
@@ -52,6 +53,10 @@ public class DateTest {
 
     @Test
     public void test4() {
+        LocalDateTime localDateTime = DateUtils.toDateTime("2023-05-05 12:32:25");
+        LocalDateTime localDateTime1 = DateUtils.toDateTime("2023-05-05 12:32:25");
+        Date date = DateUtils.toDate(localDateTime);
+        System.out.println(localDateTime1.equals(DateUtils.toDateTime(date)));
         System.out.println(DateUtils.getQuarter(DateUtils.toLocalDate("2023-12-23")));
     }
 
