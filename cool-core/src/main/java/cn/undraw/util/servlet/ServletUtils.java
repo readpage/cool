@@ -1,5 +1,6 @@
 package cn.undraw.util.servlet;
 
+import cn.undraw.handler.xss.XssHttpServletRequestWrapperFilter;
 import cn.undraw.util.ConvertUtils;
 import eu.bitwalker.useragentutils.Browser;
 import eu.bitwalker.useragentutils.OperatingSystem;
@@ -47,7 +48,7 @@ public class ServletUtils {
      * 获得请求
      * @return HttpServletRequest
      */
-    public static HttpServletRequest getRequest() {
+    public synchronized static HttpServletRequest getRequest() {
         RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
         if (!(requestAttributes instanceof ServletRequestAttributes)) {
             return null;
@@ -69,25 +70,26 @@ public class ServletUtils {
      * @param request
      * @return java.lang.String
      */
-
     public static String getBody(ServletRequest request) {
         StringBuilder sb = new StringBuilder();
         BufferedReader br = null;
-        try {
-            br = request.getReader();
-            String line;
-            while ((line = br.readLine()) != null) {
-                sb.append(line);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } finally {
+        if (request instanceof XssHttpServletRequestWrapperFilter) {
             try {
-                if (br != null) {
-                    br.close();
+                br = request.getReader();
+                String line;
+                while ((line = br.readLine()) != null) {
+                    sb.append(line);
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);
+            } finally {
+                try {
+                    if (br != null) {
+                        br.close();
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
         return sb.toString();

@@ -4,10 +4,7 @@ import cn.undraw.util.DateUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.util.Date;
 
 /**
@@ -18,7 +15,9 @@ import java.util.Date;
 public class DateTest {
     @Test
     public void test() {
+        System.out.println(DateUtils.toString(LocalDateTime.of(LocalDate.now(), LocalTime.of(17, 30, 0))));
         System.out.println(DateUtils.now());
+        System.out.println(DateUtils.toString(LocalDateTime.of(LocalDate.now(), LocalTime.MAX)));
     }
 
     @Test

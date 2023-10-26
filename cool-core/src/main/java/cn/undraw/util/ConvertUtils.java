@@ -199,8 +199,8 @@ public class ConvertUtils {
     }
 
 
-    private static String toString(Object o) {
-        return String.valueOf(o);
+    public static String toString(Object o) {
+        return o == null ? "" : o.toString();
     }
 
     /**

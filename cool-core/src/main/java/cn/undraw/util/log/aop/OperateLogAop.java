@@ -30,9 +30,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author readpage
@@ -190,25 +188,6 @@ public class OperateLogAop {
             } catch (Exception e) {
             }
         }
-    }
-
-    /**
-     * 获取请求参数
-     * @param pjp
-     * @return java.lang.String
-     */
-    @Deprecated
-    private String getMethodArgs(ProceedingJoinPoint pjp) {
-        MethodSignature methodSignature = (MethodSignature) pjp.getSignature();
-        String[] argNames = methodSignature.getParameterNames();
-        Object[] argValues = pjp.getArgs();
-        Map<String, Object> args = new HashMap<>();
-        for (int i = 0; i < argNames.length; i++) {
-            String argName = argNames[i];
-            Object argValue = argValues[i];
-            args.put(argName, argValue);
-        }
-        return args.toString();
     }
 
     /**

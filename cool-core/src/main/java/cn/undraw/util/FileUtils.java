@@ -1,6 +1,7 @@
 package cn.undraw.util;
 
 import cn.undraw.handler.exception.customer.CustomerException;
+import cn.undraw.util.snowflake.SnowflakeUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.ServletOutputStream;
@@ -15,21 +16,43 @@ import java.time.LocalDate;
  */
 public class FileUtils extends org.apache.commons.io.FileUtils {
 
-
+    /***
+     *
+     * @param fileDir
+     * @param file
+     * @param
+     * @return java.lang.String 文件上传返回值相对路径 前缀 +文件名 如 /upload/2023/10/24/filename
+     */
     public static String upload(String fileDir, MultipartFile file) {
         return upload(fileDir, file,"");
     }
 
+    /***
+     *
+     * @param fileDir
+     * @param file
+     * @param prefix 自定义前缀 -> 文件上传返回值相对路径 前缀 +文件名 如 /upload/2023/10/24/filename
+     * @return java.lang.String
+     */
     public static String upload(String fileDir, MultipartFile file, String prefix) {
         MultipartFile[] files = new MultipartFile[]{file};
         return upload(fileDir, files, prefix);
     }
 
+    /***
+     *
+     * @param fileDir
+     * @param files
+     * @param
+     * @return java.lang.String 文件上传返回值相对路径 前缀 +文件名 如 /upload/2023/10/24/filename||/upload/2023/10/24/filename1
+     */
     public static String upload(String fileDir, MultipartFile[] files) {
         LocalDate now = LocalDate.now();
         String prefix = "/upload/" + now.getYear() + "/" + now.getMonthValue() + "/" + now.getDayOfMonth();
         return upload(fileDir, files, prefix);
     }
+
+
 
     public static String upload(String fileDir, MultipartFile[] files, String prefix) {
         if (StrUtils.isEmpty(files)) {
@@ -50,8 +73,8 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
             //原始文件名
             String originalFilename = files[i].getOriginalFilename();
             //创建不重复的文件
-            File filePath = createFile(fileDir, filter(originalFilename));
-            //相对路径
+            File filePath = createFile(fileDir, originalFilename);
+            //文件上传返回值相对路径
             String relativePath = prefix + "/" + filePath.getName();
             try {
                 files[i].transferTo(filePath);
@@ -96,27 +119,6 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         return str.replaceAll("[^a-zA-Z0-9\\u4E00-\\u9FA5/\\-_.~:\\\\]", "");
     }
 
-    /**
-     * 获取不重复的文件对象,如果文件存在则文件名追加序号
-     * @param fileDir
-     * @param fileName
-     * @param num
-     * @return java.io.File
-     */
-    private static File getFile(String fileDir, String fileName, int num) {
-        File file;
-        String name = fileName.substring(0, fileName.lastIndexOf(".")).trim().replace(" ", "-"); //文件名 avatar
-        String suffix = fileName.substring(fileName.lastIndexOf(".")); //后缀 如.png
-        if (num == 0) {
-            file = new File(fileDir + File.separator + name + suffix);
-        } else {
-            file = new File(fileDir + File.separator + name + "(" + num + ")" + suffix);
-        }
-        if (file.isFile()) {
-            file = getFile(fileDir, fileName, ++num);
-        }
-        return file;
-    }
 
     /**
      * 创建不重复的文件，如果文件存在则文件名追加序号
@@ -126,7 +128,9 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
      */
     public static File createFile(String fileDir, String fileName) {
         if (StrUtils.isEmpty(fileDir) || StrUtils.isEmpty(fileName)) return new File("");
-        File file = getFile(fileDir, fileName, 0);
+        String suffix = fileName.substring(fileName.lastIndexOf(".")); //后缀 如.png
+        fileName = SnowflakeUtils.nextId() + suffix;
+        File file = new File(fileDir + File.separator + fileName);
         try {
             FileUtils.touch(file);
         } catch (IOException e) {

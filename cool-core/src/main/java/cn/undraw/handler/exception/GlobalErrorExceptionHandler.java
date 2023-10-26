@@ -40,7 +40,7 @@ public class GlobalErrorExceptionHandler {
      */
     @ExceptionHandler({ DuplicateKeyException.class})
     public R<?> duplicateKeyException(HttpServletRequest req, DuplicateKeyException e) {
-        return R.error("SQL重复键异常", e);
+        return R.error("添加数据重复", e);
     }
 
     /**

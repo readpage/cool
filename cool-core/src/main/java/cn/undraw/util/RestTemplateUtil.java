@@ -2,15 +2,15 @@ package cn.undraw.util;
 
 import cn.undraw.util.result.R;
 import com.fasterxml.jackson.core.type.TypeReference;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -20,8 +20,9 @@ import java.util.Map;
  */
 @Component
 public class RestTemplateUtil {
-    @Autowired
+    @Resource
     private RestTemplate restTemplate;
+
 
     /**
      * 参数拼接到url上
@@ -53,7 +54,7 @@ public class RestTemplateUtil {
         }
 
         HttpEntity<Map<String, ?>> httpEntity = new HttpEntity<>(null, headers);
-        return restTemplate.exchange(this.join(url, param), HttpMethod.GET, httpEntity, type).getBody();
+        return restTemplate.exchange(join(url, param), HttpMethod.GET, httpEntity, type).getBody();
     }
     public String get(String url, HttpHeaders headers, Map<String, ?> param) {
         return get(url, headers, param, String.class);
@@ -75,21 +76,28 @@ public class RestTemplateUtil {
         return get(url, String.class);
     }
 
+    public <T> R<T> getR(String url, HttpHeaders headers, Map<String, ?> param, Class<T> type) {
+        return ConvertUtils.toObject(get(url, headers, param), new TypeReference<R<T>>() {});
+    }
 
-    public <T> R<T> getResult(String url, Map<String, ?> param, Class<T> type) {
+    public <T> R<T> getR(String url, Map<String, ?> param, Class<T> type) {
         return ConvertUtils.toObject(get(url, param), new TypeReference<R<T>>() {});
     }
 
-    public <T> R<T> getResult(String url, Class<T> type) {
+    public <T> R<T> getR(String url, Class<T> type) {
         return ConvertUtils.toObject(get(url), new TypeReference<R<T>>() {});
     }
 
-    public R<Object> getResult(String url, Map<String, ?> param) {
-        return getResult(url, param, Object.class);
+    public R<Object> getR(String url, HttpHeaders headers, Map<String, ?> param) {
+        return getR(url, headers, param, Object.class);
+    }
+
+    public R<Object> getR(String url, Map<String, ?> param) {
+        return getR(url, param, Object.class);
     }
 
     public R<Object> getR(String url) {
-        return getResult(url, Object.class);
+        return getR(url, Object.class);
     }
 
 
@@ -105,7 +113,7 @@ public class RestTemplateUtil {
      * @param headers 自定义的头信息
      * @return T
      */
-    public <T, K> T post(String url, K body, HttpHeaders headers, Class<T> responseType) {
+    public <T, K> T post(String url, HttpHeaders headers, K body, Class<T> responseType) {
         HttpEntity<K> httpEntity = new HttpEntity<>(body, headers);
         return restTemplate.postForObject(url, httpEntity, responseType);
     }
@@ -122,38 +130,70 @@ public class RestTemplateUtil {
     public <T, K> T post(String url, K body, Class<T> responseType) {
         HttpHeaders headers = new HttpHeaders();
         HttpEntity<K> httpEntity = new HttpEntity<>(body, headers);
-        return post(url, body, headers, responseType);
+        return post(url, headers, body, responseType);
     }
 
-    public <K> String post(String url, K body, HttpHeaders headers) {
+    public <K> String post(String url,  HttpHeaders headers, K body) {
         if (headers.getContentType() == null) {
             headers.setContentType(MediaType.APPLICATION_JSON);
         }
         if (headers.getContentType() == null) {
             headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
         }
-        return post(url, body, headers, String.class);
+        return post(url, headers, body, String.class);
     }
 
     public <K> String post(String url, K body) {
         return post(url, body, String.class);
     }
 
-    public <T, K> R<T> postResult(String url, K body, HttpHeaders headers, Class<T> type) {
-        return ConvertUtils.toObject(post(url, body, headers), new TypeReference<R<T>>() {});
+    public <T, K> R<T> postR(String url, HttpHeaders headers, K body,  Class<T> type) {
+        return ConvertUtils.toObject(post(url, headers, body), new TypeReference<R<T>>() {});
     }
 
-    public <T, K> R<T> postResult(String url, K body, Class<T> type) {
+    public <T, K> R<T> postR(String url, K body, Class<T> type) {
         return ConvertUtils.toObject(post(url, body), new TypeReference<R<T>>() {});
     }
 
-    public <K> R<Object> postResult(String url, K body, HttpHeaders headers) {
-        return postResult(url, body, headers, Object.class);
+    public <K> R<Object> postR(String url, HttpHeaders headers, K body) {
+        return postR(url, headers, body, Object.class);
     }
 
-    public <K> R<Object> postResult(String url, K body) {
-        return postResult(url, body, Object.class);
+    public <K> R<Object> postR(String url, K body) {
+        return postR(url, body, Object.class);
     }
 
+    private void toHttpServletResponse(ResponseEntity<byte[]> responseEntity, HttpServletResponse response) {
+        OutputStream out = null;
+        try {
+            HttpHeaders headers = responseEntity.getHeaders();
+            byte[] bytes = responseEntity.getBody();
+
+            // 设置响应头
+            for (String key : headers.keySet()) {
+                response.setHeader(key, headers.get(key).get(0));
+            }
+
+            out = response.getOutputStream(); // 获取OutputStream对象
+
+            out.write(bytes);
+            out.flush();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } finally {
+            if (out != null) {
+                try {
+                    out.close();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+    }
+
+    public void transferFile(String url, HttpServletResponse response) {
+        ResponseEntity<byte[]> responseEntity = restTemplate.exchange(url, HttpMethod.GET, null, byte[].class);
+        toHttpServletResponse(responseEntity, response);
+    }
 
 }

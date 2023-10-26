@@ -19,5 +19,4 @@ import static java.lang.annotation.ElementType.TYPE;
 public @interface EnableCool {
     String type() default "";
 
-
 }

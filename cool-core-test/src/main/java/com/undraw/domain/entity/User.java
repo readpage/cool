@@ -1,4 +1,4 @@
-package com.undraw.entity;
+package com.undraw.domain.entity;
 
 import cn.undraw.util.phone.annotation.Phone;
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -8,6 +8,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
@@ -34,6 +35,7 @@ public class User implements Serializable {
     private String username;
 
     @ApiModelProperty("密码")
+    @NotBlank(message = "密码为必填项，不得为空")
     private String password;
 
     @ApiModelProperty("年龄")

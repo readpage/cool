@@ -9,6 +9,7 @@ import org.springframework.web.multipart.support.StandardServletMultipartResolve
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.Enumeration;
 
 /**
  * @author readpage
@@ -35,6 +36,9 @@ public class XSSFilter implements Filter {
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
 
+        Enumeration<String> parameterNames = request.getParameterNames();
+
+
         if (ServletUtils.isMultipart(request)) {
             // 判断类型如果是multipart类型，则将request手动封装为multipart类型。
             request = new StandardServletMultipartResolver().resolveMultipart(request);
@@ -52,14 +56,14 @@ public class XSSFilter implements Filter {
             AntPathMatcher matcher = new AntPathMatcher();
             String uri = request.getRequestURI();
             for (String str : split) {
-                if (matcher.match(str, uri)) {
+                if (matcher.match(str.trim(), uri)) {
                     flag = false;
                 }
             }
         }
 
         if (flag) {
-            filterChain.doFilter(new XssHttpServletRequestWrapper(request), servletResponse);
+            filterChain.doFilter(new XssHttpServletRequestWrapperFilter(request), servletResponse);
         } else {
             filterChain.doFilter(request, servletResponse);
         }

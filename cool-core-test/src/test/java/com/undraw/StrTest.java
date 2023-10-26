@@ -82,6 +82,13 @@ public class StrTest {
     }
 
     @Test
+    public void convert() {
+        String string = ConvertUtils.toString(null);
+        System.out.println(string);
+        System.out.println(string.isEmpty());
+    }
+
+    @Test
     public void test5() {
         String format = String.format("%d hello world %s", 1L, 2);
         System.out.println(format);

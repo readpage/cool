@@ -33,6 +33,7 @@ public class CodeGenerator {
                 // 包配置
                 .packageConfig(builder ->
                     builder.parent("com.undraw") //父包名
+                            .entity("domain.entity") //设置entity包名
                             .pathInfo(Collections.singletonMap(OutputFile.mapperXml, ProjectPath+ "/src/main/resources/mapper"))  // 设置mapperXml生成路径
                 )
                 // 策略配置

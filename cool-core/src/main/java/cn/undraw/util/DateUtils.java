@@ -49,14 +49,6 @@ public class DateUtils {
         return LocalDateTime.ofInstant(Instant.ofEpochMilli(time), ZoneId.systemDefault());
     }
 
-    /**
-     * localdatetime转换为毫秒数
-     * @param localDateTime
-     * @return long
-     */
-    public static long toLong(LocalDateTime localDateTime) {
-        return localDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
-    }
 
     /**
      * 传日期时间格式化为字符串 yyyy-MM-dd HH:mm:ss
@@ -118,13 +110,30 @@ public class DateUtils {
     }
 
     /**
-     * localDate转时间戳
+     * 返回当前时间戳(ms/毫秒)
+     * @return long
+     */
+    public static long toLong()  {
+        return toLong(LocalDateTime.now());
+    }
+
+    /**
+     * localDate转毫秒数
      * @param localDate
      * @return long
      */
     public static long toLong(LocalDate localDate) {
         ZoneId zoneId = ZoneId.systemDefault();
         return localDate.atStartOfDay(zoneId).toInstant().toEpochMilli();
+    }
+
+    /**
+     * localdatetime转换为毫秒数
+     * @param localDateTime
+     * @return long
+     */
+    public static long toLong(LocalDateTime localDateTime) {
+        return localDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
     }
 
     /**

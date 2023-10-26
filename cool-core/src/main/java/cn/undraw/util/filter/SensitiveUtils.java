@@ -40,8 +40,6 @@ public class SensitiveUtils {
      */
     private static final TrieNode ROOT_NODE = new TrieNode();
 
-    private static List<String> dynamicWords = new ArrayList<>();
-
     static {
         try (
                 InputStream is = new ClassPathResource(SENSITIVE_WORD).getInputStream();
@@ -111,7 +109,7 @@ public class SensitiveUtils {
         }
     }
 
-    /***
+    /**
      * 删除词
      * @param keyword
      * @return void

@@ -1,4 +1,4 @@
-package com.undraw.dto;
+package com.undraw.domain.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

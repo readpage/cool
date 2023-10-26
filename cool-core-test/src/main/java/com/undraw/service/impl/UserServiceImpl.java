@@ -1,6 +1,6 @@
 package com.undraw.service.impl;
 
-import com.undraw.entity.User;
+import com.undraw.domain.entity.User;
 import com.undraw.mapper.UserMapper;
 import com.undraw.service.UserService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;

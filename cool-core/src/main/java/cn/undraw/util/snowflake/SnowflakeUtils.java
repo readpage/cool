@@ -10,7 +10,7 @@ import javax.annotation.PostConstruct;
  * @date 2023-07-05 13:56
  */
 @Component
-public class SnowflakeUtil {
+public class SnowflakeUtils {
     @Value("${cool-core.snowflake.workerId:0}")
     private long workerId;
 

@@ -14,15 +14,15 @@ import java.util.ArrayList;
  * @date 2022-10-26 20:19
  */
 @Configuration
-public class FilterConfig {
+public class CoolFilterConfig {
     @Autowired
     private XSSFilter xssFilter;
 
     @Value("${cool-core.filter.include:}")
     private String include;
 
-    @Bean
-    public FilterRegistrationBean<XSSFilter> filterSample() {
+    @Bean(name="coolFilterRegistrationBean")
+    public FilterRegistrationBean<XSSFilter> webFilter() {
         FilterRegistrationBean<XSSFilter> registrationBean = new FilterRegistrationBean();
         registrationBean.setFilter(xssFilter);
         ArrayList<String> urls = new ArrayList<>();

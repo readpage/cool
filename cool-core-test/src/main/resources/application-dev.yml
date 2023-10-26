@@ -1,0 +1,22 @@
+server:
+  upload: D:\Code\Java\cool\cool-core-test
+
+spring:
+  # 设置静态资源的存放路径
+  resources:
+    static-locations: classpath:/static
+  datasource:
+    url: jdbc:mysql://localhost:3306/cool?serverTimezone=GMT%2B8&allowMultiQueries=true
+    username: root
+    password: root
+
+mybatis-plus:
+  configuration:
+    # 配置日志
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+knife4j:
+  # 开启增强配置
+  enable: true
+  # 开启生产环境屏蔽 true
+  production: false

@@ -1,6 +1,6 @@
 package com.undraw.mapper;
 
-import com.undraw.entity.SystemLog;
+import com.undraw.domain.entity.SystemLog;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**

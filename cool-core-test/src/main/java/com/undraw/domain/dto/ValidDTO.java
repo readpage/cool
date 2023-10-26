@@ -1,4 +1,4 @@
-package com.undraw.dto;
+package com.undraw.domain.dto;
 
 import io.swagger.annotations.ApiModel;
 import lombok.Getter;

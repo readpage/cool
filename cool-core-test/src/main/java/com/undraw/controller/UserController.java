@@ -3,7 +3,7 @@ package com.undraw.controller;
 
 import cn.undraw.util.log.annotation.OperateLog;
 import cn.undraw.util.result.R;
-import com.undraw.entity.User;
+import com.undraw.domain.entity.User;
 import com.undraw.service.UserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;

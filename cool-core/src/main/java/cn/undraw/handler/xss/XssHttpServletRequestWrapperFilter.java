@@ -1,6 +1,7 @@
 package cn.undraw.handler.xss;
 
 import cn.undraw.util.StrUtils;
+import cn.undraw.util.filter.JsoupUtils;
 
 import javax.servlet.ReadListener;
 import javax.servlet.ServletInputStream;
@@ -17,11 +18,11 @@ import java.util.Map;
  * @author readpage
  * @date 2022-10-26 19:36
  */
-public class XssHttpServletRequestWrapper extends HttpServletRequestWrapper {
+public class XssHttpServletRequestWrapperFilter extends HttpServletRequestWrapper {
 
     private final String body;
 
-    public XssHttpServletRequestWrapper(HttpServletRequest request) throws IOException {
+    public XssHttpServletRequestWrapperFilter(HttpServletRequest request) throws IOException {
         super(request);
         StringBuilder sb = new StringBuilder();
         BufferedReader reader = null;
@@ -38,7 +39,7 @@ public class XssHttpServletRequestWrapper extends HttpServletRequestWrapper {
                 reader.close();
             }
         }
-        body = sb.toString();
+        body = JsoupUtils.filter(sb.toString());
     }
 
     /**
@@ -49,7 +50,7 @@ public class XssHttpServletRequestWrapper extends HttpServletRequestWrapper {
     @Override
     public String getHeader(String name) {
         String value = super.getHeader(name);
-        return value;
+        return JsoupUtils.filter(value);
     }
 
     /**
@@ -60,7 +61,7 @@ public class XssHttpServletRequestWrapper extends HttpServletRequestWrapper {
     @Override
     public String getParameter(String name) {
         String value = super.getParameter(name);
-        return value;
+        return JsoupUtils.filter(value);
     }
 
     /**
@@ -73,7 +74,7 @@ public class XssHttpServletRequestWrapper extends HttpServletRequestWrapper {
         String[] arr = super.getParameterValues(name);
         if(arr != null){
             for (int i=0; i<arr.length; i++) {
-                arr[i] = arr[i];
+                arr[i] = JsoupUtils.filter(arr[i]);
             }
         }
         return arr;
@@ -95,7 +96,7 @@ public class XssHttpServletRequestWrapper extends HttpServletRequestWrapper {
             int count = values.get(key).length;
             String[] encodedValues = new String[count];
             for (int i = 0; i < count; i++) {
-                encodedValues[i] = values.get(key)[i];
+                encodedValues[i] = JsoupUtils.filter(values.get(key)[i]);
             }
             result.put(key, encodedValues);
         }
@@ -138,6 +139,8 @@ public class XssHttpServletRequestWrapper extends HttpServletRequestWrapper {
     public BufferedReader getReader() throws IOException {
         return new BufferedReader(new InputStreamReader(this.getInputStream()));
     }
+
+
 
 
 

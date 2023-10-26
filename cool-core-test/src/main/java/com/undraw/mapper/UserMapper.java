@@ -1,6 +1,6 @@
 package com.undraw.mapper;
 
-import com.undraw.entity.User;
+import com.undraw.domain.entity.User;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Select;
 

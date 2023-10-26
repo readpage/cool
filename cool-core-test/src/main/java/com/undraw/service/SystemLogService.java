@@ -1,6 +1,6 @@
 package com.undraw.service;
 
-import com.undraw.entity.SystemLog;
+import com.undraw.domain.entity.SystemLog;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**

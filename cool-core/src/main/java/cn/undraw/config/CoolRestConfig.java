@@ -12,7 +12,7 @@ import java.nio.charset.Charset;
  * @date 2022-12-08 9:01
  */
 @Configuration
-public class RestConfig {
+public class CoolRestConfig {
     @Bean
     public RestTemplate restTemplate() {
         RestTemplate restTemplate = new RestTemplate();

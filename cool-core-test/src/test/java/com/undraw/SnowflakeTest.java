@@ -1,7 +1,7 @@
 package com.undraw;
 
 import cn.undraw.util.snowflake.Snowflake;
-import cn.undraw.util.snowflake.SnowflakeUtil;
+import cn.undraw.util.snowflake.SnowflakeUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -27,7 +27,7 @@ public class SnowflakeTest {
     @Test
     public void test2() {
         for (int i = 0; i < 1000; i++) {
-            long id = SnowflakeUtil.nextId();
+            long id = SnowflakeUtils.nextId();
             System.out.println(id);
         }
     }

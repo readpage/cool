@@ -3,7 +3,7 @@ package com.undraw.service.impl;
 import cn.undraw.util.ConvertUtils;
 import cn.undraw.util.log.service.OperateLogService;
 import cn.undraw.util.log.vo.OperationLog;
-import com.undraw.entity.SystemLog;
+import com.undraw.domain.entity.SystemLog;
 import com.undraw.mapper.SystemLogMapper;
 import com.undraw.service.SystemLogService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
