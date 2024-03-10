@@ -4,6 +4,7 @@ import cn.undraw.util.log.annotation.ErrorLog;
 import cn.undraw.util.log.enums.OperateTypeEnum;
 import cn.undraw.util.result.R;
 import cn.undraw.util.result.ResultEnum;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindException;
@@ -22,6 +23,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolationException;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -31,6 +34,7 @@ import java.util.stream.Collectors;
 @ErrorLog(type = OperateTypeEnum.WARN)
 @Order(value = 2)
 @RestControllerAdvice
+@Slf4j
 public class GlobalWarnExceptionHandler {
 
 
@@ -42,7 +46,15 @@ public class GlobalWarnExceptionHandler {
     @ExceptionHandler({ MethodArgumentTypeMismatchException.class, HttpMessageNotReadableException.class, MissingServletRequestParameterException.class})
     @ResponseBody
     public R requestParamFormatException(HttpServletRequest req, Exception e) {
-        return R.bad("类型转换错误");
+        System.out.println(e.getMessage());
+        Pattern pattern = Pattern.compile("CustomerException: (.+?)$");
+        Matcher matcher = pattern.matcher(e.getMessage());
+        String msg = "类型转换错误";
+
+        if (matcher.find()) {
+            msg = matcher.group(1);
+        }
+        return R.bad(msg);
     }
 
     /**
@@ -67,7 +79,7 @@ public class GlobalWarnExceptionHandler {
     public R<?> argumentValidationException(HttpServletRequest req, Exception e) {
         BindingResult bindingResult = null;
         if (e instanceof BindException) {
-           return R.fail("类型转换错误");
+            bindingResult = ((BindException) e).getBindingResult();
         } else if (e instanceof MethodArgumentNotValidException) {
             bindingResult = ((MethodArgumentNotValidException)e).getBindingResult();
         } else {
@@ -79,7 +91,12 @@ public class GlobalWarnExceptionHandler {
                 String[] msg = {"提交的数据不合规范"};
                 Map<String, String> map = errors.stream().map(o -> {
                     FieldError f = (FieldError) o;
-                    msg[0] = f.getDefaultMessage();
+                    String message = f.getDefaultMessage();
+                    String tar = "Exception: ";
+                    if (message.contains(tar)) {
+                        message = message.substring(message.lastIndexOf(tar)+tar.length());
+                    }
+                    msg[0] = message;
                     return f;
                 }).collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
                 return R.fail(msg[0], map);

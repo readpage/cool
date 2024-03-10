@@ -4,7 +4,10 @@ server:
 spring:
   # 设置静态资源的存放路径
   resources:
-    static-locations: classpath:/static
+    static-locations: file:D:\code\Java\cool\cool-core-test\upload
+  mvc:
+    # 静态资源的访问路径，默认 /
+    static-path-pattern: /static/**
   datasource:
     url: jdbc:mysql://localhost:3306/cool?serverTimezone=GMT%2B8&allowMultiQueries=true
     username: root

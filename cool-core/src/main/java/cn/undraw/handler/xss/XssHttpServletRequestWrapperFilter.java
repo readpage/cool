@@ -7,10 +7,7 @@ import javax.servlet.ReadListener;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,19 +21,19 @@ public class XssHttpServletRequestWrapperFilter extends HttpServletRequestWrappe
 
     public XssHttpServletRequestWrapperFilter(HttpServletRequest request) throws IOException {
         super(request);
-        StringBuilder sb = new StringBuilder();
-        BufferedReader reader = null;
+        InputStream is = null;
+        StringBuilder sb = null;
         try {
-            reader = new BufferedReader(new InputStreamReader(request.getInputStream(), "UTF-8"));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                sb.append(line);
+            is = request.getInputStream();
+            sb = new StringBuilder();
+            byte[] b = new byte[4096];
+            for (int n; (n = is.read(b)) != -1;)
+            {
+                sb.append(new String(b, 0, n));
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         } finally {
-            if (reader != null) {
-                reader.close();
+            if(is != null) {
+                is.close();
             }
         }
         body = JsoupUtils.filter(sb.toString());

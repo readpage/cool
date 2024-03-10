@@ -1,7 +1,7 @@
 package com.undraw.controller;
 
 import cn.undraw.util.result.R;
-import com.undraw.model.Fruit;
+import com.undraw.domain.model.Fruit;
 import io.swagger.annotations.Api;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

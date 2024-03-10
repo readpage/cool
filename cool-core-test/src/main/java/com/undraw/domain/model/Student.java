@@ -1,5 +1,6 @@
 package com.undraw.domain.model;
 
+import com.alibaba.excel.annotation.ExcelProperty;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,15 +15,19 @@ import java.util.List;
 @NoArgsConstructor
 public class Student {
     @ApiModelProperty("ID")
+    @ExcelProperty("ID")
     private Integer id;
 
     @ApiModelProperty("姓名")
+    @ExcelProperty("姓名")
     private String name;
 
     @ApiModelProperty("年龄")
+    @ExcelProperty("年龄")
     public int age;
 
     @ApiModelProperty("性别")
+    @ExcelProperty("性别")
     private int sex;
 
     public final static List<Student> studentList = new ArrayList<>(Arrays.asList(

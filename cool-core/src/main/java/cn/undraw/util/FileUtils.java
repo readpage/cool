@@ -8,6 +8,8 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.net.URLEncoder;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 
 /**
@@ -131,6 +133,59 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         String suffix = fileName.substring(fileName.lastIndexOf(".")); //后缀 如.png
         fileName = SnowflakeUtils.nextId() + suffix;
         File file = new File(fileDir + File.separator + fileName);
+        try {
+            FileUtils.touch(file);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return file;
+    }
+
+
+    private static File getFile(String filePath, int num) {
+        File file;
+        if (num == 0) {
+            file = new File(filePath);
+        } else {
+            String prefix = filePath.substring(0, filePath.lastIndexOf(".")).trim().replace(" ", "-");
+            String suffix = filePath.substring(filePath.lastIndexOf(".")); //后缀 如.png
+            file = new File(prefix + "(" + num + ")" + suffix);
+        }
+        if (file.isFile()) {
+            file = getFile(filePath, ++num);
+        }
+        return file;
+    }
+
+    /**
+     * 创建不重复的文件，如果文件存在则文件名追加序号
+     * @param filePath
+     * @return java.io.File
+     */
+    public static File createFile(String filePath) {
+        if (StrUtils.isEmpty(filePath)) throw new RuntimeException("文件路径为空");
+        File file = getFile(filePath, 0);
+        try {
+            FileUtils.touch(file);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return file;
+    }
+
+    /**
+     * 创建不重复的文件，以雪花算法为名称
+     * @param filePath
+     * @return java.io.File
+     */
+    public static File createSnowFile(String filePath) {
+        if (StrUtils.isEmpty(filePath)) throw new RuntimeException("文件路径为空");
+        Path path = Paths.get(filePath);
+        String parent = path.getParent().toString();
+        String fileName = path.getFileName().toString();
+        String suffix = fileName.substring(fileName.lastIndexOf(".")); //后缀 如.png
+        fileName = SnowflakeUtils.nextId() + suffix;
+        File file = new File(parent + File.separator + fileName);
         try {
             FileUtils.touch(file);
         } catch (IOException e) {

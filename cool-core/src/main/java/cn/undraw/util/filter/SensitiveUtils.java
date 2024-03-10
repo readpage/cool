@@ -1,12 +1,6 @@
 package cn.undraw.util.filter;
 
-import cn.undraw.handler.exception.customer.CustomerException;
 import cn.undraw.util.StrUtils;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.TextNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
@@ -14,7 +8,10 @@ import org.springframework.core.io.ClassPathResource;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * 敏感词过滤工具类（需要在resource下放置敏感词文件）
@@ -186,69 +183,6 @@ public class SensitiveUtils {
         sb.append(text.substring(begin));
 
         return sb.toString();
-    }
-
-    // json格式: 敏感词过滤
-    private static ObjectMapper jackson = new ObjectMapper();
-    public static String jsonFilter(String str) {
-        if (!isValidJSON(str)) {
-            return filter(str);
-        }
-        try {
-            JsonNode node = jackson.readTree(str);
-            jsonLeaf(node);
-            return node.toString();
-        } catch (JsonProcessingException e) {
-            throw new CustomerException("xss和敏感词过滤异常!", e);
-        }
-    }
-
-    /**
-     * 是否是有效的json
-     * @param json
-     * @return boolean
-     */
-    public static boolean isValidJSON(final String json) {
-        boolean valid = true;
-        try{
-            jackson.readTree(json);
-        } catch(JsonProcessingException e){
-            valid = false;
-        }
-        return valid;
-    }
-
-    private static void jsonLeaf(JsonNode node) {
-        if (node.isObject())
-        {
-            Iterator<Map.Entry<String, JsonNode>> it = node.fields();
-            while (it.hasNext())
-            {
-                Map.Entry<String, JsonNode> entry = it.next();
-                if(entry.getValue() instanceof TextNode
-                        && entry.getValue().isValueNode()){
-                    TextNode t = (TextNode)entry.getValue();
-                    String filter = filter(t.asText());
-                    entry.setValue(new TextNode(filter));
-                }
-
-                jsonLeaf(entry.getValue());
-            }
-        }
-
-        if (node.isArray())
-        {
-            ArrayNode arr = (ArrayNode) node;
-            for (int i = 0; i < node.size(); i++) {
-                JsonNode value = arr.get(i);
-                if (value instanceof TextNode && value.isValueNode()) {
-                    String filter = filter(value.asText());
-                    arr.set(i, new TextNode(filter));
-                } else {
-                    jsonLeaf(node.get(i));
-                }
-            }
-        }
     }
 
     /**

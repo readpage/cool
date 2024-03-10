@@ -1,7 +1,6 @@
 package cn.undraw.util;
 
 import cn.undraw.util.result.R;
-import com.fasterxml.jackson.core.type.TypeReference;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;

@@ -1,16 +1,16 @@
 package cn.undraw.config;
 
 
+import cn.undraw.handler.exception.customer.CustomerException;
 import cn.undraw.util.DateUtils;
-import cn.undraw.util.StrUtils;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalTimeDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
-import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.jackson.JsonComponent;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
@@ -33,6 +33,8 @@ public class TimeFormatConfig {
     private static final String DATE_PATTERN = "yyyy-MM-dd";
     private static final String TIME_PATTERN = "HH:mm:ss";
 
+    @Value("${cool-core.date-format:global}")
+    private String dateFormat;
 
 
     /** 
@@ -44,10 +46,7 @@ public class TimeFormatConfig {
         return new Converter<String, LocalDateTime>() {
             @Override
             public LocalDateTime convert(String source) {
-                if (StrUtils.isNumber(source)) {
-                    return DateUtils.toDateTime(Long.parseLong(source));
-                }
-                return LocalDateTime.parse(source, DateTimeFormatter.ofPattern(DATE_TIME_PATTERN));
+                return DateUtils.toDateTime(source);
             }
         };
     }
@@ -61,10 +60,7 @@ public class TimeFormatConfig {
         return new Converter<String, LocalDate>() {
             @Override
             public LocalDate convert(String source) {
-                if (StrUtils.isNumber(source)) {
-                    return DateUtils.toDateTime(Long.parseLong(source)).toLocalDate();
-                }
-                return LocalDate.parse(source, DateTimeFormatter.ofPattern(DATE_PATTERN));
+                return DateUtils.toLocalDate(source);
             }
         };
     }
@@ -78,61 +74,59 @@ public class TimeFormatConfig {
         return new Converter<String, LocalTime>() {
             @Override
             public LocalTime convert(String source) {
-                return LocalTime.parse(source, DateTimeFormatter.ofPattern(TIME_PATTERN));
+                try {
+                    return LocalTime.parse(source, DateTimeFormatter.ofPattern(TIME_PATTERN));
+                } catch (Exception e) {
+                    throw new CustomerException("时间类型转换异常");
+                }
             }
         };
     }
 
-//    public static class LocalDateTimeSerializer extends JsonSerializer<LocalDateTime> {
-//        @Override
-//        public void serialize(LocalDateTime value, JsonGenerator gen, SerializerProvider serializers)
-//                throws IOException {
-//            if (value != null) {
-//                gen.writeNumber(value.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
-//            }
-//        }
-//    }
-
-    public static class LocalDateTimeDeserializer extends JsonDeserializer<LocalDateTime> {
+    // 反序列化
+    @JsonComponent
+    public class LocalDateTimeDeserializer extends JsonDeserializer<LocalDateTime> {
         @Override
         public LocalDateTime deserialize(JsonParser parser, DeserializationContext deserializationContext) throws IOException {
             String str = parser.getText();
-            if (StrUtils.isNumber(str)) {
-                return DateUtils.toDateTime(Long.parseLong(str));
-            }
-            return LocalDateTime.parse(parser.getText(), DateTimeFormatter.ofPattern(DATE_TIME_PATTERN));
+            return DateUtils.toDateTime(str);
         }
     }
 
-    public static class LocalDateDeserializer extends JsonDeserializer<LocalDate> {
+    @JsonComponent
+    public class LocalDateDeserializer extends JsonDeserializer<LocalDate> {
         @Override
         public LocalDate deserialize(JsonParser parser, DeserializationContext deserializationContext) throws IOException {
             String str = parser.getText();
-            if (StrUtils.isNumber(str)) {
-                return DateUtils.toDateTime(Long.parseLong(str)).toLocalDate();
-            }
-            return LocalDate.parse(str, DateTimeFormatter.ofPattern(DATE_PATTERN));
+            return DateUtils.toLocalDate(str);
         }
     }
 
-
-
-    /** 
-     * 配置LocalDateTime类型序列化与反序列化
-     * @return org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer
-     */
-    @Bean
-    public Jackson2ObjectMapperBuilderCustomizer jsonCustomizer() {
-        return builder -> builder
-                .simpleDateFormat(DATE_TIME_PATTERN)
-                .serializers(new LocalDateTimeSerializer(DateTimeFormatter.ofPattern(DATE_TIME_PATTERN)))
-                .deserializerByType(LocalDateTime.class, new LocalDateTimeDeserializer())
-                .serializers(new LocalDateSerializer(DateTimeFormatter.ofPattern(DATE_PATTERN)))
-                .deserializerByType(LocalDate.class, new LocalDateDeserializer())
-                .serializers(new LocalTimeSerializer(DateTimeFormatter.ofPattern(TIME_PATTERN)))
-                .deserializers(new LocalTimeDeserializer(DateTimeFormatter.ofPattern(TIME_PATTERN)))
-                ;
+    //序列化
+    @JsonComponent
+    public class LocalDateTimeSerializer extends JsonSerializer<LocalDateTime> {
+        @Override
+        public void serialize(LocalDateTime localDateTime, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
+            if (dateFormat.equals("timestamp")) {
+                jsonGenerator.writeNumber(DateUtils.toMilli(localDateTime));
+            } else {
+                jsonGenerator.writeString(DateUtils.toString(localDateTime));
+            }
+        }
     }
+
+    @JsonComponent
+    public class LocalDateSerializer extends JsonSerializer<LocalDate> {
+        @Override
+        public void serialize(LocalDate localDate, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
+            if (dateFormat.equals("timestamp")) {
+                jsonGenerator.writeNumber(DateUtils.toMilli(localDate));
+            } else {
+                jsonGenerator.writeString(localDate.toString());
+            }
+        }
+    }
+
 }
 
 

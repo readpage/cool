@@ -7,7 +7,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.safety.Whitelist;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,6 +20,7 @@ import java.util.Map;
  * @author readpage
  * @date 2022-11-15 11:00
  */
+@Component
 public class JsoupUtils {
 
     /**
@@ -25,6 +28,13 @@ public class JsoupUtils {
      */
     static Document.OutputSettings OUTPUT_SETTINGS = new Document.OutputSettings().prettyPrint(false);
     private static final ClassPathResource WHITE_LIST = new ClassPathResource("/assets/whiteList.json");
+
+    @Value("${cool-core.filter.sensitive:true}")
+    private static boolean sensitive = true;
+
+    @Value("${cool-core.filter.xss:true}")
+    private static boolean xss = true;
+
 
     //添加默认base配置,因为本项目的富文本图片实现使用base64,暂不使用默认的baseImage配置
 //    private static Whitelist whitelist = Whitelist.basicWithImages();
@@ -78,8 +88,19 @@ public class JsoupUtils {
         if (StrUtils.isEmpty(str)) {
             return null;
         }
-        String filter = SensitiveUtils.jsonFilter(str);
-        return clean(filter);
+        String clean = JsonFilterUtils.filter(str, (k, v) -> {
+            if (StrUtils.isEmpty(v)) {
+                return null;
+            }
+            if (sensitive) {
+                v = SensitiveUtils.filter(v);
+            }
+            if (xss) {
+                v = clean(v);
+            }
+            return v;
+        });
+        return clean;
     }
 
 }

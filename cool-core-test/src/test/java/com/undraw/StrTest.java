@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author readpage
@@ -90,7 +92,19 @@ public class StrTest {
 
     @Test
     public void test5() {
-        String format = String.format("%d hello world %s", 1L, 2);
-        System.out.println(format);
+        String str = "Cause: java.sql.SQLIntegrityConstraintViolationException: Duplicate entry '86' for key 'user.PRIMARY'\n" +
+                "; Duplicate entry '86' for key 'user.PRIMARY'; ";
+        Pattern pattern = Pattern.compile("Duplicate entry '(.+?)' for key");
+        Matcher matcher = pattern.matcher(str);
+
+        if (matcher.find()) {
+            String content = matcher.group(1);
+            System.out.println("匹配到的内容是: " + content);
+        } else {
+            System.out.println("没有找到匹配的内容");
+        }
     }
+
+
+
 }

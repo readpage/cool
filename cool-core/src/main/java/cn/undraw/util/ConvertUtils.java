@@ -3,7 +3,6 @@ package cn.undraw.util;
 import cn.undraw.util.result.R;
 import cn.undraw.util.result.ResultEnum;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.MediaType;
@@ -263,7 +262,8 @@ public class ConvertUtils {
         List result = new ArrayList();
         if (list != null && list.size() > 0) {
             int allCount = list.size();
-            int pageCount = (allCount + pageSize - 1) / pageSize;
+//            int pageCount = (allCount - 1) / pageSize + 1;
+            int pageCount = (int)Math.ceil((double)allCount / pageSize);
             if (pageNum >= pageCount) {
                 pageNum = pageCount;
             }
@@ -277,6 +277,28 @@ public class ConvertUtils {
             }
         }
         return (result.size() > 0) ? result : null;
+    }
+
+
+    /**
+     * 将一个大列表分割成指定大小的多个小列表。
+     *
+     * @param list        要分割的列表
+     * @param batchSize   每个批次的大小
+     * @param <T>         列表元素的类型
+     * @return            包含所有批次的列表
+     */
+    public static <T> List<List<T>> batchList(List<T> list, int batchSize) {
+        if (list == null || batchSize <= 0) {
+            throw new IllegalArgumentException("List或batchSize必须有效。");
+        }
+
+        List<List<T>> batches = new ArrayList<>();
+        for (int i = 0; i < list.size(); i += batchSize) {
+            int end = Math.min(i + batchSize, list.size());
+            batches.add(new ArrayList<>(list.subList(i, end)));
+        }
+        return batches;
     }
 
 }

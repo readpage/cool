@@ -6,7 +6,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -19,11 +18,18 @@ import java.time.LocalDateTime;
 @RequestMapping("/date")
 @RestController
 public class DateController {
+
+    @ApiOperation("测试0")
+    @GetMapping("/test0")
+    public R test2(LocalDate date) {
+        return R.ok(date);
+    }
     @ApiOperation("测试1")
     @GetMapping("/test")
-    public R test(@Valid DateDTO dateDTO) {
+    public R test(DateDTO dateDTO) {
         return R.ok(dateDTO);
     }
+
 
     @ApiOperation("测试2")
     @GetMapping("/test2")

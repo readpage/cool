@@ -4,12 +4,10 @@ import cn.undraw.util.servlet.ServletUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
-import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.util.Enumeration;
 
 /**
  * @author readpage
@@ -36,18 +34,15 @@ public class XSSFilter implements Filter {
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
 
-        Enumeration<String> parameterNames = request.getParameterNames();
-
-
-        if (ServletUtils.isMultipart(request)) {
-            // 判断类型如果是multipart类型，则将request手动封装为multipart类型。
-            request = new StandardServletMultipartResolver().resolveMultipart(request);
-        }
 
         // 是否开启过滤
         boolean flag = true;
 
         if ("".equals(include)) {
+            flag = false;
+        }
+
+        if (ServletUtils.isMultipart(request)) {
             flag = false;
         }
 

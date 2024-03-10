@@ -59,4 +59,24 @@ public class DateTest {
         System.out.println(DateUtils.getQuarter(DateUtils.toLocalDate("2023-12-23")));
     }
 
+
+    @Test
+    public void test5() {
+        System.out.println(DateUtils.toLocalDate("2023/12/17"));
+    }
+
+    /**
+     * unix 时间戳
+     */
+    @Test
+    public void second() {
+        LocalDateTime startTime = DateUtils.toDateTime("2023-11-06 00:00:00");
+        LocalDateTime endTime = DateUtils.toDateTime("2023-11-06 23:59:59");
+        System.out.println(DateUtils.toMilli(startTime));
+        System.out.println(DateUtils.toMilli(endTime));
+
+
+        System.out.println(DateUtils.toDateTime(1609430400000L));
+    }
+
 }

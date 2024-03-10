@@ -4,6 +4,7 @@ import cn.undraw.util.log.annotation.ErrorLog;
 import cn.undraw.util.result.R;
 import cn.undraw.util.result.ResultEnum;
 import org.springframework.core.annotation.Order;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -11,6 +12,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import javax.servlet.http.HttpServletRequest;
 import java.net.ConnectException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author readpage
@@ -38,9 +41,28 @@ public class GlobalErrorExceptionHandler {
      * @param e
      * @return cn.undraw.util.result.R<?>
      */
-    @ExceptionHandler({ DuplicateKeyException.class})
+    @ExceptionHandler(DuplicateKeyException.class)
     public R<?> duplicateKeyException(HttpServletRequest req, DuplicateKeyException e) {
-        return R.error("添加数据重复", e);
+        Pattern pattern = Pattern.compile("Duplicate entry '(.+?)' for key");
+        Matcher matcher = pattern.matcher(e.getMessage());
+        String res = "添加数据重复";
+
+        if (matcher.find()) {
+            String content = matcher.group(1);
+            res += ": " + content;
+        }
+        return R.error(res, e);
+    }
+
+    /**
+     * 完整型违规异常
+     * @param req
+     * @param e
+     * @return cn.undraw.util.result.R<?>
+     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public R<?> dataIntegrityViolationException(HttpServletRequest req, DataIntegrityViolationException e) {
+        return R.error("添加数据缺失或重复", e);
     }
 
     /**

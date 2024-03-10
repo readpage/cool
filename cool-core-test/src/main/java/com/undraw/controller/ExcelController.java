@@ -6,6 +6,7 @@ import com.pig4cloud.plugin.excel.annotation.RequestExcel;
 import com.pig4cloud.plugin.excel.vo.ErrorMessage;
 import com.undraw.domain.dto.ImportDemo;
 import com.undraw.domain.model.Employee;
+import com.undraw.domain.model.Student;
 import com.undraw.util.excel.ExcelUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -17,6 +18,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static cn.undraw.util.log.enums.OperateTypeEnum.EXPORT;
@@ -47,5 +50,16 @@ public class ExcelController {
     @OperateLog(type = EXPORT)
     public void export(HttpServletResponse response) {
         ExcelUtils.export(response, "导出", "sheet", Employee.employeeList, Employee.class);
+    }
+
+    @GetMapping("/more-export")
+    @ApiOperation("导出多个工作表excel")
+    @OperateLog(type = EXPORT)
+    public void moveExport(HttpServletResponse response) {
+        List<ExcelUtils.ExcelModel> excelModelList = new ArrayList<>(Arrays.asList(
+                new ExcelUtils.ExcelModel("employee", Employee.class, Employee.employeeList),
+                new ExcelUtils.ExcelModel("student", Student.class, Student.studentList)
+        ));
+        ExcelUtils.moreExport(response, "多个工作表导出", excelModelList);
     }
 }

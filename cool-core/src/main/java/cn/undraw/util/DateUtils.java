@@ -1,11 +1,15 @@
 package cn.undraw.util;
 
+import cn.undraw.handler.exception.customer.CustomerException;
 import lombok.Data;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @author readpage
  * @date 2022-12-01 17:27
@@ -14,9 +18,10 @@ public class DateUtils {
     // 时区
 //    private static String zoneId = "Asia/Shanghai";
     // 日期格式
-    private static String dateFormat = "yyyy-MM-dd";
+    private static String DATE_FORMAT = "yyyy-MM-dd";
 
-    private static String dateTimeFormat = "yyyy-MM-dd HH:mm:ss";
+    private static String DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
+
 
     /**
      * 传日期时间字符串返回日期时间
@@ -25,8 +30,18 @@ public class DateUtils {
      */
     public static LocalDateTime toDateTime(String dateTime) {
         if (dateTime == null) return null;
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(dateTimeFormat);
-        return LocalDateTime.parse(dateTime, dateTimeFormatter);
+        if (StrUtils.isNumber(dateTime)) {
+            return DateUtils.toDateTime(Long.parseLong(dateTime));
+        }
+        try {
+            String pattern = "^\\d{4}/\\d{2}/\\d{2} \\d{2}:\\d{2}:\\d{2}$";
+            if (dateTime.matches(pattern)) {
+                return LocalDateTime.parse(dateTime, DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
+            }
+            return LocalDateTime.parse(dateTime, DateTimeFormatter.ofPattern(DATE_TIME_FORMAT));
+        } catch (Exception e) {
+            throw new CustomerException("时间类型转换异常");
+        }
     }
 
     /**
@@ -56,7 +71,7 @@ public class DateUtils {
      * @return java.lang.String
      */
     public static String toString(LocalDateTime localDateTime) {
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(dateTimeFormat);
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(DATE_TIME_FORMAT);
         String format = dateTimeFormatter.format(localDateTime);
         return format;
     }
@@ -76,9 +91,24 @@ public class DateUtils {
      */
     public static LocalDate toLocalDate(String dateTime) {
         if (dateTime == null) return null;
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(dateFormat);
-        LocalDate localDate= LocalDate.parse(dateTime, dateTimeFormatter);
-        return localDate;
+        if (StrUtils.isNumber(dateTime)) {
+            return DateUtils.toDateTime(Long.parseLong(dateTime)).toLocalDate();
+        }
+        try {
+            Map<String, String> map = new HashMap<>();
+            map.put("^\\d{4}/\\d{2}/\\d{2}$", "yyyy/MM/dd");
+            map.put("^\\d{4}/\\d{1}/\\d{2}$", "yyyy/M/dd");
+            map.put("^\\d{4}/\\d{2}/\\d{1}$", "yyyy/MM/d");
+            map.put("^\\d{4}/\\d{1}/\\d{1}$", "yyyy/M/d");
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                if (dateTime.matches(entry.getKey())) {
+                    return LocalDate.parse(dateTime, DateTimeFormatter.ofPattern(entry.getValue()));
+                }
+            }
+            return LocalDate.parse(dateTime, DateTimeFormatter.ofPattern(DATE_FORMAT));
+        } catch (Exception e) {
+            throw new CustomerException("日期类型转换异常");
+        }
     }
 
     /**
@@ -113,6 +143,7 @@ public class DateUtils {
      * 返回当前时间戳(ms/毫秒)
      * @return long
      */
+    @Deprecated
     public static long toLong()  {
         return toLong(LocalDateTime.now());
     }
@@ -122,9 +153,39 @@ public class DateUtils {
      * @param localDate
      * @return long
      */
+    @Deprecated
     public static long toLong(LocalDate localDate) {
         ZoneId zoneId = ZoneId.systemDefault();
         return localDate.atStartOfDay(zoneId).toInstant().toEpochMilli();
+    }
+
+    /**
+     * 返回当前时间戳(ms/毫秒)
+     * @return long
+     */
+    @Deprecated
+    public static long toMilli()  {
+        return toLong(LocalDateTime.now());
+    }
+
+    /**
+     * localDate转毫秒数
+     * @param localDate
+     * @return long
+     */
+    public static long toMilli(LocalDate localDate) {
+        ZoneId zoneId = ZoneId.systemDefault();
+        return localDate.atStartOfDay(zoneId).toInstant().toEpochMilli();
+    }
+
+    /**
+     * localDate转秒数
+     * @param localDate
+     * @return long
+     */
+    public static long toSecond(LocalDate localDate) {
+        ZoneId zoneId = ZoneId.systemDefault();
+        return localDate.atStartOfDay(zoneId).toEpochSecond();
     }
 
     /**
@@ -132,9 +193,29 @@ public class DateUtils {
      * @param localDateTime
      * @return long
      */
+    @Deprecated
     public static long toLong(LocalDateTime localDateTime) {
         return localDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
     }
+
+    /**
+     * localdatetime转换为毫秒数
+     * @param localDateTime
+     * @return long
+     */
+    public static long toMilli(LocalDateTime localDateTime) {
+        return localDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+    }
+
+    /**
+     * localdatetime转换为秒数
+     * @param localDateTime
+     * @return long
+     */
+    public static long toSecond(LocalDateTime localDateTime) {
+        return localDateTime.atZone(ZoneId.systemDefault()).toEpochSecond();
+    }
+
 
     /**
      * 根据出生日期获取年龄

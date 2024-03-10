@@ -11,6 +11,9 @@ import java.io.IOException;
  * @date 2023-02-08 15:04
  */
 public class FileTest {
+
+    // https://www.yc00.com/web/1701570280a1119247.html
+
     private static String userDir = System.getProperty("user.dir");
     @Test
     public void path() {
@@ -22,9 +25,9 @@ public class FileTest {
      */
     @Test
     public void test() throws IOException {
-        String fileDir = userDir + "/file";
-        String fileName = "avatar.gif";
-        System.out.println(FileUtils.createFile(fileDir, fileName));
+        String fileDir = userDir + "/file/avatar.gif";
+        System.out.println(FileUtils.createFile(fileDir));
+        System.out.println(FileUtils.createSnowFile(fileDir));
     }
 
     @Test
@@ -36,10 +39,11 @@ public class FileTest {
 
     @Test
     public void test4() {
-        String fileDir = userDir + "/file//";
+        String fileDir = userDir + "/file.test";
         File file = new File(fileDir);
         System.out.println(file.getPath());
         System.out.println(file.getParentFile());
+
     }
 
     @Test

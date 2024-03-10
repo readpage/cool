@@ -51,6 +51,22 @@ public class ConvertTest {
 
     @Test
     public void test2() {
-        System.out.println(ConvertUtils.toLong(5));
+        List<Integer> numbers = new ArrayList<>();
+        for (int i = 0; i < 50; i++) {
+            numbers.add(i);
+        }
+
+        int batchSize = 10; // 每个批次的大小
+        List<List<Integer>> batches = ConvertUtils.batchList( numbers, batchSize);
+
+        // 输出每个批次
+        for (List<Integer> batch : batches) {
+            System.out.println(batch);
+        }
+    }
+
+    @Test
+    public void test3() {
+
     }
 }

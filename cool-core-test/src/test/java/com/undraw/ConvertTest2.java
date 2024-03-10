@@ -1,7 +1,7 @@
 package com.undraw;
 
 import cn.undraw.util.ConvertUtils;
-import com.undraw.model.Fruit;
+import com.undraw.domain.model.Fruit;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

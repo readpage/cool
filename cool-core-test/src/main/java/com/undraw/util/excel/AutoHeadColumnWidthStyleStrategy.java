@@ -1,16 +1,19 @@
 package com.undraw.util.excel;
 
+import cn.undraw.util.StrUtils;
 import com.alibaba.excel.enums.CellDataTypeEnum;
 import com.alibaba.excel.metadata.Head;
+import com.alibaba.excel.metadata.data.CellData;
 import com.alibaba.excel.metadata.data.WriteCellData;
 import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
 import com.alibaba.excel.write.style.column.AbstractColumnWidthStyleStrategy;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Sheet;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
- 
+
 /**
  * Description 自适应列宽
  *
@@ -18,61 +21,70 @@ import java.util.Map;
  * @date 2022.10.11 17:50
  */
 public class AutoHeadColumnWidthStyleStrategy extends AbstractColumnWidthStyleStrategy  {
- 
+
     private static final int MAX_COLUMN_WIDTH = 255;
-    private Map<Integer, Map<Integer, Integer>> CACHE = new HashMap(8);
     // 保底宽度
     private static final int COLUMN_WIDTH = 20;
-    public AutoHeadColumnWidthStyleStrategy() {}
- 
+
+    private final Map<Integer, Map<Integer, Integer>> CACHE = new HashMap<>();
     @Override
-    protected void setColumnWidth(WriteSheetHolder writeSheetHolder, List<WriteCellData<?>> cellDataList, Cell cell,
-        Head head, Integer relativeRowIndex, Boolean isHead) {
-        boolean needSetWidth = isHead && cell.getRowIndex() != 0;
+    protected void setColumnWidth(WriteSheetHolder writeSheetHolder, List<WriteCellData<?>> cellDataList, Cell cell, Head head, Integer integer, Boolean isHead) {
+        boolean needSetWidth = isHead || !StrUtils.isEmpty(cellDataList);
         if (needSetWidth) {
             Map<Integer, Integer> maxColumnWidthMap = CACHE.computeIfAbsent(writeSheetHolder.getSheetNo(), k -> new HashMap<>());
- 
+
             Integer columnWidth = this.dataLength(cellDataList, cell, isHead);
+            // 单元格文本长度大于MAX_COLUMN_WIDTH换行
             if (columnWidth >= 0) {
                 if (columnWidth > MAX_COLUMN_WIDTH) {
                     columnWidth = MAX_COLUMN_WIDTH;
                 } else {
                     if (columnWidth < COLUMN_WIDTH) {
                         //小于基础跨度的时候略加宽
-                        columnWidth = columnWidth +3;
+                        columnWidth = columnWidth + 2;
                     }
                 }
                 Integer maxColumnWidth = maxColumnWidthMap.get(cell.getColumnIndex());
                 if (maxColumnWidth == null || columnWidth > maxColumnWidth) {
                     maxColumnWidthMap.put(cell.getColumnIndex(), columnWidth);
-                    writeSheetHolder.getSheet().setColumnWidth(cell.getColumnIndex(), columnWidth * 256);
-                } else {
-                    // 设置表头宽度
-                    writeSheetHolder.getSheet().setColumnWidth(cell.getColumnIndex(), columnWidth * 256);
+                    Sheet sheet = writeSheetHolder.getSheet();
+                    sheet.setColumnWidth(cell.getColumnIndex(), columnWidth * 256);
                 }
             }
         }
     }
- 
+    /**
+     * 计算长度
+     * @param cellDataList
+     * @param cell
+     * @param isHead
+     * @return
+     */
     private Integer dataLength(List<WriteCellData<?>> cellDataList, Cell cell, Boolean isHead) {
         if (isHead) {
             return cell.getStringCellValue().getBytes().length;
-        }
-        WriteCellData<?> cellData = cellDataList.get(0);
-        CellDataTypeEnum type = cellData.getType();
-        if (type == null) {
-            return -1;
-        }
-        switch (type) {
-            case STRING:
-                return cellData.getStringValue().getBytes().length;
-            case BOOLEAN:
-                return cellData.getBooleanValue().toString().getBytes().length;
-            case NUMBER:
-                return cellData.getNumberValue().toString().getBytes().length;
-            default:
+        } else {
+            CellData<?> cellData = cellDataList.get(0);
+            CellDataTypeEnum type = cellData.getType();
+            if (type == null) {
                 return -1;
+            } else {
+                switch (type) {
+                    case STRING:
+                        // 换行符（数据需要提前解析好）
+                        int index = cellData.getStringValue().indexOf("\n");
+                        return index != -1 ?
+                                cellData.getStringValue().substring(0, index).getBytes().length + 1 : cellData.getStringValue().getBytes().length + 1;
+                    case BOOLEAN:
+                        return cellData.getBooleanValue().toString().getBytes().length;
+                    case NUMBER:
+                        return cellData.getNumberValue().toString().getBytes().length;
+                    default:
+                        return -1;
+                }
+            }
         }
     }
- 
+
+
 }

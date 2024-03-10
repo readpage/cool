@@ -12,5 +12,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @since 2023-03-15 18:08
  */
 public interface SystemLogService extends IService<SystemLog> {
-
+    void _save(SystemLog systemLog);
 }

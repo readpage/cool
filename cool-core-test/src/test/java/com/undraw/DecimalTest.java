@@ -22,7 +22,11 @@ public class DecimalTest {
     public void test2() {
         Double round = 480535617.050000;
         System.out.println(round);
-        System.out.println(round);
         System.out.println(DecimalUtils.toString(round));
+    }
+
+    @Test
+    public void test3() {
+        System.out.println(DecimalUtils.toPercent("0.568684"));
     }
 }

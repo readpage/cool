@@ -8,15 +8,15 @@ knife4j:
   production: false
 
 spring:
-  servlet:
-    multipart:
-      max-file-size: 10MB
-      max-request-size: 20MB
   application:
     name: cool-core-test
   profiles:
     #需要使用的配置文件的后缀
     active: dev
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 20MB
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -54,7 +54,7 @@ mybatis-plus:
   # 加载mapper目录下的所有xml文件
   mapper-locations: classpath*:mapper/*.xml
   # 实体类别名,无需添加完整包路径
-  type-aliases-package: com.undraw.domain.entity, com.undraw.domain.vo
+  type-aliases-package: com.undraw.domain
 
 cool-core:
   filter:
@@ -62,4 +62,3 @@ cool-core:
   snowflake:
     workerId: 1
     datacenterId: 1
-

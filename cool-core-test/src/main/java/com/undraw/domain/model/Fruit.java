@@ -2,6 +2,8 @@ package com.undraw.domain.model;
 
 
 import cn.undraw.util.decimal.annotation.BigDecimalFormat;
+import cn.undraw.util.decimal.annotation.DecimalFormat;
+import lombok.*;
 
 import java.math.BigDecimal;
 
@@ -9,33 +11,20 @@ import java.math.BigDecimal;
  * @author readpage
  * @date 2022-11-15 14:33
  */
+@Getter
+@Setter
+@ToString
 @BigDecimalFormat
+@DecimalFormat
+@AllArgsConstructor
+@NoArgsConstructor
 public class Fruit {
     private BigDecimal price;
 
     private BigDecimal price2;
 
-    public BigDecimal getPrice() {
-        return price;
-    }
+    private Double price3;
 
-    public void setPrice(BigDecimal price) {
-        this.price = price;
-    }
+    private Double score;
 
-    public BigDecimal getPrice2() {
-        return price2;
-    }
-
-    public void setPrice2(BigDecimal price2) {
-        this.price2 = price2;
-    }
-
-    @Override
-    public String toString() {
-        return "Fruit{" +
-                "price=" + price +
-                ", price2=" + price2 +
-                '}';
-    }
 }
