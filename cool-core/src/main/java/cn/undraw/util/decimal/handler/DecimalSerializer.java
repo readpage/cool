@@ -25,6 +25,10 @@ public class DecimalSerializer extends JsonSerializer<Double> implements Context
     @Override
     public void serialize(Double aDouble, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
         if (aDouble != null && decimalFormat != null) {
+            DecimalFormat.Access access = decimalFormat.access();
+            if (access == DecimalFormat.Access.TenThousand) {
+                aDouble = aDouble / 10000;
+            }
             jsonGenerator.writeNumber(DecimalUtils.round(aDouble, decimalFormat.value()));
         } else {
             jsonGenerator.writeNumber(DecimalUtils.toString(aDouble));

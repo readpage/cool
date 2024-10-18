@@ -6,7 +6,7 @@
     <Properties>
         <!-- 文件默认名称log4j2.xml -->
         <!-- 定义日志存储的路径 -->
-        <property name="FILE_PATH" value="logs"></property>
+        <property name="LOG_PATH" value="${sys:LOG_PATH}"></property>
         <!-- 格式化输出:%d表示日期，%thread:表示线程名，"%c":表示类，%L:表示行号，%-5level:级别从左显示5个字符宽度，%msg:日志消息， %logger{36} 表示 Logger 名字最长36个字符 %n是换行符，-->
         <Property name="pattern" value="%clr{%d{yyyy-MM-dd HH:mm:ss.SSS}}{faint} %clr{%5p} %clr{${sys:PID}}{magenta} %clr{---}{faint} %clr{[%15.15t]}{faint} %clr{%-40.40c{1.}}{cyan} %clr{:}{faint} %m%n%xwEx"/>
         <property name="file" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n" />
@@ -24,8 +24,8 @@
         <!-- 这个会打印出所有的info及以下级别的信息，每次大小超过size，则这size大小的日志会自动存入按年份-月份建立的文件夹下面并进行压缩，作为存档-->
         <!--  滚动时产生的文件的存放位置及文件名称 %d{yyyy-MM-dd}：按天进行日志滚动 %i：当文件大小超过maxFileSize时，按照i进行文件滚动 -->
         <RollingFile name="info"
-                     fileName="${FILE_PATH}/info.log"
-                     filePattern="${FILE_PATH}/info/info-%d{yyyy-MM-dd}-%i.log"> <!-- filePattern: 历史日志封存路径。 -->
+                     fileName="${LOG_PATH}/info.log"
+                     filePattern="${LOG_PATH}/info/info-%d{yyyy-MM-dd}-%i.log"> <!-- filePattern: 历史日志封存路径。 -->
 
             <Filters>
                 <!--将warn及其以上级别的日志给DENY掉-->
@@ -44,7 +44,7 @@
             <!-- DefaultRolloverStrategy 文件滚动的策略 y属性如不设置，则默认为最多存在7个文件，超出过旧的文件将被删除-->
             <DefaultRolloverStrategy max="30">
                 <!-- 删除策略 -->
-                <Delete basePath="${FILE_PATH}/info" maxDepth="2">
+                <Delete basePath="${LOG_PATH}/info" maxDepth="2">
                     <IfFileName glob="*.log" />
                     <IfLastModified age="30d" />
                 </Delete>
@@ -54,8 +54,8 @@
 
         <!-- 这个会打印出所有的warn及以下级别的信息，每次大小超过size，则这size大小的日志会自动存入按年份-月份建立的文件夹下面并进行压缩，作为存档-->
         <RollingFile name="warn"
-                     fileName="${FILE_PATH}/warn.log"
-                     filePattern="${FILE_PATH}/warn/warn-%d{yyyy-MM-dd}_%i.log">
+                     fileName="${LOG_PATH}/warn.log"
+                     filePattern="${LOG_PATH}/warn/warn-%d{yyyy-MM-dd}_%i.log">
             <Filters>
                 <!--将error及其以上级别的日志给DENY掉-->
                 <ThresholdFilter level="error"  onMatch="DENY"   onMismatch="NEUTRAL"/>
@@ -74,7 +74,7 @@
             <!-- DefaultRolloverStrategy 文件滚动的策略 y属性如不设置，则默认为最多存在7个文件，超出过旧的文件将被删除-->
             <DefaultRolloverStrategy max="30">
                 <!-- 删除策略 -->
-                <Delete basePath="${FILE_PATH}/warn" maxDepth="2">
+                <Delete basePath="${LOG_PATH}/warn" maxDepth="2">
                     <IfFileName glob="*.log" />
                     <IfLastModified age="30d" />
                 </Delete>
@@ -84,8 +84,8 @@
 
         <!-- 这个会打印出所有的error及以下级别的信息，每次大小超过size，则这size大小的日志会自动存入按年份-月份建立的文件夹下面并进行压缩，作为存档-->
         <RollingFile name="error"
-                     fileName="${FILE_PATH}/error.log"
-                     filePattern="${FILE_PATH}/error/error-%d{yyyy-MM-dd}_%i.log">
+                     fileName="${LOG_PATH}/error.log"
+                     filePattern="${LOG_PATH}/error/error-%d{yyyy-MM-dd}_%i.log">
             <!--控制台只输出level及以上级别的信息（onMatch），其他的直接拒绝（onMismatch）-->
             <ThresholdFilter level="error" onMatch="ACCEPT" onMismatch="DENY"/>
             <PatternLayout pattern="${file}"/>
@@ -99,7 +99,7 @@
             <!-- DefaultRolloverStrategy 文件滚动的策略 y属性如不设置，则默认为最多存在7个文件，超出过旧的文件将被删除-->
             <DefaultRolloverStrategy max="30">
                 <!-- 删除策略 -->
-                <Delete basePath="${FILE_PATH}/error" maxDepth="2">
+                <Delete basePath="${LOG_PATH}/error" maxDepth="2">
                     <IfFileName glob="*.log" />
                     <IfLastModified age="30d" />
                 </Delete>

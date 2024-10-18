@@ -1,11 +1,13 @@
 package com.undraw.util.excel.converter;
 
+import cn.undraw.util.DateUtils;
 import com.alibaba.excel.converters.Converter;
 import com.alibaba.excel.enums.CellDataTypeEnum;
 import com.alibaba.excel.metadata.GlobalConfiguration;
 import com.alibaba.excel.metadata.data.ReadCellData;
 import com.alibaba.excel.metadata.data.WriteCellData;
 import com.alibaba.excel.metadata.property.ExcelContentProperty;
+import org.apache.poi.ss.usermodel.DateUtil;
 
 import java.text.ParseException;
 import java.time.LocalDate;
@@ -29,12 +31,13 @@ public class LocalDateConverter implements Converter<LocalDate> {
     }
 
     public LocalDate convertToJavaData(ReadCellData cellData, ExcelContentProperty contentProperty, GlobalConfiguration globalConfiguration) throws ParseException {
-        if (contentProperty != null && contentProperty.getDateTimeFormatProperty() != null) {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern(contentProperty.getDateTimeFormatProperty().getFormat());
-            return LocalDate.parse(cellData.getStringValue(), formatter);
-        } else {
-            return LocalDate.parse(cellData.getStringValue());
+        if(cellData.getType()==CellDataTypeEnum.NUMBER) {
+            LocalDate localDate = DateUtils.toLocalDate(DateUtil.getJavaDate(cellData.getNumberValue().doubleValue()));
+            return localDate;
+        } if (cellData.getType() == CellDataTypeEnum.STRING) {
+            return  DateUtils.toLocalDate(cellData.getStringValue());
         }
+        return null;
     }
 
     public WriteCellData<String> convertToExcelData(LocalDate value, ExcelContentProperty contentProperty, GlobalConfiguration globalConfiguration) {

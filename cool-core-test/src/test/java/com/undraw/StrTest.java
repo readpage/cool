@@ -4,13 +4,11 @@ import cn.undraw.util.ConvertUtils;
 import cn.undraw.util.DecimalUtils;
 import cn.undraw.util.StrUtils;
 import cn.undraw.util.URLUtils;
+import cn.undraw.util.snowflake.SnowflakeUtils;
 import org.junit.Test;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -18,6 +16,7 @@ import java.util.regex.Pattern;
  * @author readpage
  * @date 2023-03-03 11:20
  */
+
 public class StrTest {
     @Test
     public void test() {
@@ -72,6 +71,12 @@ public class StrTest {
     }
 
     @Test
+    public void test4() {
+        List<Long> numbers = StrUtils.findNumbers("CCN1300050");
+        numbers.forEach(System.out::println);
+    }
+
+    @Test
     public void removePrefix() {
         String a = "$123";
         String b = "hello world!";
@@ -88,6 +93,8 @@ public class StrTest {
         String string = ConvertUtils.toString(null);
         System.out.println(string);
         System.out.println(string.isEmpty());
+        int i = "".indexOf("\n");
+        System.out.println(i);
     }
 
     @Test
@@ -105,6 +112,19 @@ public class StrTest {
         }
     }
 
+    @Test
+    public void test6() {
+        System.out.println("CCN013".replaceAll("\\d+", ""));
+    }
 
-
+    @Test
+    public void test7() {
+        String a = "12345678";
+        System.out.println(a.substring(Math.max(0, a.length() - 6)));
+        String string = ConvertUtils.toString("123");
+        System.out.println(string);
+        String uuid = UUID.randomUUID().toString();
+        System.out.println(uuid.substring(uuid.length() - 8));
+        System.out.println(SnowflakeUtils.nextId());
+    }
 }

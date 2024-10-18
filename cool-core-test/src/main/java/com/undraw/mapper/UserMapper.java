@@ -1,8 +1,10 @@
 package com.undraw.mapper;
 
-import com.undraw.domain.entity.User;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.undraw.domain.entity.User;
 import org.apache.ibatis.annotations.Select;
+
+import java.util.List;
 
 /**
  * <p>
@@ -15,4 +17,11 @@ import org.apache.ibatis.annotations.Select;
 public interface UserMapper extends BaseMapper<User> {
     @Select("SELECT * FROM user1")
     void badSql();
+
+    /**
+     * 扩展批量添加
+     * @param list
+     * @return
+     */
+    Integer insertBatchSomeColumn(List<User> list);
 }

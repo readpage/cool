@@ -1,6 +1,7 @@
 package com.undraw;
 
 import cn.undraw.util.ConvertUtils;
+import com.undraw.domain.model.Employee;
 import com.undraw.domain.model.Fruit;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,6 +14,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author readpage
@@ -41,11 +43,23 @@ public class ConvertTest2 {
         BigDecimal decimal = new BigDecimal("2.2225");
         fruit.setPrice(decimal);
         fruit.setScore(480535617.050000);
+        fruit.setPrice2(new BigDecimal(480535617.050000));
+        fruit.setPrice3(new BigDecimal(480535617.050000));
         System.out.println("序列化前--------");
         System.out.println(fruit);
         System.out.println("序列化后----------");
         Fruit newFruit = ConvertUtils.cloneDeep(fruit, Fruit.class);
         System.out.println(newFruit);
     }
+
+    @Test
+    public void test1() {
+        List<Employee> employeeList = Employee.employeeList;
+        List<Employee> newList = ConvertUtils.cloneDeep(Employee.employeeList.subList(0, 3));
+        newList.get(0).setId(11L);
+        List<Employee> list = employeeList.stream().filter(o -> newList.contains(o)).collect(Collectors.toList());
+        System.out.println(list);
+    }
+
 
 }

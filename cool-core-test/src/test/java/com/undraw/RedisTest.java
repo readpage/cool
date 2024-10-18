@@ -1,13 +1,17 @@
 package com.undraw;
 
+import cn.undraw.util.ConvertUtils;
+import cn.undraw.util.DateUtils;
+import com.undraw.domain.model.Student;
 import com.undraw.util.redis.RedisUtil;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
+import java.time.LocalDate;
 
 /**
  * @author readpage
@@ -20,8 +24,43 @@ public class RedisTest {
     @Resource
     private RedisUtil redisUtil;
 
+    @Resource
+    private RedisTemplate<String, Object> redisTemplate;
+
     @Test
     public void test() {
-        redisUtil.sRemove("test", new ArrayList<>().toArray());
+        redisTemplate.setEnableTransactionSupport(true);
+        redisTemplate.watch("key");
+        Integer n = redisUtil.get("key", Integer.class);
+        redisUtil.incr("key", 1);
+        System.out.println(n);
+        redisTemplate.multi();
+
+        // 执行事务
+        redisTemplate.exec();
+    }
+
+    @Test
+    public void test2() {
+        boolean b = redisUtil.sHasKey("set", 4);
+        System.out.println(b);
+    }
+
+
+    @Test
+    public void tets3() {
+        redisUtil.zAdd("score", 1, DateUtils.toMilli(LocalDate.now().minusDays(1)));
+        redisUtil.zAdd("score", 2, DateUtils.toMilli(LocalDate.now()));
+        redisUtil.zAdd("score", 3, DateUtils.toMilli(LocalDate.now().plusDays(1)));
+        // 删除时间戳从 0 到当前时间戳的 score 值
+        Long n = redisUtil.zRemoveRangeByScore("score", 0, DateUtils.toMilli());
+        System.out.println(n);
+    }
+
+    @Test
+    public void hash() {
+        redisUtil.hSet("hash", "2024", Student.studentList.get(0));
+        Student student = ConvertUtils.cloneDeep(redisUtil.hGet("hash", "2024"), Student.class);
+        System.out.println(student);
     }
 }

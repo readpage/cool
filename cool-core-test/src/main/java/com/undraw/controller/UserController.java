@@ -5,8 +5,8 @@ import cn.undraw.util.log.annotation.OperateLog;
 import cn.undraw.util.result.R;
 import com.undraw.domain.entity.User;
 import com.undraw.service.UserService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,13 +27,13 @@ import static cn.undraw.util.log.enums.OperateTypeEnum.CREATE;
  */
 @RestController
 @RequestMapping("/user")
-@Api(tags = "用户管理")
+@Tag(name = "用户管理")
 public class UserController {
 
     @Resource
     private UserService userService;
 
-    @ApiOperation("添加用户")
+    @Operation(summary = "添加用户")
     @OperateLog(type = CREATE)
     @PostMapping("/save")
     public R save(@Valid @RequestBody User user) {

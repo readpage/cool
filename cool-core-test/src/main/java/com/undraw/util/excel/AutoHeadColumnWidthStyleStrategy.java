@@ -66,11 +66,14 @@ public class AutoHeadColumnWidthStyleStrategy extends AbstractColumnWidthStyleSt
         } else {
             CellData<?> cellData = cellDataList.get(0);
             CellDataTypeEnum type = cellData.getType();
-            if (type == null) {
+            if (type == null || cellData.getStringValue() == null) {
                 return -1;
             } else {
                 switch (type) {
                     case STRING:
+                        if (cellData.getStringValue() == null) {
+                            return -1;
+                        }
                         // 换行符（数据需要提前解析好）
                         int index = cellData.getStringValue().indexOf("\n");
                         return index != -1 ?

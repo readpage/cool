@@ -9,7 +9,6 @@ import cn.undraw.util.StrUtils;
 import com.alibaba.excel.write.handler.AbstractRowWriteHandler;
 import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
 import com.alibaba.excel.write.metadata.holder.WriteTableHolder;
-import com.github.xiaoymin.knife4j.core.util.StrUtil;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFColor;
@@ -43,7 +42,7 @@ public class CustomCellStyleHandler extends AbstractRowWriteHandler {
         }
         cellStyleList = cellStyleList.stream().filter(x -> x != null
                 //判断sheet名称KEY是否存在
-                && StrUtil.isNotBlank(x.getSheetName())
+                && StrUtils.isNotEmpty(x.getSheetName())
                 //字体样式
                 //判断字体颜色KEY是否存在
                 && (x.getFontColor() == null || x.getFontColor() instanceof IndexedColors

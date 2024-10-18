@@ -20,5 +20,15 @@ import static java.lang.annotation.ElementType.TYPE;
 @Target({FIELD, TYPE})
 @JsonSerialize(using = BigDecimalSerializer.class)
 public @interface BigDecimalFormat {
+    // 保留小数位
     int value() default 2;
+
+    Access access() default BigDecimalFormat.Access.AUTO;
+    public static enum Access {
+        AUTO,
+        TenThousand;
+
+        private Access() {
+        }
+    }
 }

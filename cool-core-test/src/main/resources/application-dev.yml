@@ -1,5 +1,13 @@
 server:
-  upload: D:\Code\Java\cool\cool-core-test
+  file:
+    upload: D:\Code\Java\cool\cool-core-test
+
+springdoc:
+  swagger-ui:
+    operations-sorter: method
+  # 配置需要生成接口文档的扫描包
+  packages-to-scan: com.example.controller
+
 
 spring:
   # 设置静态资源的存放路径
@@ -17,9 +25,3 @@ mybatis-plus:
   configuration:
     # 配置日志
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-
-knife4j:
-  # 开启增强配置
-  enable: true
-  # 开启生产环境屏蔽 true
-  production: false

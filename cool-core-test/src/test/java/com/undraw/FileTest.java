@@ -46,9 +46,18 @@ public class FileTest {
 
     }
 
+
+    private static final String ProjectPath = System.getProperty("user.dir") + "/upload";
+
+
     @Test
     public void test5() {
-        System.out.println(FileUtils.format("/upload/hello/"));
-        System.out.println(FileUtils.format("upload/hello/"));
+        File file = FileUtils.createFile(ProjectPath  + "/test.txt", true);
+        System.out.println(file);
+    }
+
+    @Test
+    public String[] test6() {
+       return new String[]{"1", "3"};
     }
 }

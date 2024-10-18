@@ -31,6 +31,9 @@ public class URLUtils {
      * @return java.lang.String
      */
     public static String encode(String str, String charset) {
+        if (StrUtils.isEmpty(str)) {
+            return str;
+        }
         // 匹配中文
         Pattern p = Pattern.compile("[\u4e00-\u9fa5]+");
         Matcher m = p.matcher(str);
@@ -52,6 +55,9 @@ public class URLUtils {
      * @return
      */
     public static String decode(String str) {
+        if (StrUtils.isEmpty(str)) {
+            return str;
+        }
         String result;
         try {
             result = URLDecoder.decode(str,"UTF-8");

@@ -1,6 +1,6 @@
 package cn.undraw.util.servlet;
 
-import cn.undraw.handler.xss.XssHttpServletRequestWrapperFilter;
+import cn.undraw.handler.xss.XssHttpServletRequest;
 import cn.undraw.util.ConvertUtils;
 import eu.bitwalker.useragentutils.Browser;
 import eu.bitwalker.useragentutils.OperatingSystem;
@@ -65,6 +65,10 @@ public class ServletUtils {
         return ConvertUtils.toJson(request.getParameterMap());
     }
 
+    public static String getParams() {
+        return getParams(getRequest());
+    }
+
     /**
      * 获取请求体
      * @param request
@@ -73,7 +77,7 @@ public class ServletUtils {
     public static String getBody(ServletRequest request) {
         StringBuilder sb = new StringBuilder();
         BufferedReader br = null;
-        if (request instanceof XssHttpServletRequestWrapperFilter) {
+        if (request instanceof XssHttpServletRequest) {
             try {
                 br = request.getReader();
                 String line;
@@ -93,6 +97,11 @@ public class ServletUtils {
             }
         }
         return sb.toString();
+    }
+
+
+    public static String getBody() {
+        return getBody(getRequest());
     }
 
     public static boolean isMultipart(ServletRequest request) {

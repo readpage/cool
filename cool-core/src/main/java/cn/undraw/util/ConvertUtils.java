@@ -3,7 +3,10 @@ package cn.undraw.util;
 import cn.undraw.util.result.R;
 import cn.undraw.util.result.ResultEnum;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -32,10 +35,111 @@ public class ConvertUtils {
     @Resource
     private ObjectMapper objectMapper;
 
+    public static void config(ObjectMapper mapper) {
+        //设置输入时忽略JSON字符串中存在而Java对象实际没有的属性
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    }
+
+    static {
+        config(mapper);
+    }
+
     // @PostConstruct: 加该注解会在项目启动的时候执行该方法，也可以理解为在spring容器初始化的时候执行该方法。
     @PostConstruct
     public void init(){
         mapper = objectMapper;
+        config(mapper);
+    }
+
+    /**
+     * 是否是有效的json
+     * @param json
+     * @return boolean
+     */
+    public static boolean isValidJSON(final String json) {
+        if (StrUtils.isEmpty(json)) {
+            return false;
+        }
+        boolean valid = true;
+        try{
+            mapper.readTree(json);
+        } catch(JsonProcessingException e){
+            valid = false;
+        }
+        return valid;
+    }
+
+    /**
+     * 对象转换json
+     * @param obj
+     * @return java.lang.String
+     */
+    public static String toJson(Object obj) {
+        if (obj == null) {
+            return null;
+        }
+        if (obj instanceof String) {
+            return (String)obj;
+        }
+        try {
+            return mapper.writeValueAsString(obj);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Deprecated
+    public static<T> String toJson(ResultEnum resultEnum) {
+        if (resultEnum == null) {
+            return null;
+        }
+        return toJson(R.ok(resultEnum));
+    }
+
+    /**
+     * json转换对象
+     * @param json
+     * @param valueType
+     * @return T
+     */
+    public static<T> T toObject(String json, Class<T> valueType) {
+        if (json == null) {
+            return null;
+        }
+
+        if (valueType == String.class) {
+            return (T)json;
+        } else if (valueType == Integer.class) {
+            return (T)toInteger(json);
+        } else if (valueType == Long.class) {
+            return (T)toLong(json);
+        } else if (valueType == Double.class) {
+            return (T)toDouble(json);
+        }
+
+        try {
+            return mapper.readValue(json, valueType);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * json转换对象, 提供泛型类型支持
+     * @param json
+     * @param valueTypeRef
+     * @return T
+     */
+    public static<T> T toObject(String json, TypeReference<T> valueTypeRef) {
+        if (json == null) {
+            return null;
+        }
+
+        try {
+            return mapper.readValue(json, valueTypeRef);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 
@@ -62,21 +166,26 @@ public class ConvertUtils {
         }
     }
 
+
     /**
      * 深拷贝
      * @param o
      * @param valueType
      * @return T
      */
-    public static<T> T cloneDeep(Object o, Class<T> valueType) {
+    public static<T, U> U cloneDeep(T o, Class<U> valueType) {
         String str;
-        if (o instanceof String) {
-            str = (String)o;
+        if (o == null) {
+            return null;
         } else {
             str = toJson(o);
         }
+        if (valueType == null) {
+            valueType = (Class<U>) o.getClass();
+        }
         return toObject(str, valueType);
     }
+
 
     /**
      * 深拷贝 支持泛型类型
@@ -84,7 +193,7 @@ public class ConvertUtils {
      * @param valueTypeRef
      * @return T
      */
-    public static<T> T cloneDeep(Object o, TypeReference<T> valueTypeRef) {
+    public static<T, U> U cloneDeep(T o, TypeReference<U> valueTypeRef) {
         String str;
         if (o instanceof String) {
             str = (String)o;
@@ -95,11 +204,54 @@ public class ConvertUtils {
     }
 
     /**
+     * 深拷贝
+     * @param o
+     * @return T
+     */
+    public static<T> T cloneDeep(T o) {
+        return cloneDeep(o, (Class<T>) null);
+    }
+
+    /**
+     * 深拷贝
+     * @param list
+     * @param valueType
+     * @return T
+     */
+    public static<T, U> List<U> cloneDeep(Collection<T> list, Class<U> valueType) {
+        if (StrUtils.isEmpty(list)) {
+            return new ArrayList<>();
+        }
+        if (list.size() >= 1 && valueType == null) {
+            Object firstElement = list.iterator().next();
+            valueType = (Class<U>) firstElement.getClass();
+        }
+        TypeFactory typeFactory = mapper.getTypeFactory();
+        JavaType javaType = typeFactory.constructParametricType(List.class, valueType);
+        String json = toJson(list);
+        try {
+            return mapper.readValue(json, javaType);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * 深拷贝
+     * @param list
+     * @return T
+     */
+    public static<T, U> List<U> cloneDeep(Collection<T> list) {
+        return cloneDeep(list, (Class<U>) null);
+    }
+
+    /**
      * Collection
      * @param sources 源对象列表
      * @param clazz 目标对象类型
      * @return java.util.Collection<T>
      */
+    @Deprecated
     public static<T, U> List<T> copy(Collection<U> sources, Class<T> clazz) {
         if (StrUtils.isEmpty(sources)) {
             return null;
@@ -117,6 +269,7 @@ public class ConvertUtils {
      * @param clazz 目标对象类型
      * @return T
      */
+    @Deprecated
     public static<T> T copy(Object source, Class<T> clazz) {
         if (StrUtils.isEmpty(source)) {
             return null;
@@ -127,65 +280,6 @@ public class ConvertUtils {
         T t = AnnoUtils.getConstructor(clazz);
         BeanUtils.copyProperties(source, t);
         return t;
-    }
-
-    /**
-     * 对象转换json
-     * @param obj
-     * @return java.lang.String
-     */
-    public static String toJson(Object obj) {
-        if (obj instanceof String) {
-            return (String)obj;
-        }
-        try {
-            return mapper.writeValueAsString(obj);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-
-    @Deprecated
-    public static<T> String toJson(ResultEnum resultEnum) {
-        if (resultEnum == null) {
-            return null;
-        }
-        return toJson(R.ok(resultEnum));
-    }
-
-    /**
-     * json转换对象
-     * @param json
-     * @param valueType
-     * @return T
-     */
-    public static<T> T toObject(String json, Class<T> valueType) {
-        if (json == null) {
-            return null;
-        }
-        try {
-            return mapper.readValue(json, valueType);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
-     * json转换对象, 提供泛型类型支持
-     * @param json
-     * @param valueTypeRef
-     * @return T
-     */
-    public static<T> T toObject(String json, TypeReference<T> valueTypeRef) {
-        if (json == null) {
-            return null;
-        }
-        try {
-            return mapper.readValue(json, valueTypeRef);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     /**
@@ -299,6 +393,10 @@ public class ConvertUtils {
             batches.add(new ArrayList<>(list.subList(i, end)));
         }
         return batches;
+    }
+
+    public static <T> List<List<T>> batchList(List<T> list) {
+        return batchList(list, 1000);
     }
 
 }

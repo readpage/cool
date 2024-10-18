@@ -4,6 +4,7 @@ import cn.undraw.handler.exception.customer.CustomerException;
 import cn.undraw.util.ConvertUtils;
 import cn.undraw.util.DateUtils;
 import cn.undraw.util.StrUtils;
+import cn.undraw.util.filter.JsonFilterUtils;
 import cn.undraw.util.log.annotation.OperateLog;
 import cn.undraw.util.log.enums.OperateTypeEnum;
 import cn.undraw.util.log.service.OperateLogWorkService;
@@ -11,14 +12,15 @@ import cn.undraw.util.log.vo.OperationLog;
 import cn.undraw.util.result.R;
 import cn.undraw.util.servlet.IpUtils;
 import cn.undraw.util.servlet.ServletUtils;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -30,6 +32,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -51,16 +54,29 @@ public class OperateLogAop {
 
         Object result = null;
         try {
+            setRequestAttribute(pjp, operateLog);
             result = pjp.proceed();
             record(pjp, operateLog, start, result);
             return result;
         } catch (CustomerException e) {
             R r = e.getR();
             record(pjp, operateLog, start, r);
-            R res = ConvertUtils.copy(r, R.class);
-            res.setData(null);
+            R res = ConvertUtils.cloneDeep(r, R.class);
             return res;
         }
+    }
+
+    /**
+     * 设置 请求的operateLog属性
+     * @param pjp
+     * @param operateLog
+     */
+    public void setRequestAttribute(ProceedingJoinPoint pjp, OperateLog operateLog) {
+        // 设置日志信息
+        HttpServletRequest request = ServletUtils.getRequest();
+        OperationLog operationLog = new OperationLog();
+        setModuleFields(operationLog, pjp, operateLog);
+        request.setAttribute("operateLog", operationLog);
     }
 
     /**
@@ -80,6 +96,7 @@ public class OperateLogAop {
 
         // 设置模块信息
         setModuleFields(operationLog, pjp, operateLog);
+
         // 设置请求信息
         setRequestFields(operationLog, pjp);
 
@@ -89,7 +106,7 @@ public class OperateLogAop {
         R r = R.ok();
 
         if (result instanceof R) {
-            r = ConvertUtils.copy(result, R.class);
+            r = ConvertUtils.cloneDeep(result, R.class);
         }
         // 设置结果信息
         setResultFields(operationLog, r);
@@ -116,15 +133,15 @@ public class OperateLogAop {
      */
     private void setModuleFields(OperationLog operationLog, ProceedingJoinPoint pjp, OperateLog operateLog) {
         // 获取操作
-        Api api = getClassAnnotation(pjp, Api.class);
-        ApiOperation apiOperation = getMethodAnnotation(pjp, ApiOperation.class);
+        Tag tag = getClassAnnotation(pjp, Tag.class);
+        Operation operation = getMethodAnnotation(pjp, Operation.class);
         // 记录模板名
-        if (api != null) {
-            operationLog.setModule(api.tags()[0]);
+        if (tag != null) {
+            operationLog.setModule(tag.name());
         }
         // 记录name属性
-        if (apiOperation != null) {
-            operationLog.setName(apiOperation.value());
+        if (operation != null) {
+            operationLog.setName(operation.summary());
         }
         if (operateLog != null) {
             operationLog.setType(operateLog.type().getType());
@@ -138,6 +155,9 @@ public class OperateLogAop {
             }
         }
     }
+
+    @Value("${cool-core.filter.request-param:}")
+    private String requestParam;
 
     /**
      * 设置请求信息
@@ -182,6 +202,15 @@ public class OperateLogAop {
                     } else {
                         s = ConvertUtils.toJson(argList);
                     }
+                }
+                if (!"".equals(requestParam)) {
+                    s = JsonFilterUtils.filter(s, (k, v) -> {
+                        List<String> keys = Arrays.asList(requestParam.split(", "));
+                        if (keys.contains(k)) {
+                            v = "******";
+                        }
+                        return v;
+                    });
                 }
                 // 请求参数
                 operationLog.setRequestParam(s);

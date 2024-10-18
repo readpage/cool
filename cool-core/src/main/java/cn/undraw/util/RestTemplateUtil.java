@@ -30,6 +30,9 @@ public class RestTemplateUtil {
      * @return java.lang.String
      */
     public String join(String url, Map<String, ?> param) {
+        if (StrUtils.isEmpty(param)) {
+            return url;
+        }
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
         for (Map.Entry<String, ?> e : param.entrySet()) {
             builder.queryParam(e.getKey(), e.getValue());
@@ -40,6 +43,7 @@ public class RestTemplateUtil {
     /**
      *
      * @param url
+     * @param headers
      * @param param
      * @param type
      * @return
@@ -51,7 +55,6 @@ public class RestTemplateUtil {
         if (headers.getAccept() == null) {
             headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
         }
-
         HttpEntity<Map<String, ?>> httpEntity = new HttpEntity<>(null, headers);
         return restTemplate.exchange(join(url, param), HttpMethod.GET, httpEntity, type).getBody();
     }
@@ -99,6 +102,55 @@ public class RestTemplateUtil {
         return getR(url, Object.class);
     }
 
+    public <T, K> T exchange(String url, HttpHeaders headers, HttpMethod method, K body, Class<T> type) {
+        if (headers == null) {
+            headers = new HttpHeaders();
+        }
+        if (headers.getContentType() == null) {
+            headers.setContentType(MediaType.APPLICATION_JSON);
+        }
+        if (headers.getContentType() == null) {
+            headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+        }
+        HttpEntity<K> entity = new HttpEntity<>(body, headers);
+        return restTemplate.exchange(url, HttpMethod.DELETE, entity, type).getBody();
+    }
+
+    public <T, K> T delete(String url, HttpHeaders headers, K body, Class<T> type) {
+        return exchange(url, headers, HttpMethod.DELETE, body, type);
+    }
+
+    public <K> String delete(String url, HttpHeaders headers, K body) {
+        return delete(url, headers, body, String.class);
+    }
+
+    public <K> String delete(String url, K body) {
+        HttpHeaders headers = new HttpHeaders();
+        return delete(url, headers, body);
+    }
+
+    public String delete(String url) {
+        return delete(url, new Object());
+    }
+
+
+    public <T, K> T put(String url, HttpHeaders headers, K body, Class<T> type) {
+        return exchange(url, headers, HttpMethod.PUT, body, type);
+    }
+
+    public <K> String put(String url, HttpHeaders headers, K body) {
+        return put(url, headers, body, String.class);
+    }
+
+    public <K> String put(String url, K body) {
+        HttpHeaders headers = new HttpHeaders();
+        return put(url, headers, new Object());
+    }
+
+    public String put(String url) {
+        return put(url, new Object());
+    }
+
 
 
     //Accept代表发送端（客户端）希望接受的数据类型。
@@ -113,6 +165,15 @@ public class RestTemplateUtil {
      * @return T
      */
     public <T, K> T post(String url, HttpHeaders headers, K body, Class<T> responseType) {
+        if (headers == null) {
+            headers = new HttpHeaders();
+        }
+        if (headers.getContentType() == null) {
+            headers.setContentType(MediaType.APPLICATION_JSON);
+        }
+        if (headers.getContentType() == null) {
+            headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+        }
         HttpEntity<K> httpEntity = new HttpEntity<>(body, headers);
         return restTemplate.postForObject(url, httpEntity, responseType);
     }
@@ -127,18 +188,10 @@ public class RestTemplateUtil {
     //Accept：用于在http请求报头，指明客户端接受那些类型的数据。
     //Content-Type: 用户指明本次（客户端或服务器）发送的数据类型
     public <T, K> T post(String url, K body, Class<T> responseType) {
-        HttpHeaders headers = new HttpHeaders();
-        HttpEntity<K> httpEntity = new HttpEntity<>(body, headers);
-        return post(url, headers, body, responseType);
+        return post(url, null, body, responseType);
     }
 
-    public <K> String post(String url,  HttpHeaders headers, K body) {
-        if (headers.getContentType() == null) {
-            headers.setContentType(MediaType.APPLICATION_JSON);
-        }
-        if (headers.getContentType() == null) {
-            headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-        }
+    public <K> String post(String url, HttpHeaders headers, K body) {
         return post(url, headers, body, String.class);
     }
 
@@ -160,6 +213,20 @@ public class RestTemplateUtil {
 
     public <K> R<Object> postR(String url, K body) {
         return postR(url, body, Object.class);
+    }
+
+
+    public void transferFile(String url, HttpServletResponse response, Map<String, ?> param) {
+        ResponseEntity<byte[]> responseEntity = restTemplate.exchange(join(url, param), HttpMethod.GET, null, byte[].class);
+        toHttpServletResponse(responseEntity, response);
+    }
+
+    public void transferFile(String url, HttpServletResponse response, Object obj) {
+        transferFile(url, response, ConvertUtils.cloneDeep(obj, Map.class));
+    }
+
+    public void transferFile(String url, HttpServletResponse response) {
+        transferFile(url, response, null);
     }
 
     private void toHttpServletResponse(ResponseEntity<byte[]> responseEntity, HttpServletResponse response) {
@@ -188,11 +255,6 @@ public class RestTemplateUtil {
                 }
             }
         }
-    }
-
-    public void transferFile(String url, HttpServletResponse response) {
-        ResponseEntity<byte[]> responseEntity = restTemplate.exchange(url, HttpMethod.GET, null, byte[].class);
-        toHttpServletResponse(responseEntity, response);
     }
 
 }

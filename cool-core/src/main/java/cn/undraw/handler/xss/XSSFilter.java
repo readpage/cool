@@ -47,7 +47,7 @@ public class XSSFilter implements Filter {
         }
 
         if (!"".equals(exclude)) {
-            String[] split = exclude.split(",");
+            String[] split = exclude.split(", ");
             AntPathMatcher matcher = new AntPathMatcher();
             String uri = request.getRequestURI();
             for (String str : split) {
@@ -58,7 +58,7 @@ public class XSSFilter implements Filter {
         }
 
         if (flag) {
-            filterChain.doFilter(new XssHttpServletRequestWrapperFilter(request), servletResponse);
+            filterChain.doFilter(new XssHttpServletRequest(request), servletResponse);
         } else {
             filterChain.doFilter(request, servletResponse);
         }

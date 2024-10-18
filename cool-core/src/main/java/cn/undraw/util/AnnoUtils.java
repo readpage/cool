@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
  */
 public class AnnoUtils {
 
-    /*** 
+    /**
      * 根据类类型实例化对象
      * @return void
      */
@@ -33,7 +33,8 @@ public class AnnoUtils {
      * @param objClass
      * @return java.util.List<java.lang.reflect.Field>
      */
-    public static List<Field> getFidlds(Class<?> objClass) {
+    @Deprecated
+    public static List<Field> getFields(Class<?> objClass) {
         List<Field> fields = new ArrayList<>();
         try {
             Field[] declaredFields = objClass.getDeclaredFields();
@@ -102,8 +103,10 @@ public class AnnoUtils {
                 Map<String, Object> memberValues = (Map<String, Object>) field.get(invocationHandler);
                 t = (T) memberValues.get(Optional.ofNullable(annoFieldName).orElse("value"));
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
         }
         return t;
     }
@@ -140,8 +143,10 @@ public class AnnoUtils {
                 Map<String, Object> memberValues = (Map<String, Object>) field.get(invocationHandler);
                 memberValues.put(Optional.ofNullable(annoFieldName).orElse("value"), t);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -177,8 +182,10 @@ public class AnnoUtils {
                 Map<String, Object> memberValues = (Map<String, Object>) f.get(invocationHandler);
                 t = (T) memberValues.get(Optional.ofNullable(annoFieldName).orElse("value"));
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
         }
         return t;
     }

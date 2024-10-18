@@ -26,6 +26,10 @@ public class BigDecimalSerializer extends JsonSerializer<BigDecimal> implements 
     @Override
     public void serialize(BigDecimal bigDecimal, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
         if (bigDecimal != null && bigDecimalFormat != null) {
+            BigDecimalFormat.Access access = bigDecimalFormat.access();
+            if (access == BigDecimalFormat.Access.TenThousand) {
+                bigDecimal = bigDecimal.divide(new BigDecimal(10000));
+            }
             // 保留4位小数，四舍五入
             bigDecimal = bigDecimal.setScale(bigDecimalFormat.value(), RoundingMode.HALF_UP);
         }
@@ -39,6 +43,7 @@ public class BigDecimalSerializer extends JsonSerializer<BigDecimal> implements 
                 //获取对象属性上的自定义注解
                 bigDecimalFormat = beanProperty.getAnnotation(BigDecimalFormat.class);
                 if (bigDecimalFormat == null) {
+                    // 获取类上的自定义注解
                     bigDecimalFormat = beanProperty.getContextAnnotation(BigDecimalFormat.class);
                 }
                 BigDecimalSerializer bigDecimalSerializer = new BigDecimalSerializer();

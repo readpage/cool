@@ -17,7 +17,7 @@ public class SnowflakeUtils {
     @Value("${cool-core.snowflake.datacenterId:0}")
     private long datacenterId;
 
-    private static Snowflake idWorker;
+    private static Snowflake idWorker = new Snowflake(0, 0);
 
     @PostConstruct
     public void init(){

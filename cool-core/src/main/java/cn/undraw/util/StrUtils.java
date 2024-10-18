@@ -9,6 +9,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
 import java.util.function.BiFunction;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author readpage
@@ -164,6 +166,23 @@ public class StrUtils {
         return count;
     }
 
+
+    /**
+     * 提取字符串中的数字内容
+     * @param v
+     * @return
+     */
+    public static List<Long> findNumbers(String v) {
+        String regex = "\\d+";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(v);
+        List<Long> list = new ArrayList<>();
+        while (matcher.find()) {
+            list.add(ConvertUtils.toLong(matcher.group()));
+        }
+        return list;
+    }
+
     /**
      * 将字符串数组转换为由指定分隔符分割的字符串
      * @param collection 输入数组
@@ -289,4 +308,56 @@ public class StrUtils {
         }
         return sb.toString();
     }
+
+    /**
+     * 移除原始字符串两端的空白字符
+     * @param str
+     * @return
+     */
+    public static String trim(String str) {
+        return str == null ? null : str.trim();
+    }
+
+
+    /**
+     * 将驼峰式命名转换为大写下划线格式
+     * @param camelCaseStr
+     * @return
+     */
+    public static String toUnderScoreCase(String camelCaseStr) {
+        StringBuffer result = new StringBuffer();
+        for (int i = 0; i < camelCaseStr.length(); i++) {
+            char c = camelCaseStr.charAt(i);
+            if (Character.isUpperCase(c)) {
+                if (i > 0) {
+                    result.append("_");
+                }
+                result.append(Character.toLowerCase(c));
+            } else {
+                result.append(c);
+            }
+        }
+        return result.toString();
+    }
+
+    // 将大写下划线格式转换为驼峰式命名
+    public static String toCamelCase(String underScoreStr) {
+        StringBuffer result = new StringBuffer();
+        String[] parts = underScoreStr.split("_");
+        for (String part : parts) {
+            if (part.length() > 0) {
+                result.append(part.substring(0, 1).toUpperCase());
+                if (part.length() > 1) {
+                    result.append(part.substring(1).toLowerCase());
+                }
+            }
+        }
+        return result.toString();
+    }
+
+    public static Matcher matcher(String regex, String v) {
+        Pattern pattern = Pattern.compile(regex);
+        return pattern.matcher(v);
+    }
 }
+

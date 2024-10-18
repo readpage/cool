@@ -1,6 +1,12 @@
 server:
   upload: D:\Code\Java\cool\cool-core-test
 
+springdoc:
+  swagger-ui:
+    enabled: false
+  api-docs:
+    enabled: false
+
 spring:
   # 设置静态资源的存放路径
   resources:
@@ -13,10 +19,4 @@ spring:
 logging:
   config: classpath:log4j2-prod.xml
   file:
-    path: logs/${spring.application.name}
-
-knife4j:
-  # 开启增强配置
-  enable: true
-  # 开启生产环境屏蔽
-  production: true
+    path: logs

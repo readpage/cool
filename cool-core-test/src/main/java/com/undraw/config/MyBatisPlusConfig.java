@@ -3,6 +3,7 @@ package com.undraw.config;
 import com.baomidou.mybatisplus.annotation.DbType;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
+import com.undraw.handler.EasySqlInjector;
 import org.apache.ibatis.annotations.Mapper;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.context.annotation.Bean;
@@ -27,5 +28,10 @@ public class MyBatisPlusConfig {
         MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
         interceptor.addInnerInterceptor(new PaginationInnerInterceptor(DbType.MYSQL));
         return interceptor;
+    }
+
+    @Bean
+    public EasySqlInjector easySqlInjector() {
+        return new EasySqlInjector();
     }
 }

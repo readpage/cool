@@ -93,6 +93,19 @@ public class DecimalUtils {
         return b1.multiply(b2).doubleValue();
     }
 
+
+    /**
+     * 提供（相对）精确的除法运算，当发生除不尽的情况时，精确到
+     * 小数点以后10位，以后的数字四舍五入。
+     *
+     * @param v1 被除数
+     * @param v2 除数
+     * @return double 两个参数的商
+     */
+    public static double div(String v1, String v2) {
+        return div(ConvertUtils.toDouble(v1), ConvertUtils.toDouble(v2));
+    }
+
     /**
      * 提供（相对）精确的除法运算，当发生除不尽的情况时，精确到
      * 小数点以后10位，以后的数字四舍五入。

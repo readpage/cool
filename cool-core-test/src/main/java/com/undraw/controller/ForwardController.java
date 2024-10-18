@@ -2,8 +2,8 @@ package com.undraw.controller;
 
 import cn.undraw.util.RestTemplateUtil;
 import cn.undraw.util.result.R;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,21 +25,21 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/forward")
-@Api(tags = "转发处理")
+@Tag(name = "转发处理")
 public class ForwardController {
 
     @Resource
     private RestTemplateUtil restTemplateUtil;
 
 
-    @ApiOperation("导出文件")
+    @Operation(summary = "导出文件")
     @GetMapping("/export")
     public void export(HttpServletResponse response) {
         String url = "http://localhost:7032/excel/export";
         restTemplateUtil.transferFile(url, response);
     }
 
-    @ApiOperation("导入文件")
+    @Operation(summary = "导入文件")
     @PostMapping("/import")
     public R upload(MultipartFile file) {
         HttpHeaders headers = new HttpHeaders();

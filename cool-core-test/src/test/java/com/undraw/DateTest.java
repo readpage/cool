@@ -70,13 +70,21 @@ public class DateTest {
      */
     @Test
     public void second() {
-        LocalDateTime startTime = DateUtils.toDateTime("2023-11-06 00:00:00");
-        LocalDateTime endTime = DateUtils.toDateTime("2023-11-06 23:59:59");
+        LocalDateTime startTime = DateUtils.toDateTime("2024-07-01 00:00:00");
+        LocalDateTime endTime = DateUtils.toDateTime("2024-08-01 00:00:00");
         System.out.println(DateUtils.toMilli(startTime));
         System.out.println(DateUtils.toMilli(endTime));
 
 
         System.out.println(DateUtils.toDateTime(1609430400000L));
+    }
+
+    @Test
+    public void after() {
+        LocalDate start = LocalDate.parse("2024-01-01");
+        LocalDate end = LocalDate.parse("2024-03-01");
+        System.out.println(start.isBefore(end));
+        System.out.println(start.isAfter(end));
     }
 
 }

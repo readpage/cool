@@ -1,14 +1,18 @@
 package com.undraw.controller;
 
+//import cn.undraw.handler.xss.XssHttpServletRequest;
+
 import cn.undraw.util.log.annotation.OperateLog;
 import cn.undraw.util.result.R;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.Map;
 
-import static cn.undraw.util.log.enums.OperateTypeEnum.*;
+import static cn.undraw.util.log.enums.OperateTypeEnum.CREATE;
+import static cn.undraw.util.log.enums.OperateTypeEnum.READ;
 
 /**
  * @author readpage
@@ -16,10 +20,10 @@ import static cn.undraw.util.log.enums.OperateTypeEnum.*;
  */
 @RestController
 @RequestMapping("/filter")
-@Api(tags = "过滤处理")
+@Tag(name = "过滤处理")
 public class FilterController {
 
-    @ApiOperation("参数拦截过滤")
+    @Operation(summary = "参数拦截过滤")
     @OperateLog(type = READ)
     @GetMapping("/args")
     public R args(String name) {
@@ -28,7 +32,7 @@ public class FilterController {
 
     @PostMapping("/map")
     @OperateLog(type = CREATE)
-    public R test(@RequestBody Map map) {
+    public R test(@RequestBody Map map) throws IOException {
         return R.ok(map);
     }
 }

@@ -18,7 +18,7 @@ import java.time.LocalDate;
  */
 public class FileUtils extends org.apache.commons.io.FileUtils {
 
-    /***
+    /**
      *
      * @param fileDir
      * @param file
@@ -29,7 +29,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         return upload(fileDir, file,"");
     }
 
-    /***
+    /**
      *
      * @param fileDir
      * @param file
@@ -41,7 +41,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         return upload(fileDir, files, prefix);
     }
 
-    /***
+    /**
      *
      * @param fileDir
      * @param files
@@ -86,7 +86,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
             if (i == 0) {
                 dest.append(relativePath);
             } else {
-                dest.append("||" + relativePath);
+                dest.append("," + relativePath);
             }
         }
         return dest.toString();
@@ -151,11 +151,35 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
             String suffix = filePath.substring(filePath.lastIndexOf(".")); //后缀 如.png
             file = new File(prefix + "(" + num + ")" + suffix);
         }
-        if (file.isFile()) {
+        if (file.exists()) {
             file = getFile(filePath, ++num);
         }
         return file;
     }
+
+
+    /**
+     * 创建不重复的文件，如果文件存在则文件名追加序号
+     * @param filePath
+     * @param disable 是否禁用生成不重复的文件
+     * @return java.io.File
+     */
+    public static File createFile(String filePath, boolean disable) {
+        if (StrUtils.isEmpty(filePath)) throw new RuntimeException("文件路径为空");
+        File file;
+        if (!disable) {
+            file = getFile(filePath, 0);
+        } else {
+            file = new File(filePath);
+        }
+        try {
+            FileUtils.touch(file);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return file;
+    }
+
 
     /**
      * 创建不重复的文件，如果文件存在则文件名追加序号
@@ -163,14 +187,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
      * @return java.io.File
      */
     public static File createFile(String filePath) {
-        if (StrUtils.isEmpty(filePath)) throw new RuntimeException("文件路径为空");
-        File file = getFile(filePath, 0);
-        try {
-            FileUtils.touch(file);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return file;
+        return createFile(filePath, false);
     }
 
     /**
@@ -202,13 +219,14 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         }
         String suffix = filePath.substring(filePath.lastIndexOf(".")); //后缀 如.png
         //获取文件名
-        String fileName = file.getName();
+        String filename = file.getName();
         // 设置响应
         try {
-            response.addHeader("Content-Disposition", "attachment;fileName=" + URLEncoder.encode(fileName, "UTF-8"));
+            response.addHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(filename, "UTF-8"));
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
+        response.addHeader("Content-Length", "" + file.length());
         response.setContentType("application/octet-stream;charset=UTF-8");
         response.setCharacterEncoding("UTF-8");
         BufferedInputStream bis = null;

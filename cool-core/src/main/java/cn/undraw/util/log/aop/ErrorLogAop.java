@@ -3,6 +3,8 @@ package cn.undraw.util.log.aop;
 import cn.undraw.util.ConvertUtils;
 import cn.undraw.util.DateUtils;
 import cn.undraw.util.ErrorUtils;
+import cn.undraw.util.StrUtils;
+import cn.undraw.util.filter.JsonFilterUtils;
 import cn.undraw.util.log.annotation.ErrorLog;
 import cn.undraw.util.log.service.OperateLogWorkService;
 import cn.undraw.util.log.vo.OperationLog;
@@ -14,6 +16,7 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -21,7 +24,9 @@ import javax.servlet.http.HttpServletRequest;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -54,6 +59,14 @@ public class ErrorLogAop {
         if (errorLog == null) {
             errorLog = OperateLogAop.getClassAnnotation(pjp, ErrorLog.class);
         }
+        HttpServletRequest request = ServletUtils.getRequest();
+        Object obj = request.getAttribute("operateLog");
+        if (StrUtils.isNotEmpty(obj) && obj instanceof OperationLog) {
+            OperationLog operateLog = (OperationLog) obj;
+            operationLog.setModule(operateLog.getModule());
+            operationLog.setName(operateLog.getName());
+        }
+
         operationLog.setType(errorLog.type().getType());
 
         Object[] args = pjp.getArgs();
@@ -64,7 +77,6 @@ public class ErrorLogAop {
                 e = (Exception) arg;
             }
         }
-        String method = ((MethodSignature) pjp.getSignature()).toString();
         if (req == null) {
             log.error("OperateLog注解: " + (MethodSignature)pjp.getSignature() + "方法的参数HttpServletRequest为null");
         } else if (e == null) {
@@ -72,8 +84,7 @@ public class ErrorLogAop {
         } else {
             initExceptionLog(operationLog, req, result, e);
         }
-        R res = ConvertUtils.copy(result, R.class);
-        res.setData(null);
+        R res = ConvertUtils.cloneDeep(result, R.class);
         return res;
     }
 
@@ -110,6 +121,10 @@ public class ErrorLogAop {
         operationLog.setOptMethod(ErrorUtils.getErrorMethod(e));
     }
 
+    @Value("${cool-core.filter.request-param:}")
+    private String requestParam;
+
+
     /**
      * 设置请求信息
      * @param operationLog
@@ -121,7 +136,17 @@ public class ErrorLogAop {
             Map<String, Object> params = new HashMap<>();
             params.put("query", ServletUtils.getParams(request));
             params.put("body", ServletUtils.getBody(request));
-            operationLog.setRequestParam(params.toString());
+            String s = params.toString();
+            if (!"".equals(requestParam)) {
+                s = JsonFilterUtils.filter(s, (k, v) -> {
+                    List<String> keys = Arrays.asList(requestParam.split(", "));
+                    if (keys.contains(k)) {
+                        v = "******";
+                    }
+                    return v;
+                });
+            }
+            operationLog.setRequestParam(s);
         }
         operationLog.setRequestUrl(request.getRequestURI());
         operationLog.setRequestMethod(request.getMethod());

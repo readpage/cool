@@ -3,12 +3,12 @@ package com.undraw.domain.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import java.io.Serializable;
-import java.time.LocalDateTime;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.io.Serializable;
+import java.time.LocalDateTime;
 
 /**
  * <p>
@@ -21,58 +21,58 @@ import lombok.Setter;
 @Getter
 @Setter
 @TableName("system_log")
-@ApiModel(value = "SystemLog对象", description = "")
+@Schema(title = "SystemLog对象")
 public class SystemLog implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @ApiModelProperty("ID")
+    @Schema(title = "ID")
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
-    @ApiModelProperty("操作模块")
+    @Schema(title = "操作模块")
     private String module;
 
-    @ApiModelProperty("操作名")
+    @Schema(title = "操作名")
     private String name;
 
-    @ApiModelProperty("操作分类")
+    @Schema(title = "操作分类")
     private Integer type;
 
-    @ApiModelProperty("请求方法方式")
+    @Schema(title = "请求方法方式")
     private String requestMethod;
 
-    @ApiModelProperty("请求方法")
+    @Schema(title = "请求方法")
     private String optMethod;
 
-    @ApiModelProperty("请求地址")
+    @Schema(title = "请求地址")
     private String requestUrl;
 
-    @ApiModelProperty("请求参数")
+    @Schema(title = "请求参数")
     private String requestParam;
 
-    @ApiModelProperty("用户 IP")
+    @Schema(title = "用户 IP")
     private String userIp;
 
-    @ApiModelProperty("地理位置")
+    @Schema(title = "地理位置")
     private String address;
 
-    @ApiModelProperty("浏览器 UserAgent")
+    @Schema(title = "浏览器 UserAgent")
     private String userAgent;
 
-    @ApiModelProperty("开始时间")
+    @Schema(title = "开始时间")
     private LocalDateTime startTime;
 
-    @ApiModelProperty("执行时长，单位：毫秒")
+    @Schema(title = "执行时长，单位：毫秒")
     private String duration;
 
-    @ApiModelProperty("结果码")
+    @Schema(title = "结果码")
     private String resultCode;
 
-    @ApiModelProperty("结果提示")
+    @Schema(title = "结果提示")
     private String resultMsg;
 
-    @ApiModelProperty("结果数据")
+    @Schema(title = "结果数据")
     private String resultData;
 
 

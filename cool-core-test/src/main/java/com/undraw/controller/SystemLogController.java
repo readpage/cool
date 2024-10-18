@@ -26,13 +26,13 @@ public class SystemLogController {
     @GetMapping("/test")
     public R test(HttpServletRequest request) {
         //解析agent字符串
-        UserAgent userAgent = UserAgent.parseUserAgentString(request.getHeader("User-Agent"));
+        UserAgent userAgent = UserAgent.parseUserAgentString(request.getHeader("Usera-Agent"));
         //获取浏览器对象
         Browser browser = userAgent.getBrowser();
         System.out.println(browser);
         //获取操作系统对象
         OperatingSystem os = userAgent.getOperatingSystem();
-        System.out.println(request.getHeader("User-Agent"));
+        System.out.println(request.getHeader("Usera-Agent"));
         return R.ok();
     }
 }

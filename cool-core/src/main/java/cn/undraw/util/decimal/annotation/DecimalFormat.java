@@ -21,4 +21,12 @@ import static java.lang.annotation.ElementType.TYPE;
 @JsonSerialize(using = DecimalSerializer.class)
 public @interface DecimalFormat {
     int value() default 2;
+    Access access() default DecimalFormat.Access.AUTO;
+    public static enum Access {
+        AUTO,
+        TenThousand;
+
+        private Access() {
+        }
+    }
 }

@@ -2,11 +2,9 @@ package cn.undraw.util.result;
 
 import cn.undraw.handler.exception.customer.CustomerException;
 import cn.undraw.util.ErrorUtils;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.*;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -16,17 +14,23 @@ import java.util.Map;
  * @author readpage
  * @date 2022-10-27 14:39
  */
-@ApiModel(value = "R", description = "返回信息")
-@Data
+@Tag(name = "R", description = "返回信息")
+@Getter
+@Setter
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 public class R<T> implements Serializable {
+    
     private static final long serialVersionUID = 1L;
-    @ApiModelProperty("状态码")
+    
+    @Schema(title = "状态码")
     private Integer code;
-    @ApiModelProperty("返回消息")
+    
+    @Schema(title = "返回消息")
     private String msg;
-    @ApiModelProperty("承载数据")
+    
+    @Schema(title = "承载数据")
     private T data;
 
 

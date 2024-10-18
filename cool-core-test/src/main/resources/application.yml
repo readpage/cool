@@ -1,12 +1,6 @@
 server:
   port: 7032
 
-knife4j:
-  # 开启增强配置
-  enable: true
-  # 开启生产环境屏蔽 true
-  production: false
-
 spring:
   application:
     name: cool-core-test
@@ -58,7 +52,8 @@ mybatis-plus:
 
 cool-core:
   filter:
-    exclude: /**
+    request-param: password, oldPwd, newPwd
+    include: /**
   snowflake:
     workerId: 1
     datacenterId: 1

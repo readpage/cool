@@ -15,28 +15,24 @@ import java.util.Map;
  * @author readpage
  * @date 2022-10-26 19:36
  */
-public class XssHttpServletRequestWrapperFilter extends HttpServletRequestWrapper {
+public class XssHttpServletRequest extends HttpServletRequestWrapper {
 
     private final String body;
 
-    public XssHttpServletRequestWrapperFilter(HttpServletRequest request) throws IOException {
+    public XssHttpServletRequest(HttpServletRequest request) {
         super(request);
-        InputStream is = null;
         StringBuilder sb = null;
-        try {
-            is = request.getInputStream();
+        try (InputStream is = request.getInputStream()) {
+            Reader in = new InputStreamReader(is, "UTF-8");
             sb = new StringBuilder();
-            byte[] b = new byte[4096];
-            for (int n; (n = is.read(b)) != -1;)
+            for (int n; (n = in.read()) != -1;)
             {
-                sb.append(new String(b, 0, n));
+                sb.append((char) n);
             }
-        } finally {
-            if(is != null) {
-                is.close();
-            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-        body = JsoupUtils.filter(sb.toString());
+        body = JsoupUtils.filter(String.valueOf(sb));
     }
 
     /**
@@ -101,7 +97,7 @@ public class XssHttpServletRequestWrapperFilter extends HttpServletRequestWrappe
     }
 
     @Override
-    public ServletInputStream getInputStream() throws IOException {
+    public ServletInputStream getInputStream() {
         byte[] bytes;
         if (StrUtils.isEmpty(body)) {
             bytes = "".getBytes();
@@ -113,7 +109,7 @@ public class XssHttpServletRequestWrapperFilter extends HttpServletRequestWrappe
         return new ServletInputStream() {
 
             @Override
-            public int read() throws IOException {
+            public int read() {
                 return bais.read();
             }
 
@@ -136,8 +132,6 @@ public class XssHttpServletRequestWrapperFilter extends HttpServletRequestWrappe
     public BufferedReader getReader() throws IOException {
         return new BufferedReader(new InputStreamReader(this.getInputStream()));
     }
-
-
 
 
 

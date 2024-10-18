@@ -10,7 +10,7 @@
       "name": "cool-core.filter.exclude",
       "type": "java.lang.String",
       "defaultValue": "",
-      "description": "排除xss，敏感词拦截的路径如:/test/**,/test2/**."
+      "description": "排除xss，敏感词拦截的路径如:/test/**, /test2/**."
     },
     {
       "name": "cool-core.filter.sensitive",
@@ -23,6 +23,12 @@
       "type": "java.lang.Boolean",
       "defaultValue": true,
       "description": "是否开启xss代码过滤."
+    },
+    {
+      "name": "cool-core.filter.request-param",
+      "type": "java.lang.String",
+      "defaultValue": "",
+      "description": "请求参数属性过滤白名单入:password, oldPwd, newPwd."
     },
     {
       "name": "cool-core.snowflake.workerId",

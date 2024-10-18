@@ -28,7 +28,7 @@ public class CoolFilterConfig {
         ArrayList<String> urls = new ArrayList<>();
         //配置过滤规则
         if (!"".equals(include)) {
-            String[] split = include.split(",");
+            String[] split = include.split(", ");
             for (String str : split) {
                 if (str.endsWith("**")) {
                     str = str.substring(0, str.length() - 1);

@@ -5,6 +5,7 @@ import lombok.Data;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAccessor;
 import java.time.temporal.TemporalAdjusters;
 import java.util.Date;
 import java.util.HashMap;
@@ -22,6 +23,40 @@ public class DateUtils {
 
     private static String DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
+    /**
+     * 自定义日期时间格式 yyyy-MM-dd HH:mm:ss
+     * @param temporal LocalDate || LocalDateTime
+     * @param pattern yyyy-MM-dd HH:mm:ss
+     * @return
+     */
+    public static String format(TemporalAccessor temporal, String pattern) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
+        return formatter.format(temporal);
+    }
+
+    /**
+     * 传日期时间字符串返回日期时间
+     * @param dateTime
+     * @return java.time.LocalDateTime
+     */
+    public static LocalDateTime toDateTime(String dateTime, String pattern) {
+        if (StrUtils.isEmpty(dateTime)) return null;
+        if (StrUtils.isNumber(dateTime)) {
+            return DateUtils.toDateTime(Long.parseLong(dateTime));
+        }
+        try {
+            if (pattern == null) {
+                if (dateTime.matches("^\\d{4}/\\d{2}/\\d{2} \\d{2}:\\d{2}:\\d{2}$")) {
+                    return LocalDateTime.parse(dateTime, DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
+                }
+                return LocalDateTime.parse(dateTime, DateTimeFormatter.ofPattern(DATE_TIME_FORMAT));
+            }
+
+            return LocalDateTime.parse(dateTime, DateTimeFormatter.ofPattern(pattern));
+        } catch (Exception e) {
+            throw new CustomerException("时间类型转换异常");
+        }
+    }
 
     /**
      * 传日期时间字符串返回日期时间
@@ -29,20 +64,9 @@ public class DateUtils {
      * @return java.time.LocalDateTime
      */
     public static LocalDateTime toDateTime(String dateTime) {
-        if (dateTime == null) return null;
-        if (StrUtils.isNumber(dateTime)) {
-            return DateUtils.toDateTime(Long.parseLong(dateTime));
-        }
-        try {
-            String pattern = "^\\d{4}/\\d{2}/\\d{2} \\d{2}:\\d{2}:\\d{2}$";
-            if (dateTime.matches(pattern)) {
-                return LocalDateTime.parse(dateTime, DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
-            }
-            return LocalDateTime.parse(dateTime, DateTimeFormatter.ofPattern(DATE_TIME_FORMAT));
-        } catch (Exception e) {
-            throw new CustomerException("时间类型转换异常");
-        }
+        return toDateTime(dateTime, null);
     }
+
 
     /**
      * date转换为localdatetime
@@ -86,13 +110,13 @@ public class DateUtils {
 
     /**
      * 传日期字符串返回日期
-     * @param dateTime
+     * @param date
      * @return java.time.LocalDate
      */
-    public static LocalDate toLocalDate(String dateTime) {
-        if (dateTime == null) return null;
-        if (StrUtils.isNumber(dateTime)) {
-            return DateUtils.toDateTime(Long.parseLong(dateTime)).toLocalDate();
+    public static LocalDate toLocalDate(String date) {
+        if (StrUtils.isEmpty(date)) return null;
+        if (StrUtils.isNumber(date)) {
+            return DateUtils.toDateTime(Long.parseLong(date)).toLocalDate();
         }
         try {
             Map<String, String> map = new HashMap<>();
@@ -101,14 +125,32 @@ public class DateUtils {
             map.put("^\\d{4}/\\d{2}/\\d{1}$", "yyyy/MM/d");
             map.put("^\\d{4}/\\d{1}/\\d{1}$", "yyyy/M/d");
             for (Map.Entry<String, String> entry : map.entrySet()) {
-                if (dateTime.matches(entry.getKey())) {
-                    return LocalDate.parse(dateTime, DateTimeFormatter.ofPattern(entry.getValue()));
+                if (date.matches(entry.getKey())) {
+                    return LocalDate.parse(date, DateTimeFormatter.ofPattern(entry.getValue()));
                 }
             }
-            return LocalDate.parse(dateTime, DateTimeFormatter.ofPattern(DATE_FORMAT));
+            return LocalDate.parse(date, DateTimeFormatter.ofPattern(DATE_FORMAT));
         } catch (Exception e) {
             throw new CustomerException("日期类型转换异常");
         }
+    }
+
+    /**
+     * date转换为localDate
+     * @param date
+     * @return java.time.LocalDate
+     */
+    public static LocalDate toLocalDate(Date date) {
+        return toDateTime(date).toLocalDate();
+    }
+
+    /**
+     * 毫秒数转换为localDate
+     * @param time
+     * @return java.time.LocalDate
+     */
+    public static LocalDate toLocalDate(long time) {
+        return toDateTime(time).toLocalDate();
     }
 
     /**
@@ -119,15 +161,6 @@ public class DateUtils {
     public static Date toDate(LocalDateTime localDateTime) {
         Instant instant = localDateTime.atZone(ZoneId.systemDefault()).toInstant();
         return Date.from(instant);
-    }
-
-    /**
-     * date转换为localDate
-     * @param date
-     * @return java.time.LocalDate
-     */
-    public static LocalDate toLocalDate(Date date) {
-        return toDateTime(date).toLocalDate();
     }
 
     /**
@@ -163,7 +196,6 @@ public class DateUtils {
      * 返回当前时间戳(ms/毫秒)
      * @return long
      */
-    @Deprecated
     public static long toMilli()  {
         return toLong(LocalDateTime.now());
     }
@@ -176,6 +208,15 @@ public class DateUtils {
     public static long toMilli(LocalDate localDate) {
         ZoneId zoneId = ZoneId.systemDefault();
         return localDate.atStartOfDay(zoneId).toInstant().toEpochMilli();
+    }
+
+    /**
+     * localdatetime转换为毫秒数
+     * @param localDateTime
+     * @return long
+     */
+    public static long toMilli(LocalDateTime localDateTime) {
+        return localDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
     }
 
     /**
@@ -195,15 +236,6 @@ public class DateUtils {
      */
     @Deprecated
     public static long toLong(LocalDateTime localDateTime) {
-        return localDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
-    }
-
-    /**
-     * localdatetime转换为毫秒数
-     * @param localDateTime
-     * @return long
-     */
-    public static long toMilli(LocalDateTime localDateTime) {
         return localDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
     }
 

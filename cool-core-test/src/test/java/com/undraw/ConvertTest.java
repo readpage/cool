@@ -1,14 +1,13 @@
 package com.undraw;
 
 import cn.undraw.util.ConvertUtils;
+import com.undraw.domain.model.Student;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author readpage
@@ -67,6 +66,27 @@ public class ConvertTest {
 
     @Test
     public void test3() {
+        Animal animal = ConvertUtils.cloneDeep(new Animal("猫", "鱼"));
+        System.out.println(animal);
+    }
 
+    @Test
+    public void test4() {
+        List<Student> list = Student.studentList;
+        Set<Student> set = new TreeSet<>(Comparator.comparing(Student::getId));
+        set.addAll(list);
+        List<Student> list1 = ConvertUtils.cloneDeep(set);
+        list.removeIf(o -> o.getId() == 1);
+        System.out.println(list);
+        System.out.println(list1);
+    }
+
+    @Test
+    public void test5() {
+//        System.out.println(ConvertUtils.toObject("05d597bcf69b8771ca11faf924e6f4ab95799de4", String.class));
+        Integer o = ConvertUtils.cloneDeep("2323", Integer.class);
+        System.out.println(o);
+        String s = ConvertUtils.toJson(1);
+        System.out.println(s);
     }
 }

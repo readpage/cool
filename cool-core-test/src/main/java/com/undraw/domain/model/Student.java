@@ -1,7 +1,7 @@
 package com.undraw.domain.model;
 
 import com.alibaba.excel.annotation.ExcelProperty;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,19 +14,19 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Student {
-    @ApiModelProperty("ID")
+    @Schema(title = "ID")
     @ExcelProperty("ID")
     private Integer id;
 
-    @ApiModelProperty("姓名")
+    @Schema(title = "姓名")
     @ExcelProperty("姓名")
     private String name;
 
-    @ApiModelProperty("年龄")
+    @Schema(title = "年龄")
     @ExcelProperty("年龄")
     public int age;
 
-    @ApiModelProperty("性别")
+    @Schema(title = "性别")
     @ExcelProperty("性别")
     private int sex;
 
@@ -36,6 +36,6 @@ public class Student {
             new Student(3, "赵刚", 17, 0),
             new Student(4, "赵强", 16, 0),
             new Student(5, "小花", 15, 1),
-            new Student(6, "张三", 17, 0)
+            new Student(6, null, 17, 0)
     ));
 }

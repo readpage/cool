@@ -1,6 +1,7 @@
 package cn.undraw.util.filter;
 
 import cn.undraw.handler.exception.customer.CustomerException;
+import cn.undraw.util.StrUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -36,6 +37,9 @@ public class JsonFilterUtils {
      * @return boolean
      */
     public static boolean isValidJSON(final String json) {
+        if (StrUtils.isEmpty(json)) {
+            return false;
+        }
         boolean valid = true;
         try{
             jackson.readTree(json);

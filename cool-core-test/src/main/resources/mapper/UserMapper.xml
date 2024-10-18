@@ -1,5 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.undraw.mapper.UserMapper">
+    <update id="batchUpdateStock">
+        ALTER TABLE STOCK DISABLE TRIGGER STOCK_UPDTICK;
+        <foreach collection="list" item="item" index="index" separator=";">
+            UPDATE STOCK SET CUMWIPQTY_0 =0, CUMWIPQTA_0 =0
+            WHERE STOFCY_0 = #{item.address} AND STOCOU_0 = #{item.stocou}
+        </foreach>
+        ALTER TABLE STOCK ENABLE TRIGGER STOCK_UPDTICK;
+    </update>
 
+    <select id="userinfoList" resultType="map">
+        SELECT userid, badgenumber FROM userinfo WHERE badgenumber
+        IN
+        <foreach collection="list" item="item" index="index" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
 </mapper>

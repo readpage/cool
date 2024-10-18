@@ -17,17 +17,18 @@
     <!--阿里云maven代理仓库 https://developer.aliyun.com/mvn/guide -->
     <!-- 统一管理jar包版权 -->
     <properties>
-        <revision>0.1.9</revision>
+        <revision>0.2.2</revision>
         <java.version>1.8</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <mysql.version>8.0.22</mysql.version>
         <druid.version>1.2.9</druid.version>
         <pagehelper.version>1.4.3</pagehelper.version>
         <mybatis.plus.version>3.5.1</mybatis.plus.version>
+        <mybatis-plus-extension.version>3.5.1</mybatis-plus-extension.version>
         <mybatis.plus.generator.version>3.5.1</mybatis.plus.generator.version>
         <velocity.engine.core.version>2.3</velocity.engine.core.version>
         <hutool.version>5.7.13</hutool.version>
-        <knife4j.version>2.0.9</knife4j.version>
+        <springdoc.version>1.7.0</springdoc.version>
         <rocketmq.version>2.2.0</rocketmq.version>
         <spring-boot.version>2.3.2.RELEASE</spring-boot.version>
         <spring-cloud.version>Hoxton.SR9</spring-cloud.version>
@@ -79,6 +80,11 @@
             </dependency>
             <dependency>
                 <groupId>com.baomidou</groupId>
+                <artifactId>mybatis-plus-extension</artifactId>
+                <version>${mybatis-plus-extension.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.baomidou</groupId>
                 <artifactId>mybatis-plus-generator</artifactId>
                 <version>${mybatis.plus.generator.version}</version>
             </dependency>
@@ -93,9 +99,9 @@
                 <version>${pagehelper.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.github.xiaoymin</groupId>
-                <artifactId>knife4j-spring-boot-starter</artifactId>
-                <version>${knife4j.version}</version>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-ui</artifactId>
+                <version>${springdoc.version}</version>
             </dependency>
 
             <dependency>

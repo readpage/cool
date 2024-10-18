@@ -9,9 +9,18 @@ import lombok.Data;
  */
 @Data
 public class ImportDemo {
-    @ExcelProperty(index = 0)
     private String username;
 
-    @ExcelProperty(index = 1)
+    @ExcelProperty(index = 10)
     private String password;
+
+    @ExcelProperty(index = 1)
+    private String password2;
+
+    @ExcelProperty(value = "用户名")
+    private String username2;
+
+    public String getKey() {
+        return username;
+    }
 }
