@@ -11,6 +11,7 @@ import cn.undraw.util.log.vo.OperationLog;
 import cn.undraw.util.result.R;
 import cn.undraw.util.servlet.IpUtils;
 import cn.undraw.util.servlet.ServletUtils;
+import cn.undraw.util.servlet.UserAgent;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -109,7 +110,7 @@ public class ErrorLogAop {
     private void setRFields(OperationLog operationLog, Object result, Throwable e) {
         R r = null;
         if (result instanceof R) {
-            r = ConvertUtils.copy(result, R.class);
+            r = ConvertUtils.cloneDeep(result, R.class);
         } else {
             r = R.error(e);
         }
@@ -150,7 +151,9 @@ public class ErrorLogAop {
         }
         operationLog.setRequestUrl(request.getRequestURI());
         operationLog.setRequestMethod(request.getMethod());
-        operationLog.setUserAgent(ServletUtils.getUserAgent(request));
+        UserAgent userAgent = new UserAgent(request);
+        operationLog.setUserAgent(userAgent.toString());
+        operationLog.setDevice(userAgent.getDevice());
         operationLog.setUserIp(IpUtils.getClientIP(request));
         operationLog.setAddress(IpUtils.getAddress());
         operationLog.setStartTime(LocalDateTime.now());
@@ -166,7 +169,7 @@ public class ErrorLogAop {
         String str = "请求信息:" + operationLog.getRequestMethod() + "|" + operationLog.getRequestUrl() + "; 方法名:" + operationLog.getOptMethod() +
                 "; 开始时间:" + DateUtils.toString(operationLog.getStartTime()) +
                 "\n请求参数:" + operationLog.getRequestParam() + "\n地理位置:" + operationLog.getUserIp()+ "(" + operationLog.getAddress() + ")" +
-                "|" + operationLog.getUserAgent() + "\n操作结果:" +
+                "|" + operationLog.getDevice() + "\n操作结果:" +
                 operationLog.getResultCode()  + "|" + operationLog.getResultMsg();
 
         String resultData = operationLog.getResultData();

@@ -30,7 +30,6 @@ public class TestController {
         HttpServletRequest request = ServletUtils.getRequest();
         String header = request.getHeader("User-Agent");
         System.out.println(header);
-        String userAgent = ServletUtils.getUserAgent();
         return R.ok("hello world! " + daily);
     }
 

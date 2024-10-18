@@ -57,6 +57,11 @@ public class OperationLog {
     private String address;
 
     /**
+     * 设备 device
+     */
+    private String device;
+
+    /**
      * 浏览器 UserAgent
      */
     private String userAgent;

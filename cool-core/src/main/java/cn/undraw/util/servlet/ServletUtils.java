@@ -2,9 +2,6 @@ package cn.undraw.util.servlet;
 
 import cn.undraw.handler.xss.XssHttpServletRequest;
 import cn.undraw.util.ConvertUtils;
-import eu.bitwalker.useragentutils.Browser;
-import eu.bitwalker.useragentutils.OperatingSystem;
-import eu.bitwalker.useragentutils.UserAgent;
 import org.springframework.http.MediaType;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -21,28 +18,6 @@ import java.io.IOException;
  * @date 2022-11-29 19:28
  */
 public class ServletUtils {
-    /**
-     * @param request 请求
-     * @return java.lang.String
-     */
-    public static String getUserAgent(HttpServletRequest request) {
-        if (request == null) return "未知";
-        //解析agent字符串
-        UserAgent userAgent = UserAgent.parseUserAgentString(request.getHeader("User-Agent"));
-        //获取浏览器对象
-        Browser browser = userAgent.getBrowser();
-        //获取操作系统对象
-        OperatingSystem os = userAgent.getOperatingSystem();
-        return browser.getName() + " | " + os.getName();
-    }
-
-    /**
-     * userAgent
-     * @return java.lang.String
-     */
-    public static String getUserAgent() {
-        return getUserAgent(getRequest());
-    }
 
     /**
      * 获得请求
@@ -68,6 +43,7 @@ public class ServletUtils {
     public static String getParams() {
         return getParams(getRequest());
     }
+
 
     /**
      * 获取请求体

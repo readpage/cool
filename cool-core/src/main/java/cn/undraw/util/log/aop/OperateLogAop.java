@@ -12,6 +12,7 @@ import cn.undraw.util.log.vo.OperationLog;
 import cn.undraw.util.result.R;
 import cn.undraw.util.servlet.IpUtils;
 import cn.undraw.util.servlet.ServletUtils;
+import cn.undraw.util.servlet.UserAgent;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
@@ -173,7 +174,9 @@ public class OperateLogAop {
         // 请求URL
         operationLog.setRequestUrl(request.getRequestURI());
         operationLog.setUserIp(IpUtils.getClientIP());
-        operationLog.setUserAgent(ServletUtils.getUserAgent(request));
+        UserAgent userAgent = new UserAgent();
+        operationLog.setUserAgent(userAgent.toString());
+        operationLog.setDevice(userAgent.getDevice());
         operationLog.setAddress(IpUtils.getAddress());
 
 
@@ -249,7 +252,7 @@ public class OperateLogAop {
                 "; 开始时间:" + DateUtils.toString(operationLog.getStartTime()) + "|持续" + operationLog.getDuration() + "ms\n" +
                 "请求信息:" + operationLog.getRequestMethod() + "|" + operationLog.getRequestUrl() + "\n方法名:" + operationLog.getOptMethod() +
                 "\n请求参数:" + operationLog.getRequestParam() + "\n地理位置:" + operationLog.getUserIp()+ "(" + operationLog.getAddress() + ")" +
-                "|" + operationLog.getUserAgent() + "\n操作结果:" +
+                "|" + operationLog.getDevice() + "\n操作结果:" +
                 operationLog.getResultCode()  + "|" + operationLog.getResultMsg();
 
 
