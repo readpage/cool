@@ -14,10 +14,12 @@ import java.util.Scanner;
 
 public class CodeGenerator {
 
-    private static final String URL = "jdbc:mysql://localhost:3306/report?serverTimezone=GMT%2B8";
+    private static final String URL = "jdbc:mysql://localhost:3306/cool?serverTimezone=GMT%2B8";
     private static final String USERNAME = "root";
     private static final String PASSWORD = "root";
-    private static final String ProjectPath = System.getProperty("user.dir") + File.separator + "basic";
+    private static final String ProjectPath = System.getProperty("user.dir") + File.separator + "cool-core-test";
+
+    private static final String ParentPackage = "com.undraw";
 
     public static void main(String[] args) {
         Scanner scr = new Scanner(System.in);
@@ -36,9 +38,9 @@ public class CodeGenerator {
                 )
                 // 包配置
                 .packageConfig(builder ->
-                        builder.parent("com.example") //父包名
+                        builder.parent(ParentPackage) //父包名
                                 .entity("domain.entity") //设置entity包名
-                                .pathInfo(Collections.singletonMap(OutputFile.mapperXml, ProjectPath+ "/src/main/resources/mapper"))  // 设置mapperXml生成路径
+                                .pathInfo(Collections.singletonMap(OutputFile.xml, ProjectPath+ "/src/main/resources/mapper"))  // 设置mapperXml生成路径
                 )
                 // 策略配置
                 .strategyConfig((scanner, builder) -> builder.addInclude(tables)
@@ -58,13 +60,13 @@ public class CodeGenerator {
                 .execute();
 
         // entity swagger 注释生成
-        ClassGenerator.create(URL, USERNAME, PASSWORD).projectPath(ProjectPath).tables(tables).build();
+        ClassGenerator.create(URL, USERNAME, PASSWORD).projectPath(ProjectPath).parentPackage(ParentPackage).tables(tables).build();
 
     }
 
     @Test
     public void test2() {
-        ClassGenerator.create(URL, USERNAME, PASSWORD).tables(Arrays.asList("customer_plan")).build();
+        ClassGenerator.create(URL, USERNAME, PASSWORD).parentPackage(ParentPackage).tables(Arrays.asList("customer_plan")).build();
     }
 
 

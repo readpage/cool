@@ -57,6 +57,9 @@ public class SystemLog implements Serializable {
     @Schema(title = "地理位置")
     private String address;
 
+    @Schema(title = "设备")
+    private String device;
+
     @Schema(title = "浏览器 UserAgent")
     private String userAgent;
 

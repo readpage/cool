@@ -22,12 +22,15 @@ public class ClassGenerator {
 
     private String projectPath = System.getProperty("user.dir");
 
-    private String packageName = "com.example.domain.entity";
+    private String parentPackage = "com.example";
+
+    private String packageName;
 
     private List<String> tables = new ArrayList<>();
 
     public ClassGenerator() {
         super();
+        this.packageName = parentPackage + ".domain.entity";
     }
 
     public ClassGenerator(String url, String user, String password) {
@@ -41,8 +44,9 @@ public class ClassGenerator {
         return this;
     }
 
-    public ClassGenerator packageName(String v) {
-        this.packageName = v;
+    public ClassGenerator parentPackage(String v) {
+        this.parentPackage = v;
+        this.packageName = parentPackage + ".domain.entity";
         return this;
     }
 

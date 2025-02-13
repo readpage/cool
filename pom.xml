@@ -23,9 +23,8 @@
         <mysql.version>8.0.22</mysql.version>
         <druid.version>1.2.9</druid.version>
         <pagehelper.version>1.4.3</pagehelper.version>
-        <mybatis.plus.version>3.5.1</mybatis.plus.version>
-        <mybatis-plus-extension.version>3.5.1</mybatis-plus-extension.version>
-        <mybatis.plus.generator.version>3.5.1</mybatis.plus.generator.version>
+        <mybatis.plus.version>3.5.2</mybatis.plus.version>
+        <mybatis.plus.generator.version>3.5.2</mybatis.plus.generator.version>
         <velocity.engine.core.version>2.3</velocity.engine.core.version>
         <hutool.version>5.7.13</hutool.version>
         <springdoc.version>1.7.0</springdoc.version>
@@ -77,11 +76,6 @@
                 <groupId>com.baomidou</groupId>
                 <artifactId>mybatis-plus-boot-starter</artifactId>
                 <version>${mybatis.plus.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.baomidou</groupId>
-                <artifactId>mybatis-plus-extension</artifactId>
-                <version>${mybatis-plus-extension.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.baomidou</groupId>
