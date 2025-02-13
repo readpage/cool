@@ -14,7 +14,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 /**
- * @author readpage
+ *
  * @date 2023-02-08 8:50
  */
 public class LocalDateConverter implements Converter<LocalDate> {
@@ -27,7 +27,7 @@ public class LocalDateConverter implements Converter<LocalDate> {
     }
 
     public CellDataTypeEnum supportExcelTypeKey() {
-        return CellDataTypeEnum.STRING;
+        return CellDataTypeEnum.NUMBER;
     }
 
     public LocalDate convertToJavaData(ReadCellData cellData, ExcelContentProperty contentProperty, GlobalConfiguration globalConfiguration) throws ParseException {

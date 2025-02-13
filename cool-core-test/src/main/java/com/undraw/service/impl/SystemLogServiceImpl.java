@@ -8,6 +8,8 @@ import com.undraw.service.SystemLogService;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+
 /**
  * <p>
  *  服务实现类
@@ -22,6 +24,8 @@ public class SystemLogServiceImpl extends ServiceImpl<SystemLogMapper, SystemLog
 
     @Async("async")
     public void _save(SystemLog systemLog) {
+        this.saveOrUpdateBatch(new ArrayList<>());
+        System.out.println(systemLog.getResultData().length());
         systemLog.setResultMsg(StrUtils.substringByChar(systemLog.getResultMsg(), 65535));
         systemLog.setResultData(StrUtils.substringByChar(systemLog.getResultData(), 65535));
         this.save(systemLog);

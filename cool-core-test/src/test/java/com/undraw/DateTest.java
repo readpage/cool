@@ -42,8 +42,11 @@ public class DateTest {
 
     @Test
     public void test3() {
-        LocalDateTime localDateTime = DateUtils.toDateTime("2023-02-01 00:00:00");
-        System.out.println(DateUtils.toLong(localDateTime));
+        LocalDateTime startTime = DateUtils.toDateTime("2024-11-01 00:00:00");
+        System.out.println(DateUtils.toMilli(startTime));
+        LocalDateTime endTime = DateUtils.toDateTime("2024-11-30 00:00:00");
+        System.out.println(DateUtils.toMilli(endTime));
+
         LocalDate localDate2 = DateUtils.toLocalDate("2023-02-01");
         System.out.println(DateUtils.toLong(localDate2));
         log.info("时间戳转localDateTime-->" + DateUtils.toDateTime(1669046400000L).toString());
@@ -71,8 +74,8 @@ public class DateTest {
      */
     @Test
     public void second() {
-        LocalDateTime startTime = DateUtils.toDateTime("2024-07-01 00:00:00");
-        LocalDateTime endTime = DateUtils.toDateTime("2024-08-01 00:00:00");
+        LocalDateTime startTime = DateUtils.toDateTime("2024-12-04 00:00:00");
+        LocalDateTime endTime = DateUtils.toDateTime("2024-12-05 00:00:00");
         System.out.println(DateUtils.toMilli(startTime));
         System.out.println(DateUtils.toMilli(endTime));
 

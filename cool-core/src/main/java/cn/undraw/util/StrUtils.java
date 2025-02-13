@@ -7,6 +7,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Field;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.regex.Matcher;
@@ -320,7 +323,7 @@ public class StrUtils {
 
 
     /**
-     * 将驼峰式命名转换为大写下划线格式
+     * 将驼峰式命名转换为下划线格式
      * @param camelCaseStr
      * @return
      */
@@ -340,7 +343,7 @@ public class StrUtils {
         return result.toString();
     }
 
-    // 将大写下划线格式转换为驼峰式命名
+    // 将下划线格式转换为驼峰式命名
     public static String toCamelCase(String underScoreStr) {
         StringBuffer result = new StringBuffer();
         String[] parts = underScoreStr.split("_");
@@ -355,9 +358,140 @@ public class StrUtils {
         return result.toString();
     }
 
+    /**
+     * sql排序
+     * @param json
+     * @param clazz
+     * @param suffix
+     * @return
+     */
+    @Deprecated
+    public static String toSort(String json, Class<?> clazz, String suffix) {
+        StringBuffer sb = new StringBuffer();
+        sb.append("ORDER BY");
+        StringJoiner sj = new StringJoiner(",");
+        Map<String, String> map = null;
+        try {
+            map = ConvertUtils.cloneDeep(json, Map.class);
+        } catch (Exception e) {
+            return "";
+        }
+        if (StrUtils.isEmpty(map)) {
+            return "";
+        }
+
+        List<Field> fields = ReflectUtils.getFields(clazz);
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            for (Field field : fields) {
+                if (Objects.equals(entry.getKey(), field.getName())) {
+                    String key = toUnderScoreCase(field.getName());
+                    if ("asc".equals(entry.getValue())) {
+                        sj.add(String.format(" %s ASC", key));
+                    } else if ("desc".equals(entry.getValue())) {
+                        sj.add(String.format(" %s DESC", key));
+                    }
+                }
+            }
+        }
+        if (StrUtils.isEmpty(sj.toString())) {
+            return "";
+        }
+
+        if (StrUtils.isNotEmpty(suffix)) {
+            String[] strArr = suffix.split(" ");
+            if (StrUtils.isNotEmpty(strArr)) {
+                for (Field field : fields) {
+                    if (Objects.equals(field.getName(), strArr[0])) {
+                        String key = toUnderScoreCase(field.getName());
+                        if (strArr.length > 1 && strArr[1] != null) {
+                            if ("DESC".equals(strArr[1].toUpperCase())) {
+                                key += " DESC";
+                            }
+                        }
+                        sj.add(String.format(" %s", key));
+                    }
+                }
+            }
+
+        }
+        sb.append(sj);
+        return sb.toString();
+    }
+
+    @Deprecated
+    public static String toSort(String json, Class<?> clazz) {
+        return toSort(json, clazz, null);
+    }
+
     public static Matcher matcher(String regex, String v) {
         Pattern pattern = Pattern.compile(regex);
         return pattern.matcher(v);
     }
+
+    /**
+     * arr是否小于两个长度，否则默认补充空字符串
+     * @param arr
+     * @return
+     */
+    @Deprecated
+    public static String[] toTwo(String[] arr) {
+        if (StrUtils.isEmpty(arr)) {
+            return new String[]{"", ""};
+        }
+        if (arr.length < 2) {
+            return new String[]{arr[0], ""};
+        }
+        return arr;
+    }
+
+    /**
+     * 日期初始化处理: arr是否小于两个长度，否则默认补充为2
+     * @param arr
+     * @return
+     */
+    @Deprecated
+    public static LocalDate[] toTwo(LocalDate[] arr) {
+        if (StrUtils.isEmpty(arr)) {
+            return new LocalDate[]{null, null};
+        }
+        if (arr.length < 2) {
+            return new LocalDate[]{arr[0], null};
+        }
+        return arr;
+    }
+
+    /**
+     * 时间初始化处理: arr是否小于两个长度，否则默认补充为2
+     * @param arr
+     * @return
+     */
+    @Deprecated
+    public static LocalDateTime[] toTwo(LocalDateTime[] arr) {
+        if (StrUtils.isEmpty(arr)) {
+            return new LocalDateTime[]{null, null};
+        }
+        if (arr.length < 2) {
+            return new LocalDateTime[]{arr[0], null};
+        }
+        return arr;
+    }
+
+    /*
+     * 生成[min, max]之间的随机整数
+     * @param min 最小整数
+     * @param max 最大整数
+     */
+    public static int randomInt(int min, int max){
+        return new Random().nextInt(max - min + 1) + min;
+    }
+
+    /*
+     * 生成[0, max]之间的随机整数
+     * @param max 最大整数
+     */
+    public static int randomInt(int max){
+        return randomInt(0, max);
+    }
+
 }
 

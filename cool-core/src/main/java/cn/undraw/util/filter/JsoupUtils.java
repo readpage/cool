@@ -20,10 +20,10 @@ public class JsoupUtils {
      */
     static Document.OutputSettings OUTPUT_SETTINGS = new Document.OutputSettings().prettyPrint(false);
 
-    @Value("${cool-core.filter.sensitive:true}")
-    private static boolean sensitive = true;
+    @Value("${cool-core.filter.sensitive}")
+    private static boolean sensitive = false;
 
-    @Value("${cool-core.filter.xss:true}")
+    @Value("${cool-core.filter.xss}")
     private static boolean xss = true;
 
     private static Whitelist whitelist = Whitelist.basicWithImages();

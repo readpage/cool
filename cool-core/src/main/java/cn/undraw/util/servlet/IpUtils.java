@@ -199,6 +199,23 @@ public class IpUtils {
     }
 
     /**
+     * ip地址模糊匹配
+     * @param ip
+     * @param partialIP
+     * @return
+     */
+    public static boolean isIPInRange(String ip, String partialIP) {
+        String[] ipParts = ip.split("\\.");
+        String[] partialIPParts = partialIP.split("\\.");
+        for (int i = 0; i < partialIPParts.length; i++) {
+            if (!(partialIPParts[i].equals("*") || partialIPParts[i].equals(ipParts[i]))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * 判断IP是否内网IP
      * @Title: ipIsInner
      * @param ip

@@ -33,7 +33,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
      *
      * @param fileDir
      * @param file
-     * @param prefix 自定义前缀 -> 文件上传返回值相对路径 前缀 +文件名 如 /upload/2023/10/24/filename
+     * @param prefix 自定义前缀 -> 文件上传返回值相对路径 前缀 +文件名 如 /2023/10/24/filename
      * @return java.lang.String
      */
     public static String upload(String fileDir, MultipartFile file, String prefix) {
@@ -41,20 +41,21 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         return upload(fileDir, files, prefix);
     }
 
+    public static String getDatePrefix() {
+        LocalDate now = LocalDate.now();
+        return "/" + now.getYear() + "/" + now.getMonthValue() + "/" + now.getDayOfMonth();
+    }
+
     /**
      *
      * @param fileDir
      * @param files
      * @param
-     * @return java.lang.String 文件上传返回值相对路径 前缀 +文件名 如 /upload/2023/10/24/filename||/upload/2023/10/24/filename1
+     * @return java.lang.String 文件上传返回值相对路径 前缀 +文件名 如 /2023/10/24/filename,/2023/10/24/filename1
      */
     public static String upload(String fileDir, MultipartFile[] files) {
-        LocalDate now = LocalDate.now();
-        String prefix = "/upload/" + now.getYear() + "/" + now.getMonthValue() + "/" + now.getDayOfMonth();
-        return upload(fileDir, files, prefix);
+        return upload(fileDir, files, getDatePrefix());
     }
-
-
 
     public static String upload(String fileDir, MultipartFile[] files, String prefix) {
         if (StrUtils.isEmpty(files)) {

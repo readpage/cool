@@ -12,17 +12,17 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.CellRangeAddress;
 
 import java.util.List;
- 
+
 /**
  * @Author: lxy
  * @CreateTime: 2024-06-12
  * @Description: EasyExcel单元格合并处理器
  */
 public class MergeHandler implements CellWriteHandler {
- 
+
     private int[] mergeColumnIndex;
     private int mergeRowIndex;
- 
+
     public MergeHandler() {
     }
 
@@ -36,7 +36,7 @@ public class MergeHandler implements CellWriteHandler {
         this.mergeRowIndex = mergeRowIndex;
         this.mergeColumnIndex = new int[]{mergeColumnIndex};
     }
- 
+
     /**
      * 构造函数
      *
@@ -49,7 +49,7 @@ public class MergeHandler implements CellWriteHandler {
     }
 
     private Row varRow;
- 
+
     @Override
     public void afterCellDispose(WriteSheetHolder writeSheetHolder, WriteTableHolder writeTableHolder, List<WriteCellData<?>> cellDataList, Cell cell, Head head, Integer relativeRowIndex, Boolean isHead) {
         // 当前行索引
@@ -75,8 +75,8 @@ public class MergeHandler implements CellWriteHandler {
             }
         }
     }
- 
- 
+
+
     /**
      * 当前单元格向上合并
      *
@@ -99,7 +99,7 @@ public class MergeHandler implements CellWriteHandler {
 
         Cell preCell = row.getCell(curColIndex);
         Object preData = preCell.getCellType() == CellType.STRING ? preCell.getStringCellValue() : preCell.getNumericCellValue();
- 
+
         // 判断当前单元格和前一个单元格的数据以及主键是否相同
         if (curData.equals(preData)) {
             // 获取工作表
@@ -125,8 +125,8 @@ public class MergeHandler implements CellWriteHandler {
             }
         }
     }
- 
- 
+
+
     @Override
     public void beforeCellCreate(WriteSheetHolder writeSheetHolder, WriteTableHolder writeTableHolder, Row row, Head head, Integer integer, Integer integer1, Boolean aBoolean) {
 

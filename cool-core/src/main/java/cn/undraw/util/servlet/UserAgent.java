@@ -40,10 +40,12 @@ public class UserAgent {
             return "Unknown";
         }
         Map<String, String> map = new HashMap<>();
-        Matcher matcher = StrUtils.matcher("(?i)(edg|firefox|QQBrowser|MiuiBrowser|MQQBrowser|MicroMessenger|Quark)/(\\d+.\\d+)", userAgent);
+        // (?i) 不区分大小写
+        Matcher matcher = StrUtils.matcher("(?i)(edg|firefox|QQBrowser|MiuiBrowser|MQQBrowser|MicroMessenger|" +
+                "Quark|DingTalk)/(\\d+.\\d+)", userAgent);
         if (matcher.find()) {
             if (userAgent.contains("Edg")) {
-                return "Microsoft Edge " + matcher.group(2);
+                return "Edge " + matcher.group(2);
             }
             return matcher.group(1) + " "  + matcher.group(2);
         }
@@ -53,7 +55,7 @@ public class UserAgent {
             String[] s = userAgent.split(" ");
             if (s != null && s.length > 2) {
                 if (s[s.length-2].contains("Chrome") && s[s.length-1].contains("Safari")) {
-                    return "Google chrome" + " " + matcher.group(2);
+                    return "Google Chrome" + " " + matcher.group(2);
                 }
             }
             return matcher.group(1) + " " + matcher.group(2);

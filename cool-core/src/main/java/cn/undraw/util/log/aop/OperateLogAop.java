@@ -264,9 +264,9 @@ public class OperateLogAop {
             str += "\n";
         }
 
-        if (R.ok().getCode() == operationLog.getResultCode()) {
+        if (R.ok().getCode().equals(operationLog.getResultCode())) {
             log.info(str);
-        } else if (R.error().getCode() == operationLog.getResultCode()) {
+        } else if (R.error().getCode().equals(operationLog.getResultCode())) {
             log.error(str);
         } else {
             log.warn(str);

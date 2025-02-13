@@ -73,7 +73,7 @@ public class AnnoUtils {
 
 
     /**
-     * 获取注解的值
+     * 获取类注解的值
      *
      * @param objClass  类class
      * @param annoClass 注解class

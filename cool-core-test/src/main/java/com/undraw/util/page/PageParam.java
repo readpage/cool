@@ -15,4 +15,7 @@ public class PageParam {
     @Schema(title = "页大小")
     private Integer size;
 
+    @Schema(title = "排序参数")
+    private String sort;
+
 }

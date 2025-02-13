@@ -30,6 +30,8 @@ public @interface Phone {
 
     Class<? extends Payload>[] payload() default { };
 
+    boolean required() default true;
+
     // 默认分组
     interface Default{
 

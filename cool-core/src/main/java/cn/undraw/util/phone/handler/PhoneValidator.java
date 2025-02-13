@@ -23,9 +23,10 @@ public class PhoneValidator implements ConstraintValidator<Phone, String> {
 
     @Override
     public boolean isValid(String s, ConstraintValidatorContext constraintValidatorContext) {
-        if (StrUtils.isEmpty(s)) {
-            return false;
+        if (!phone.required() && StrUtils.isEmpty(s)) {
+            return true;
         }
+
         // 获取【Phone】对象的手机格式验证表达式
         String pattern = phone.pattern();
         Pattern compile = Pattern.compile(pattern);

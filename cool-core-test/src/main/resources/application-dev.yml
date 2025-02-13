@@ -1,6 +1,7 @@
 server:
   file:
-    upload: D:\Code\Java\cool\cool-core-test
+    upload: D:\Code\Java\cool\cool-core-test\upload
+    visit: http://192.168.1.165:7032/static
 
 springdoc:
   swagger-ui:
@@ -12,7 +13,7 @@ springdoc:
 spring:
   # 设置静态资源的存放路径
   resources:
-    static-locations: file:D:\code\Java\cool\cool-core-test\upload
+    static-locations: file:${server.file.upload}
   mvc:
     # 静态资源的访问路径，默认 /
     static-path-pattern: /static/**

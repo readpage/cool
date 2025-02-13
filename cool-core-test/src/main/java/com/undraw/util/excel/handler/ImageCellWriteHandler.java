@@ -50,7 +50,7 @@ public class ImageCellWriteHandler implements CellWriteHandler {
         sheet.getRow(cell.getRowIndex())
                 .setHeight((short) 900);
         // 宽 248 * 8 = 1984 ≈ 60px
-        sheet.setColumnWidth(cell.getColumnIndex(), 1984 * 5);
+        sheet.setColumnWidth(cell.getColumnIndex(), 1984 * 9);
 		// 插入图片
         for (int i = 0; i < imageDataList.size(); i++) {
             ImageData imageData = imageDataList.get(i);

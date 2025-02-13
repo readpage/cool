@@ -28,7 +28,7 @@
       "name": "cool-core.filter.request-param",
       "type": "java.lang.String",
       "defaultValue": "",
-      "description": "请求参数属性过滤白名单入:password, oldPwd, newPwd."
+      "description": "请求参数属性过滤白名单:password, oldPwd, newPwd."
     },
     {
       "name": "cool-core.snowflake.workerId",

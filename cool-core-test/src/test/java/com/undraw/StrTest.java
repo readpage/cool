@@ -114,7 +114,9 @@ public class StrTest {
 
     @Test
     public void test6() {
-        System.out.println("CCN013".replaceAll("\\d+", ""));
+        String str = null;
+//        System.out.println(str.equals(null));
+        System.out.println(Objects.equals(str, null));
     }
 
     @Test
@@ -127,4 +129,63 @@ public class StrTest {
         System.out.println(uuid.substring(uuid.length() - 8));
         System.out.println(SnowflakeUtils.nextId());
     }
+
+    @Test
+    public void test8() {
+        String v = "s0084";
+        String str = "{\n" +
+                "  \"corpAccessToken\": \"53D3623AB81A17271413EBB54CC344EF\",\n" +
+                "  \"corpId\": \"FSCID_245BECA0559FADFA95330EBAF6C802E0\",\n" +
+                "  \"currentOpenUserId\": \"FSUID_217199FEE84B0E5D719D6521B7B22BB1\",\n" +
+                "  \"data\": {\n" +
+                "    \"search_query_info\": {\n" +
+                "      \"offset\": 0,\n" +
+                "      \"limit\": 10,\n" +
+                "      \"filters\": [\n" +
+                "        {\n" +
+                "          \"field_name\": \"employee_number\",\n" +
+                "          \"field_values\": [\n" +
+                "            \"%s\"\n" +
+                "          ],\n" +
+                "          \"operator\": \"EQ\"\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    },\n" +
+                "    \"dataObjectApiName\": \"PersonnelObj\"\n" +
+                "  }\n" +
+                "}";
+        str = String.format(str, "s0084");
+        Map s = ConvertUtils.toMap(str);
+        System.out.println(s);
+    }
+
+    @Test
+    public void test9() {
+        String category = "COSUS0000009";
+        List<Long> numbers = StrUtils.findNumbers(category);
+        String format = String.format("%s%06d", category.replaceAll("\\d+", ""), numbers.get(0) + 1L);
+        System.out.println(format);
+
+        Integer a = new Integer(1);
+        Integer b = new Integer(1);
+
+        System.out.println( a == b);
+        System.out.println(Objects.equals(a, b));
+    }
+
+    @Test
+    public void test10() {
+        String test = getSort("test");
+        System.out.println(test);
+    }
+
+    public String getSort(String sort) {
+        try {
+            ConvertUtils.cloneDeep(sort, Map.class);
+            return sort;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
 }

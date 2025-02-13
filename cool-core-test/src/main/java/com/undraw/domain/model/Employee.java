@@ -1,7 +1,6 @@
 package com.undraw.domain.model;
 
 import com.alibaba.excel.annotation.ExcelProperty;
-import com.alibaba.excel.annotation.write.style.ColumnWidth;
 import com.alibaba.excel.annotation.write.style.ContentStyle;
 import com.alibaba.excel.enums.poi.HorizontalAlignmentEnum;
 import com.alibaba.excel.enums.poi.VerticalAlignmentEnum;
@@ -57,12 +56,11 @@ public class Employee implements Serializable {
 
     @Schema(title = "创建日期")
     @ExcelProperty(value = "创建日期")
-    @ColumnWidth(16)
     private LocalDate crateDate = LocalDate.now();
 
     @Schema(title = "创建时间")
     @ExcelProperty("创建时间")
-    @ColumnWidth(16)
+//    @ColumnWidth(16)
     private LocalDateTime createTime = LocalDateTime.now();
 
     public Employee(Long id, String name, String sex, int age, double salary) {

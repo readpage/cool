@@ -66,6 +66,9 @@ public class ErrorLogAop {
             OperationLog operateLog = (OperationLog) obj;
             operationLog.setModule(operateLog.getModule());
             operationLog.setName(operateLog.getName());
+        } else if ("argumentValidationException".equals(pjp.getSignature().getName())) {
+            operationLog.setModule("参数效验");
+            operationLog.setName("参数校验");
         }
 
         operationLog.setType(errorLog.type().getType());
@@ -180,7 +183,7 @@ public class ErrorLogAop {
             str += "\n";
         }
 
-        if (R.error().getCode() == operationLog.getResultCode()) {
+        if (R.error().getCode().equals(operationLog.getResultCode())) {
             log.error(str);
         } else {
             log.warn(str);

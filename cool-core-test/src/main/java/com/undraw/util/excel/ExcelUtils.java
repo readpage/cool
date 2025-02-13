@@ -5,6 +5,7 @@ import cn.undraw.util.ConvertUtils;
 import cn.undraw.util.StrUtils;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.ExcelWriter;
+import com.alibaba.excel.converters.localdatetime.LocalDateTimeDateConverter;
 import com.alibaba.excel.read.listener.PageReadListener;
 import com.alibaba.excel.write.builder.ExcelWriterBuilder;
 import com.alibaba.excel.write.builder.ExcelWriterSheetBuilder;
@@ -30,7 +31,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
- * @author readpage
+ *
  * @date 2023-02-07 13:35
  */
 public class ExcelUtils {
@@ -44,7 +45,6 @@ public class ExcelUtils {
                 .sheet()
                 .registerReadListener(new PageReadListener<T>(dataList -> {
                     list.addAll(dataList);
-                    System.out.println(dataList);
                 }))
                 .headRowNumber(headRowIndex).doRead();
 
@@ -117,7 +117,7 @@ public class ExcelUtils {
                     writerSheetBuilder.head(excelModel.getClazz());
                 }
                 writerSheetBuilder.registerConverter(new LocalDateConverter());
-                writerSheetBuilder.registerConverter(new LocalDateTimeConverter());
+                writerSheetBuilder.registerConverter(new LocalDateTimeDateConverter());
                 writerSheetBuilder.registerWriteHandler(new AutoHeadColumnWidthStyleStrategy());
                 writerSheetBuilder.registerWriteHandler(new ImageCellWriteHandler());
                 Consumer<ExcelWriterSheetBuilder> c = excelModel.getC();

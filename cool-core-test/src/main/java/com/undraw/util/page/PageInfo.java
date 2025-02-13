@@ -1,7 +1,6 @@
 package com.undraw.util.page;
 
 
-import cn.undraw.util.ConvertUtils;
 import com.github.pagehelper.Page;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,7 +16,7 @@ public class PageInfo<T> implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private Long total;
-    private List<T> list;
+    private List<T> records;
 
     public PageInfo() {
         super();
@@ -27,14 +26,8 @@ public class PageInfo<T> implements Serializable {
         if (list instanceof Page) {
             Page page = (Page) list;
             this.total = page.getTotal();
-            this.list = page;
+            this.records = page;
         }
-    }
-
-    public PageInfo(List list, Class<T> clazz) {
-        this.list = ConvertUtils.cloneDeep(list, clazz);
-        Page page = (Page) list;
-        this.total = page.getTotal();
     }
 
 }

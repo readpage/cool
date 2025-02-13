@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author readpage
+ * 
  * @date 2023-02-07 11:50
  */
 // 自定义合并策略 该类继承了AbstractMergeStrategy抽象合并策略，需要重写merge()方法
@@ -73,6 +73,9 @@ public class CustomMergeStrategy extends AbstractMergeStrategy {
         int count = 1;
 
         for (int i = 1; i < exportDataList.size(); i++) {
+            if (exportDataList.get(i) == null) {
+                exportDataList.set(i, "");
+            }
             if (exportDataList.get(i).equals(exportDataList.get(i - 1))) {
                 count++;
             } else {

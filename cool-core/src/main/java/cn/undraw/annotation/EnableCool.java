@@ -14,7 +14,7 @@ import static java.lang.annotation.ElementType.TYPE;
  * @date 2022-12-08 9:01
  */
 @Target(TYPE)
-@Retention(RetentionPolicy.RUNTIME)
+@Retention(value = RetentionPolicy.RUNTIME)
 @Import({ComponentScanModule.class})
 public @interface EnableCool {
     String type() default "";

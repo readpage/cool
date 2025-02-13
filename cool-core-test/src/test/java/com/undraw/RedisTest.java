@@ -42,6 +42,7 @@ public class RedisTest {
 
     @Test
     public void test2() {
+        redisUtil.set("test", "test");
         boolean b = redisUtil.sHasKey("set", 4);
         System.out.println(b);
     }

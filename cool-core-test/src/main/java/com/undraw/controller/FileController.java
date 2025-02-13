@@ -33,13 +33,15 @@ public class FileController {
     @Value("${server.file.upload}")
     private String fileDir;
 
+    @Value("${server.file.visit}")
+    private String visit;
     @Operation(summary = "上传文件")
     @OperateLog(type = UPLOAD)
     @PostMapping("/upload")
     public R<?> upload(MultipartFile[] file) {
         LocalDate now = LocalDate.now();
-        String prefix = "/upload/" + now.getYear() + "/" + now.getMonthValue() + "/" + now.getDayOfMonth();
-        String upload = FileUtils.upload(fileDir, file, prefix);
+        String prefix = "/basic/" + now.getYear() + "/" + now.getMonthValue() + "/" + now.getDayOfMonth();
+        String upload = visit + FileUtils.upload(fileDir, file, prefix);
         return R.ok((Object) upload);
     }
 
