@@ -1,7 +1,7 @@
 package com.undraw.mapper;
 
 import com.undraw.domain.entity.Role;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.undraw.handler.RootMapper;
 
 /**
  * <p>
@@ -11,6 +11,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @author readpage
  * @since 2025-02-13 21:15
  */
-public interface RoleMapper extends BaseMapper<Role> {
+public interface RoleMapper extends RootMapper<Role> {
 
 }

@@ -15,5 +15,8 @@ import java.util.List;
  */
 public interface RoleService extends IService<Role> {
 
-    boolean save(List<Role> list);
+    boolean save(Role role);
+
+    boolean saveBatch(List<Role> list);
+
 }

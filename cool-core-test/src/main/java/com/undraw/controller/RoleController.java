@@ -6,6 +6,7 @@ import cn.undraw.util.result.R;
 import com.undraw.domain.entity.Role;
 import com.undraw.service.RoleService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,6 +28,7 @@ import static cn.undraw.util.log.enums.OperateTypeEnum.CREATE;
  * @since 2025-02-13 21:15
  */
 @RestController
+@Tag(name = "角色管理")
 @RequestMapping("/role")
 public class RoleController {
 
@@ -36,8 +38,15 @@ public class RoleController {
     @Operation(summary = "添加角色")
     @OperateLog(type = CREATE)
     @PostMapping("/save")
-    public R save(@Valid @RequestBody List<Role> list) {
-        return R.ok(roleService.save(list));
+    public R save(@Valid @RequestBody Role role) {
+        return R.ok(roleService.save(role));
+    }
+
+    @Operation(summary = "批量添加角色")
+    @OperateLog(type = CREATE)
+    @PostMapping("/saveBatch")
+    public R saveBatch(@Valid @RequestBody List<Role> list) {
+        return R.ok(roleService.saveBatch(list));
     }
 }
 

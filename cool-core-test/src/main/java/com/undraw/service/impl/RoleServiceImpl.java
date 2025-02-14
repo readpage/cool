@@ -1,11 +1,12 @@
 package com.undraw.service.impl;
 
 import com.undraw.domain.entity.Role;
+import com.undraw.handler.EnhancedServiceImpl;
 import com.undraw.mapper.RoleMapper;
 import com.undraw.service.RoleService;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.List;
 
 /**
@@ -17,10 +18,19 @@ import java.util.List;
  * @since 2025-02-13 21:15
  */
 @Service
-public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements RoleService {
+public class RoleServiceImpl extends EnhancedServiceImpl<RoleMapper, Role> implements RoleService {
+
+    @Resource
+    private RoleMapper roleMapper;
 
     @Override
-    public boolean save(List<Role> list) {
-        return false;
+    public boolean save(Role role) {
+        return roleMapper.insert(role) > 0;
+    }
+
+    @Override
+    public boolean saveBatch(List<Role> list) {
+        boolean b = this.saveBatch1(list);
+        return b;
     }
 }

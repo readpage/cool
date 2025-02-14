@@ -39,7 +39,7 @@ public class InsertBatchMethod extends AbstractMethod {
         final String fieldSql = prepareFieldSql(tableInfo);
         final String valueSql = prepareValuesSql(tableInfo);
         final String sqlResult = String.format(sql, tableInfo.getTableName(), fieldSql, valueSql);
-        log.debug("sqlResult----->{}", sqlResult);
+//        log.debug("sqlResult----->{}", sqlResult);
         SqlSource sqlSource = languageDriver.createSqlSource(configuration, sqlResult, modelClass);
 
         // 主键处理 -->
@@ -68,6 +68,15 @@ public class InsertBatchMethod extends AbstractMethod {
         return this.addInsertMappedStatement(mapperClass, modelClass, "insertBatch", sqlSource, keyGenerator, keyProperty, keyColumn);
     }
 
+    public String getSql(Class entityClass) {
+        TableInfo tableInfo = TableInfoHelper.getTableInfo(entityClass);
+        final String sql = "<script>insert into %s %s values %s</script>";
+        final String fieldSql = prepareFieldSql(tableInfo);
+        final String valueSql = prepareValuesSql(tableInfo);
+        final String sqlResult = String.format(sql, tableInfo.getTableName(), fieldSql, valueSql);
+        return sqlResult;
+    }
+
     private String prepareFieldSql(TableInfo tableInfo) {
         StringBuffer fieldSql = new StringBuffer();
         fieldSql.append("(");
@@ -75,7 +84,7 @@ public class InsertBatchMethod extends AbstractMethod {
         tableInfo.getFieldList().forEach(x -> fieldSql.append(x.getColumn()).append(","));
         fieldSql.delete(fieldSql.length()-1, fieldSql.length());
         fieldSql.append(")");
-        return fieldSql .toString();
+        return fieldSql.toString();
     }
 
     private String prepareValuesSql(TableInfo tableInfo) {

@@ -377,12 +377,13 @@ public class ConvertUtils {
     /**
      * 将一个大列表分割成指定大小的多个小列表。
      *
-     * @param list        要分割的列表
+     * @param collection        要分割的列表
      * @param batchSize   每个批次的大小
      * @param <T>         列表元素的类型
      * @return            包含所有批次的列表
      */
-    public static <T> List<List<T>> batchList(List<T> list, int batchSize) {
+    public static <T> List<List<T>> batchList(Collection<T> collection, int batchSize) {
+        List list = new ArrayList(collection);
         if (list == null || batchSize <= 0) {
             throw new IllegalArgumentException("List或batchSize必须有效。");
         }
@@ -395,7 +396,7 @@ public class ConvertUtils {
         return batches;
     }
 
-    public static <T> List<List<T>> batchList(List<T> list) {
+    public static <T> List<List<T>> batchList(Collection<T> list) {
         return batchList(list, 1000);
     }
 
