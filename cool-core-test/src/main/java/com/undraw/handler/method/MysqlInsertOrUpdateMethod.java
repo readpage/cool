@@ -32,12 +32,12 @@ public class MysqlInsertOrUpdateMethod extends InsertOrUpdateBathMethod {
         final StringBuffer duplicateKeySql = new StringBuffer();
         duplicateKeySql.append("<trim prefix=\"\" suffixOverrides=\",\"><foreach collection=\"list\" item=\"item\" index=\"index\">");
         if(StrUtils.isNotEmpty(tableInfo.getKeyColumn())) {
-            String id = String.format("<if test=\"item.%s!=null\">%s=values(%s),</if>", tableInfo.getKeyProperty(), tableInfo.getKeyColumn(), tableInfo.getKeyColumn());
-            duplicateKeySql.append(id);
+            String key = String.format("%s=%s,", tableInfo.getKeyColumn(), tableInfo.getKeyColumn());
+            duplicateKeySql.append(key);
         }
 
         tableInfo.getFieldList().forEach(x -> {
-            String format = String.format("<if test=\"item.%s!=null\">%s=values(%s),</if>", x.getProperty(), x.getColumn(), x.getColumn());
+            String format = String.format("%s=IFNULL(values(%s),%s),", x.getColumn(), x.getColumn(), x.getColumn());
             duplicateKeySql.append(format);
         });
         duplicateKeySql.append("</foreach></trim>");
