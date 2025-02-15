@@ -1,5 +1,6 @@
 package cn.undraw.util;
 
+import cn.undraw.util.bean.BeanUtils;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.util.CollectionUtils;
 
@@ -321,6 +322,18 @@ public class StrUtils {
         return str == null ? null : str.trim();
     }
 
+    /**
+     * 首字母转小写
+     * @param s
+     * @return
+     */
+    public static String toLowerCaseFirstOne(String s) {
+        if (Character.isLowerCase(s.charAt(0))) {
+            return s;
+        }
+        return Character.toLowerCase(s.charAt(0)) + s.substring(1);
+    }
+
 
     /**
      * 将驼峰式命名转换为下划线格式
@@ -380,7 +393,7 @@ public class StrUtils {
             return "";
         }
 
-        List<Field> fields = ReflectUtils.getFields(clazz);
+        List<Field> fields = BeanUtils.getFields(clazz);
         for (Map.Entry<String, String> entry : map.entrySet()) {
             for (Field field : fields) {
                 if (Objects.equals(entry.getKey(), field.getName())) {

@@ -46,7 +46,7 @@ public class RoleController {
     @OperateLog(type = CREATE)
     @PostMapping("/saveBatch")
     public R saveBatch(@Valid @RequestBody List<Role> list) {
-        return R.ok(roleService.saveBatch(list));
+        return R.ok(roleService.saveBatch1(list));
     }
 }
 

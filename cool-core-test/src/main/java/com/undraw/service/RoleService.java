@@ -17,6 +17,6 @@ public interface RoleService extends IService<Role> {
 
     boolean save(Role role);
 
-    boolean saveBatch(List<Role> list);
+    boolean saveBatch1(List<Role> list);
 
 }

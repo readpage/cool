@@ -15,7 +15,6 @@ public abstract class InsertOrUpdateBathMethod extends AbstractMethod {
         final SqlSource sqlSource = prepareSqlSource(tableInfo, modelClass);
         // 第三个参数必须和RootMapper的自定义方法名一致
         return this.addInsertMappedStatement(mapperClass, modelClass, prepareInsertOrUpdateBathName(), sqlSource, new NoKeyGenerator(), null, null);
- 
     }
  
     protected abstract SqlSource prepareSqlSource(TableInfo tableInfo, Class<?> modelClass);

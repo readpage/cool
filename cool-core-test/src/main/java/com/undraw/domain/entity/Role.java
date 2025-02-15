@@ -34,6 +34,10 @@ public class Role implements Serializable {
 	@ExcelProperty(value = "角色昵称")
 	private String nickname;
 
+	@Schema(title = "test")
+	@ExcelProperty(value = "test")
+	private String test;
+
 	@Schema(title = "创建时间")
 	@ExcelIgnore
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)

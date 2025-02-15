@@ -9,10 +9,7 @@ import com.baomidou.mybatisplus.core.toolkit.Constants;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 public class EnhancedServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, T> {
@@ -45,8 +42,16 @@ public class EnhancedServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl
      * @return 操作结果
      */
     public boolean saveOrUpdateBatchByColumn(Collection<T> entityList, Function<T, Wrapper<T>> function) {
-        String sqlStatement = this.getSqlStatement(SqlMethod.INSERT_ONE);
-        String sqlStatement2 = this.getSqlStatement(SqlMethod.UPDATE);
+        List<List<T>> lists = ConvertUtils.batchList(entityList, 2);
+        return executeBatch(lists, (sqlSession, list) -> {
+            Map<String, Object> param = new HashMap<>();
+            param.put(Constants.LIST, list);
+            String sqlStatement = this.mapperClass.getName() + "." + "insertOrUpdateBath";
+            sqlSession.insert(sqlStatement, param);
+        });
+    }
+
+    public boolean saveOrUpdateBatchByColumn2(Collection<T> entityList, Function<T, Wrapper<T>> function) {
         return SqlHelper.saveOrUpdateBatch(this.entityClass, this.mapperClass, this.log, entityList, DEFAULT_BATCH_SIZE, (sqlSession, entity) -> {
             Map<String, Object> param = new HashMap<>();
             param.put(Constants.ENTITY, entity);
@@ -60,20 +65,21 @@ public class EnhancedServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl
         });
     }
 
-    public boolean saveBatch1(Collection<T> entityList) {
-//        InsertBatchMethod insertBatchMethod = new InsertBatchMethod();
-//        String sql = insertBatchMethod.getSql(this.entityClass);
-//        System.out.println(sql);
+    private final int PARAM_SIZE = 50;
+
+    public boolean saveOrUpdateBatchByColumn(Collection<T> entityList, int paramSize) {
         List<List<T>> lists = ConvertUtils.batchList(entityList, 2);
-        executeBatch(lists, (sqlSession, list) -> {
+        return executeBatch(lists, (sqlSession, list) -> {
             Map<String, Object> param = new HashMap<>();
             param.put(Constants.LIST, list);
-            sqlSession.insert("com.undraw.mapper.RoleMapper.insertBatch", param);
+            String sqlStatement = this.mapperClass.getName() + "." + "insertOrUpdateBath";
+            sqlSession.insert(sqlStatement, param);
         });
 
+    }
 
-
-        return true;
+    public boolean saveOrUpdateBatchByColumn(Collection<T> entityList) {
+        return this.saveOrUpdateBatchByColumn(entityList, PARAM_SIZE);
     }
 
 }

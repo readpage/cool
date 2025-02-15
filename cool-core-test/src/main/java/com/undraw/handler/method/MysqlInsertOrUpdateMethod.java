@@ -14,8 +14,7 @@ public class MysqlInsertOrUpdateMethod extends InsertOrUpdateBathMethod {
         final String filedSql = prepareFieldSql(tableInfo);
         final String modelValuesSql = prepareModelValuesSql(tableInfo);
         final String duplicateKeySql = prepareDuplicateKeySql(tableInfo);
-        final String sqlResult = String.format(sql, tableName, filedSql, modelValuesSql,duplicateKeySql);
-        log.debug("sqlResult----->{}", sqlResult);
+        final String sqlResult = String.format(sql, tableName, filedSql, modelValuesSql, duplicateKeySql);
         return languageDriver.createSqlSource(configuration, sqlResult, modelClass);
     }
 
@@ -31,17 +30,17 @@ public class MysqlInsertOrUpdateMethod extends InsertOrUpdateBathMethod {
      */
     private String prepareDuplicateKeySql(TableInfo tableInfo) {
         final StringBuffer duplicateKeySql = new StringBuffer();
+        duplicateKeySql.append("<trim prefix=\"\" suffixOverrides=\",\"><foreach collection=\"list\" item=\"item\" index=\"index\">");
         if(StrUtils.isNotEmpty(tableInfo.getKeyColumn())) {
-            duplicateKeySql.append(tableInfo.getKeyColumn()).append("=values(").append(tableInfo.getKeyColumn()).append("),");
+            String id = String.format("<if test=\"item.%s!=null\">%s=values(%s),</if>", tableInfo.getKeyProperty(), tableInfo.getKeyColumn(), tableInfo.getKeyColumn());
+            duplicateKeySql.append(id);
         }
 
         tableInfo.getFieldList().forEach(x -> {
-            duplicateKeySql.append(x.getColumn())
-                    .append("=values(")
-                    .append(x.getColumn())
-                    .append("),");
+            String format = String.format("<if test=\"item.%s!=null\">%s=values(%s),</if>", x.getProperty(), x.getColumn(), x.getColumn());
+            duplicateKeySql.append(format);
         });
-        duplicateKeySql.delete(duplicateKeySql.length() - 1, duplicateKeySql.length());
+        duplicateKeySql.append("</foreach></trim>");
         return duplicateKeySql.toString();
     }
 

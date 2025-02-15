@@ -29,8 +29,9 @@ public class RoleServiceImpl extends EnhancedServiceImpl<RoleMapper, Role> imple
     }
 
     @Override
-    public boolean saveBatch(List<Role> list) {
-        boolean b = this.saveBatch1(list);
+    public boolean saveBatch1(List<Role> list) {
+        this.updateById(new Role());
+        boolean b = this.saveOrUpdateBatchByColumn(list);
         return b;
     }
 }

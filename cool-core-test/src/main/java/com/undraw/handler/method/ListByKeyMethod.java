@@ -18,21 +18,27 @@ import org.apache.ibatis.mapping.SqlSource;
  * @date 2025-02-13 22:00
  */
 @Slf4j
-public class InsertBatchMethod extends AbstractMethod {
+public class ListByKeyMethod extends AbstractMethod {
+
 
     /**
-     * insert into user(id, name, age) values (1, "a", 17), (2, "b", 18);
-     <script>
-     insert into user(id, name, age) values
-     <foreach collection="list" item="item" index="index" open="(" separator="),(" close=")">
-     #{item.id}, #{item.name}, #{item.age}
-     </foreach>
-     </script>
+     * SELECT * FROM table WHERE (col1, col12) IN (('value1', 'value2'), ('value3', 'value4'))
+     * <script>
+     *   SELECT * FROM table WHERE (col1, col12) IN (
+     *     <foreach collection="list" item="item" index="index" open="(" separator="),(" close=")">
+     *       #{item.col1}, #{item.col2}
+     *     </foreach>
+     * 	 )
+     * </script>
+     * @param mapperClass
+     * @param modelClass
+     * @param tableInfo
+     * @return
      */
     @Override
     public MappedStatement injectMappedStatement(Class<?> mapperClass, Class<?> modelClass, TableInfo tableInfo) {
 
-        final String sql = "<script>insert into %s %s values %s</script>";
+        final String sql = "<script>SELECT * FROM table WHERE (%s) IN (%s)</script>";
         final String fieldSql = prepareFieldSql(tableInfo);
         final String valueSql = prepareValuesSql(tableInfo);
         final String sqlResult = String.format(sql, tableInfo.getTableName(), fieldSql, valueSql);

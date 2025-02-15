@@ -25,6 +25,7 @@ public class SystemLogServiceImpl extends ServiceImpl<SystemLogMapper, SystemLog
     @Async("async")
     public void _save(SystemLog systemLog) {
         this.saveBatch(new ArrayList<>());
+        this.saveOrUpdateBatch(new ArrayList<>());
         systemLog.setResultMsg(StrUtils.substringByChar(systemLog.getResultMsg(), 65535));
         systemLog.setResultData(StrUtils.substringByChar(systemLog.getResultData(), 65535));
         this.save(systemLog);
