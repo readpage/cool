@@ -3,6 +3,7 @@ package cn.undraw.handler.exception;
 import cn.undraw.util.log.annotation.ErrorLog;
 import cn.undraw.util.result.R;
 import cn.undraw.util.result.ResultEnum;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.annotation.Order;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
@@ -10,7 +11,6 @@ import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import javax.servlet.http.HttpServletRequest;
 import java.net.ConnectException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -62,7 +62,7 @@ public class GlobalErrorExceptionHandler {
      */
     @ExceptionHandler(DataIntegrityViolationException.class)
     public R<?> dataIntegrityViolationException(HttpServletRequest req, DataIntegrityViolationException e) {
-        return R.error("添加数据缺失或重复", e);
+        return R.error("数据完整性违规异常", e);
     }
 
     /**

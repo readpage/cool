@@ -1,8 +1,8 @@
 package cn.undraw.util.servlet;
 
 import cn.undraw.util.StrUtils;
+import jakarta.servlet.http.HttpServletRequest;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;

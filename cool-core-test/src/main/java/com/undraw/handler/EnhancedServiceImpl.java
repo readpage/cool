@@ -28,16 +28,17 @@ public class EnhancedServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl
         return true;
     }
 
-    public <T> boolean updateBatchByColumn(Collection<T> entityList, Function<T, Wrapper<T>> function) {
+    public <T, U>  boolean updateBatchByColumn(Collection<T> entityList, Function<T, Wrapper<U>> function) {
         String sqlStatement = getSqlStatement(SqlMethod.UPDATE);
         return executeBatch(entityList, (sqlSession, entity) -> {
             Map<String, Object> param = new HashMap<>();
             param.put(Constants.ENTITY, entity);
             param.put(Constants.WRAPPER, function.apply(entity));
+            sqlSession.update(sqlStatement, param);
         });
     }
 
-    public <T> boolean removeBatchByColumn(Collection<T> entityList, Function<T, Wrapper<T>> function) {
+    public <T, U> boolean removeBatchByColumn(Collection<T> entityList, Function<T, Wrapper<U>> function) {
         String sqlStatement = getSqlStatement(SqlMethod.DELETE);
         return executeBatch(entityList, (sqlSession, entity) -> {
             Map<String, Object> param = new HashMap<>();
@@ -47,25 +48,8 @@ public class EnhancedServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl
         });
     }
 
-    /**
-     * 可以根据其他字段批量更新或新增
-     *
-     * @param entityList 数据集合
-     * @param function   新增或者更新判断条件
-     * @return 操作结果
-     */
-    public boolean saveOrUpdateBatchByColumn(Collection<T> entityList, Function<T, Wrapper<T>> function) {
-        List<List<T>> lists = ConvertUtils.batchList(entityList, 2);
-        return executeBatch(lists, (sqlSession, list) -> {
-            Map<String, Object> param = new HashMap<>();
-            param.put(Constants.LIST, list);
-            String sqlStatement = this.mapperClass.getName() + "." + "insertOrUpdateBath";
-            sqlSession.insert(sqlStatement, param);
-        });
-    }
-
-    public boolean saveOrUpdateBatchByColumn2(Collection<T> entityList, Function<T, Wrapper<T>> function) {
-        return SqlHelper.saveOrUpdateBatch(this.entityClass, this.mapperClass, this.log, entityList, DEFAULT_BATCH_SIZE, (sqlSession, entity) -> {
+    public <T, U>  boolean saveOrUpdateBatchByColumn(Collection<T> entityList, Function<T, Wrapper<U>> function) {
+        return SqlHelper.saveOrUpdateBatch(this.getSqlSessionFactory(), this.getMapperClass(), this.log, entityList, DEFAULT_BATCH_SIZE, (sqlSession, entity) -> {
             Map<String, Object> param = new HashMap<>();
             param.put(Constants.ENTITY, entity);
             param.put(Constants.WRAPPER, function.apply(entity));
@@ -80,19 +64,19 @@ public class EnhancedServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl
 
     private final int PARAM_SIZE = 50;
 
-    public boolean saveOrUpdateBatchByColumn(Collection<T> entityList, int paramSize) {
-        List<List<T>> lists = ConvertUtils.batchList(entityList, 2);
+    public boolean saveOrUpdateBatch(Collection<T> entityList, int paramSize) {
+        List<List<T>> lists = ConvertUtils.batchList(entityList, paramSize);
         return executeBatch(lists, (sqlSession, list) -> {
             Map<String, Object> param = new HashMap<>();
             param.put(Constants.LIST, list);
-            String sqlStatement = this.mapperClass.getName() + "." + "insertOrUpdateBath";
+            String sqlStatement = this.baseMapper.getClass().getName() + "." + "insertOrUpdateBatch";
             sqlSession.insert(sqlStatement, param);
         });
 
     }
 
-    public boolean saveOrUpdateBatchByColumn(Collection<T> entityList) {
-        return this.saveOrUpdateBatchByColumn(entityList, PARAM_SIZE);
+    public boolean saveOrUpdateBatch(Collection<T> entityList) {
+        return this.saveOrUpdateBatch(entityList, PARAM_SIZE);
     }
 
 }

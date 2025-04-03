@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.generator.FastAutoGenerator;
 import com.baomidou.mybatisplus.generator.config.OutputFile;
 import com.baomidou.mybatisplus.generator.fill.Property;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.util.Arrays;
@@ -53,6 +53,9 @@ public class CodeGenerator {
                         .addTableFills(new Property("createTime", FieldFill.INSERT))
                         .addTableFills(new Property("updateTime", FieldFill.INSERT_UPDATE))
 
+                        .mapperBuilder()
+                        .enableBaseResultMap() // 启用 BaseResultMap 生成
+
                         .serviceBuilder()
                         .formatServiceFileName("%sService") //格式化 service 接口文件名称
                         .build()
@@ -66,7 +69,7 @@ public class CodeGenerator {
 
     @Test
     public void test2() {
-        ClassGenerator.create(URL, USERNAME, PASSWORD).parentPackage(ParentPackage).tables(Arrays.asList("customer_plan")).build();
+        ClassGenerator.create(URL, USERNAME, PASSWORD).parentPackage(ParentPackage).tables(Arrays.asList("role")).build();
     }
 
 

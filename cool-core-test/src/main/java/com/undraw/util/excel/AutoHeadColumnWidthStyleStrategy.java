@@ -10,9 +10,9 @@ import com.alibaba.excel.write.style.column.AbstractColumnWidthStyleStrategy;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Sheet;
 
-import java.util.*;
-
-import static com.alibaba.excel.enums.CellDataTypeEnum.DATE;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Description 自适应列宽
@@ -22,7 +22,7 @@ import static com.alibaba.excel.enums.CellDataTypeEnum.DATE;
  */
 public class AutoHeadColumnWidthStyleStrategy extends AbstractColumnWidthStyleStrategy  {
 
-    private static final int MAX_COLUMN_WIDTH = 255;
+    private static final int MAX_COLUMN_WIDTH = 100;
     // 保底宽度
     private static final int COLUMN_WIDTH = 20;
 
@@ -53,7 +53,6 @@ public class AutoHeadColumnWidthStyleStrategy extends AbstractColumnWidthStyleSt
             }
         }
     }
-
     /**
      * 计算长度
      * @param cellDataList
@@ -67,10 +66,7 @@ public class AutoHeadColumnWidthStyleStrategy extends AbstractColumnWidthStyleSt
         } else {
             CellData<?> cellData = cellDataList.get(0);
             CellDataTypeEnum type = cellData.getType();
-            if (type == DATE) {
-                return 14;
-            }
-            if (type == null || cellData.getStringValue() == null) {
+            if (type == null) {
                 return -1;
             } else {
                 switch (type) {
@@ -86,10 +82,13 @@ public class AutoHeadColumnWidthStyleStrategy extends AbstractColumnWidthStyleSt
                         return cellData.getBooleanValue().toString().getBytes().length;
                     case NUMBER:
                         return cellData.getNumberValue().toString().getBytes().length;
+                    case DATE:
+                        return 14;
                     default:
                         return -1;
                 }
             }
+
         }
     }
 

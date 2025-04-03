@@ -9,6 +9,10 @@ import org.apache.ibatis.mapping.SqlSource;
 @Slf4j
 public class UpdateBatchMethod extends AbstractMethod {
 
+    public UpdateBatchMethod(String methodName) {
+        super(methodName);
+    }
+
     @Override
     public MappedStatement injectMappedStatement(Class<?> mapperClass, Class<?> modelClass, TableInfo tableInfo) {
         String sql = "<script>\n<foreach collection=\"list\" item=\"item\" separator=\";\">\nupdate %s %s where %s=#{%s} %s\n</foreach>\n</script>";

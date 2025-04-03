@@ -5,7 +5,7 @@ import cn.undraw.util.DecimalUtils;
 import cn.undraw.util.StrUtils;
 import cn.undraw.util.URLUtils;
 import cn.undraw.util.snowflake.SnowflakeUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -177,6 +177,14 @@ public class StrTest {
     public void test10() {
         String test = getSort("test");
         System.out.println(test);
+    }
+
+    @Test
+    public void matcher() {
+        String a = "test";
+        String b = "t";
+        boolean contains = StrUtils.contains(a, b);
+        System.out.println(contains);
     }
 
     public String getSort(String sort) {

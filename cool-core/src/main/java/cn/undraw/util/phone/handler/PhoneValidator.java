@@ -2,9 +2,9 @@ package cn.undraw.util.phone.handler;
 
 import cn.undraw.util.StrUtils;
 import cn.undraw.util.phone.annotation.Phone;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

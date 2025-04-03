@@ -2,11 +2,13 @@ package cn.undraw.handler.exception;
 
 import cn.undraw.util.log.annotation.ErrorLog;
 import cn.undraw.util.result.R;
+import cn.undraw.util.result.ResultEnum;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.annotation.Order;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.FileNotFoundException;
 
 /**
@@ -19,6 +21,12 @@ import java.io.FileNotFoundException;
 @Order(value = 1)
 @RestControllerAdvice
 public class GlobalBaseExceptionHandler {
+
+    @ExceptionHandler(NoHandlerFoundException.class)
+    public R<?> noHandlerFoundException(NoHandlerFoundException ex) {
+        // 返回404状态码和自定义的错误信息
+        return R.fail(ResultEnum.NOT_FOUND);
+    }
 
     /**
      * 类转换异常

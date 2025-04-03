@@ -30,6 +30,6 @@ public class RoleServiceImpl extends EnhancedServiceImpl<RoleMapper, Role> imple
 
     @Override
     public boolean saveBatch1(List<Role> list) {
-        return this.saveOrUpdateBatchByColumn(list);
+        return this.saveOrUpdateBatch(list);
     }
 }

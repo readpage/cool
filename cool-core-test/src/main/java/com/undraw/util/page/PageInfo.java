@@ -16,7 +16,7 @@ public class PageInfo<T> implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private Long total;
-    private List<T> records;
+    private List<T> list;
 
     public PageInfo() {
         super();
@@ -26,7 +26,7 @@ public class PageInfo<T> implements Serializable {
         if (list instanceof Page) {
             Page page = (Page) list;
             this.total = page.getTotal();
-            this.records = page;
+            this.list = page;
         }
     }
 

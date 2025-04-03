@@ -2,7 +2,6 @@ package com.undraw.util.redis;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -10,7 +9,7 @@ import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
-import org.springframework.data.redis.cache.RedisCacheManager;
+import org.springframework.data.redis.cache.RedisCacheWriter;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
@@ -49,6 +48,7 @@ public class RedisConfig {
     //缓存容器
     @Bean
     public CacheManager cacheManager(RedisConnectionFactory factory) {
+
         // 配置序列化 (解决乱码的问题)
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
                 // 缓存有效期
@@ -59,9 +59,8 @@ public class RedisConfig {
                 .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(serializer()))
                 // 禁用空值
                 .disableCachingNullValues();
-        return RedisCacheManager.builder(factory)
-                .cacheDefaults(config)
-                .build();
+        RedisCacheWriter cacheWriter = RedisCacheWriter.nonLockingRedisCacheWriter(factory);
+        return new RedisConfigCacheManager(cacheWriter, config);
     }
 
     // 缓存序列化策略
@@ -70,8 +69,7 @@ public class RedisConfig {
         //序列化包括类型描述 否则反向序列化实体会报错，一律都为JsonObject
         ObjectMapper mapper = new ObjectMapper();
         mapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
-        //设置输入时忽略JSON字符串中存在而Java对象实际没有的属性
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
         // 解决jackson2无法反序列化LocalDateTime的问题
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         mapper.registerModule(new JavaTimeModule());

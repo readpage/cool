@@ -6,10 +6,8 @@ import com.undraw.domain.model.Fruit;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -21,7 +19,6 @@ import java.util.stream.Collectors;
  * @date 2023-03-04 13:03
  */
 @SpringBootTest
-@RunWith(SpringRunner.class)
 public class ConvertTest2 {
 
     @Data

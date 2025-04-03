@@ -1,7 +1,7 @@
 package com.undraw;
 
 import com.undraw.util.ImageUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 

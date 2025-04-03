@@ -10,6 +10,10 @@ import org.apache.ibatis.mapping.SqlSource;
  * 批量插入更新
  */
 public abstract class InsertOrUpdateBathMethod extends AbstractMethod {
+    protected InsertOrUpdateBathMethod(String methodName) {
+        super(methodName);
+    }
+
     @Override
     public MappedStatement injectMappedStatement(Class<?> mapperClass, Class<?> modelClass, TableInfo tableInfo) {
         final SqlSource sqlSource = prepareSqlSource(tableInfo, modelClass);

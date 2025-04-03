@@ -2,7 +2,7 @@ package com.undraw;
 
 import cn.undraw.util.StrUtils;
 import cn.undraw.util.servlet.UserAgent;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

@@ -1,7 +1,7 @@
 package com.undraw;
 
 import cn.undraw.util.FileUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;

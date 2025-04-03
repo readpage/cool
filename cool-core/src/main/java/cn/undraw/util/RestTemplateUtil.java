@@ -1,17 +1,18 @@
 package cn.undraw.util;
 
 import cn.undraw.util.result.R;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Map;
+
 
 /**
  * @author readpage
@@ -29,7 +30,7 @@ public class RestTemplateUtil {
      * @param param 参数
      * @return java.lang.String
      */
-    public String join(String url, Map<String, ?> param) {
+    public String join(String url, java.util.Map<String, ?> param) {
         if (StrUtils.isEmpty(param)) {
             return url;
         }

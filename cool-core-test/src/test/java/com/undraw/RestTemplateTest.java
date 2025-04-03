@@ -1,10 +1,8 @@
 package com.undraw;
 
 import cn.undraw.util.FileUtils;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.File;
 
@@ -13,7 +11,6 @@ import java.io.File;
  * @date 2023-02-02 17:00
  */
 @SpringBootTest
-@RunWith(SpringRunner.class)
 public class RestTemplateTest {
 
 

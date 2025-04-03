@@ -8,10 +8,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import javax.sql.DataSource;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 
 public class ClassGenerator {
@@ -105,6 +102,8 @@ public class ClassGenerator {
         sb.append("package "+packageName+";\n\n");
         sb.append("import com.baomidou.mybatisplus.annotation.*;\n");
         sb.append("import com.fasterxml.jackson.annotation.JsonProperty;\n");
+        sb.append("import com.fasterxml.jackson.annotation.JsonSerialize;\n");
+        sb.append("import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;\n");
         sb.append("import io.swagger.v3.oas.annotations.media.Schema;\n");
         sb.append("import lombok.Data;\n");
         sb.append("import lombok.NoArgsConstructor;\n");
@@ -141,7 +140,10 @@ public class ClassGenerator {
                 sb.append("\t@JsonProperty(access = JsonProperty.Access.READ_ONLY)\n");
                 sb.append("\t@TableField(fill = FieldFill.INSERT_UPDATE)\n");
             }
-            if ("id".equals(property)) {
+            if (Objects.equals(dataType, "bigint")) {
+                sb.append("\t@JsonSerialize(using = ToStringSerializer.class)\n");
+            }
+            if (Objects.equals(String.valueOf(column.get("COLUMN_KEY")), "PRI")) {
                 sb.append("\t@TableId(value = \"id\", type = IdType.AUTO)\n");
             }
             sb.append("\tprivate "+type+" "+property+";\n\n");

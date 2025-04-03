@@ -2,7 +2,7 @@ package com.undraw;
 
 import cn.undraw.util.bean.BeanUtils;
 import com.undraw.domain.entity.Role;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author readpage

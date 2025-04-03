@@ -20,6 +20,11 @@ import org.apache.ibatis.mapping.SqlSource;
 @Slf4j
 public class InsertBatchMethod extends AbstractMethod {
 
+    public InsertBatchMethod(String methodName) {
+        super(methodName);
+    }
+
+
     /**
      * insert into user(id, name, age) values (1, "a", 17), (2, "b", 18);
      <script>

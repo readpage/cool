@@ -2,7 +2,7 @@ package com.undraw;
 
 import cn.undraw.util.filter.JsonFilterUtils;
 import cn.undraw.util.filter.SensitiveUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,9 +1,9 @@
 package cn.undraw.util.phone.annotation;
 
 import cn.undraw.util.phone.handler.PhoneValidator;
+import jakarta.validation.Constraint;
+import jakarta.validation.Payload;
 
-import javax.validation.Constraint;
-import javax.validation.Payload;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

@@ -15,6 +15,10 @@ import org.apache.ibatis.mapping.SqlSource;
 public class ListByKeyMethod extends AbstractMethod {
 
 
+    public ListByKeyMethod(String methodName) {
+        super(methodName);
+    }
+
     /**
      * SELECT * FROM table WHERE (col1, col12) IN (('value1', 'value2'), ('value3', 'value4'))
      * <script>

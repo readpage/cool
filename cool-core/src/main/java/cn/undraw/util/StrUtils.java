@@ -436,9 +436,22 @@ public class StrUtils {
         return toSort(json, clazz, null);
     }
 
-    public static Matcher matcher(String regex, String v) {
+    public static Matcher matcher(String v, String regex) {
         Pattern pattern = Pattern.compile(regex);
         return pattern.matcher(v);
+    }
+
+    public static boolean contains(String parent, String child) {
+        if (parent == null) {
+            if (child == null) {
+                return true;
+            }
+            return false;
+        }
+        if (child == null) {
+            return false;
+        }
+        return parent.contains(child);
     }
 
     /**

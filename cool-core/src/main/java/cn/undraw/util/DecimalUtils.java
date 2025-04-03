@@ -223,7 +223,7 @@ public class DecimalUtils {
     }
 
     /**
-     * 提供精确的小数位四舍五入处理。保留两位
+     * 提供精确的小数位舍入模式向零舍入。保留两位
      *
      * @param v     需要四舍五入的数字
      * @return String 四舍五入后的结果
@@ -233,7 +233,7 @@ public class DecimalUtils {
     }
 
     /**
-     * 提供精确的小数位四舍五入处理。
+     * 提供精确的小数位舍入模式向零舍入。
      *
      * @param v     需要四舍五入的数字
      * @param scale 小数点后保留几位
@@ -246,7 +246,7 @@ public class DecimalUtils {
     }
 
     /**
-     * 提供精确的小数位四舍五入处理。
+     * 提供精确的小数位舍入模式向零舍入。
      *
      * @param v     需要四舍五入的数字
      * @param scale 小数点后保留几位

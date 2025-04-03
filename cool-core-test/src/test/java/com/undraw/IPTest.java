@@ -1,9 +1,29 @@
 package com.undraw;
 
 import cn.undraw.util.servlet.IpUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class IPTest {
+
+
+    // ip白名单  gateway tokenFilter
+//    public boolean ipFilter(ServerHttpRequest request, String path) {
+//        Map<String, List<String>> map = new HashMap<>();
+//        map.put("0:0:0:0:0:0:0:1", Arrays.asList("/**"));
+//        String clientIP = getClientIP(request);
+//        for (Map.Entry<String, List<String>> entry : map.entrySet()) {
+//            String key = entry.getKey();
+//            List<String> value = entry.getValue();
+//            if (clientIP.equals(key)) {
+//                for (String s : value) {
+//                    if (antPathMatcher.match(s, path)) {
+//                        return true;
+//                    }
+//                }
+//            }
+//        }
+//        return false;
+//    }
 
 
     @Test

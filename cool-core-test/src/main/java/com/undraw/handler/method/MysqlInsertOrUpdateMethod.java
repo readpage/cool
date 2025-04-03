@@ -5,8 +5,14 @@ import com.baomidou.mybatisplus.core.metadata.TableInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.mapping.SqlSource;
 
+import java.util.Objects;
+
 @Slf4j
 public class MysqlInsertOrUpdateMethod extends InsertOrUpdateBathMethod {
+    public MysqlInsertOrUpdateMethod(String methodName) {
+        super(methodName);
+    }
+
     @Override
     protected SqlSource prepareSqlSource(TableInfo tableInfo, Class<?> modelClass) {
         final String sql = "<script>insert into %s %s values %s ON DUPLICATE KEY UPDATE %s</script>";
@@ -20,7 +26,7 @@ public class MysqlInsertOrUpdateMethod extends InsertOrUpdateBathMethod {
 
     @Override
     protected String prepareInsertOrUpdateBathName() {
-        return "insertOrUpdateBath";
+        return "insertOrUpdateBatch";
     }
 
     /**
@@ -37,8 +43,14 @@ public class MysqlInsertOrUpdateMethod extends InsertOrUpdateBathMethod {
         }
 
         tableInfo.getFieldList().forEach(x -> {
-            String format = String.format("%s=IFNULL(values(%s),%s),", x.getColumn(), x.getColumn(), x.getColumn());
-            duplicateKeySql.append(format);
+            if (Objects.equals(x.getProperty(), "createTime")) {
+                String format = String.format("%s=%s,", x.getColumn(), x.getColumn());
+                duplicateKeySql.append(format);
+            } else {
+                String format = String.format("%s=IFNULL(values(%s),%s),", x.getColumn(), x.getColumn(), x.getColumn());
+                duplicateKeySql.append(format);
+            }
+
         });
         duplicateKeySql.append("</foreach></trim>");
         return duplicateKeySql.toString();

@@ -1,7 +1,7 @@
 package com.undraw;
 
 import cn.undraw.util.DecimalUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author readpage

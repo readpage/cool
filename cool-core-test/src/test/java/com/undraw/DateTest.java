@@ -2,12 +2,10 @@ package com.undraw;
 
 import cn.undraw.util.DateUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.*;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
 /**
@@ -69,13 +67,21 @@ public class DateTest {
         System.out.println(DateUtils.toLocalDate("2023/12/17"));
     }
 
+    @Test
+    public void between() {
+        LocalDate startDate = LocalDate.parse("2025-02-01");
+        LocalDate endDate = LocalDate.parse("2025-02-28");
+        long between = ChronoUnit.DAYS.between(startDate, endDate);
+        System.out.println(between);
+    }
+
     /**
      * unix 时间戳
      */
     @Test
     public void second() {
-        LocalDateTime startTime = DateUtils.toDateTime("2024-12-04 00:00:00");
-        LocalDateTime endTime = DateUtils.toDateTime("2024-12-05 00:00:00");
+        LocalDateTime startTime = DateUtils.toDateTime("2025-03-26 00:00:00");
+        LocalDateTime endTime = DateUtils.toDateTime("2025-03-27 00:00:00");
         System.out.println(DateUtils.toMilli(startTime));
         System.out.println(DateUtils.toMilli(endTime));
 
@@ -87,8 +93,16 @@ public class DateTest {
     public void after() {
         LocalDate start = LocalDate.parse("2024-01-01");
         LocalDate end = LocalDate.parse("2024-03-01");
-        System.out.println(start.isBefore(end));
+        System.out.println(start.isBefore(start));
         System.out.println(start.isAfter(end));
+    }
+
+    @Test
+    public void range() {
+        LocalDate now = LocalDate.now();
+        LocalTime localTime = LocalTime.now();
+        System.out.println(localTime.withSecond(0).withNano(0) + "--" + localTime.withSecond(59).withNano(999_999_999));
+        System.out.println(now.atTime(LocalTime.MIN) + "--" + now.atTime(LocalTime.MAX));
     }
 
 }

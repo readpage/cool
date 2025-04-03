@@ -16,10 +16,10 @@ public class CustomSqlInjector extends DefaultSqlInjector {
  
         // 注意：此SQL注入器继承了DefaultSqlInjector(默认注入器)，调用了DefaultSqlInjector的getMethodList方法，保留了mybatis-plus的自带方法
         List<AbstractMethod> methodList = super.getMethodList(mapperClass, tableInfo);
-        methodList.add(new ListByKeyMethod());
-        methodList.add(new InsertBatchMethod());
-        methodList.add(new UpdateBatchMethod());
-        methodList.add(new MysqlInsertOrUpdateMethod());
+        methodList.add(new ListByKeyMethod("listByKey"));
+        methodList.add(new InsertBatchMethod("insertBatch"));
+        methodList.add(new UpdateBatchMethod("updateBatch"));
+        methodList.add(new MysqlInsertOrUpdateMethod("insertOrUpdateBatch"));
         return methodList;
     }
 }

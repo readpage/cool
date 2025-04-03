@@ -26,6 +26,6 @@ public interface RootMapper<T> extends BaseMapper<T> {
     /**
      * 自定义批量新增或更新(mysql)
      */
-    int insertOrUpdateBath(List<T> list);
+    int insertOrUpdateBatch(List<T> list);
 
 }

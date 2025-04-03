@@ -1,9 +1,10 @@
 package com.undraw;
 
 import cn.undraw.util.StrUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * @author readpage
@@ -20,6 +21,11 @@ public class DemoTest {
     public void test2() {
         System.out.println(LocalDate.now().getDayOfWeek().getValue());
         System.out.println(LocalDate.now().minusDays(3));
+    }
+
+    @Test
+    public void test3() {
+        LocalDateTime now = LocalDateTime.now();
     }
 
 }
