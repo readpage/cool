@@ -7,7 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.annotation.Order;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.io.FileNotFoundException;
 
@@ -22,8 +22,8 @@ import java.io.FileNotFoundException;
 @RestControllerAdvice
 public class GlobalBaseExceptionHandler {
 
-    @ExceptionHandler(NoHandlerFoundException.class)
-    public R<?> noHandlerFoundException(NoHandlerFoundException ex) {
+    @ExceptionHandler(NoResourceFoundException.class)
+    public R<?> moResourceFoundException(NoResourceFoundException ex) {
         // 返回404状态码和自定义的错误信息
         return R.fail(ResultEnum.NOT_FOUND);
     }

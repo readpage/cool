@@ -1,0 +1,13 @@
+server:
+  port: 7032
+
+spring:
+  application:
+    name: cool-core-test
+  profiles:
+    #需要使用的配置文件的后缀
+    active: dev
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB

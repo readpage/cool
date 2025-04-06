@@ -4,9 +4,9 @@ import com.undraw.domain.entity.Role;
 import com.undraw.handler.EnhancedServiceImpl;
 import com.undraw.mapper.RoleMapper;
 import com.undraw.service.RoleService;
+import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.util.List;
 
 /**

@@ -1,9 +1,9 @@
 package com.undraw.config;
 
 import cn.undraw.util.filter.SensitiveUtils;
+import jakarta.annotation.PostConstruct;
 import org.springframework.context.annotation.Configuration;
 
-import javax.annotation.PostConstruct;
 import java.util.Arrays;
 import java.util.List;
 

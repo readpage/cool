@@ -1,11 +1,11 @@
 package com.undraw.config;
 
 import com.undraw.filter.AuthFilter;
+import jakarta.annotation.Resource;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import javax.annotation.Resource;
 
 /**
  * @author readpage

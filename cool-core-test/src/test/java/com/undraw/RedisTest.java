@@ -4,11 +4,11 @@ import cn.undraw.util.ConvertUtils;
 import cn.undraw.util.DateUtils;
 import com.undraw.domain.model.Student;
 import com.undraw.util.redis.RedisUtil;
+import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.RedisTemplate;
 
-import javax.annotation.Resource;
 import java.time.LocalDate;
 
 /**
