@@ -1,10 +1,15 @@
 package com.undraw;
 
 
+import cn.undraw.util.bean.BeanUtils;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.undraw.domain.model.Employee;
+import org.apache.poi.ss.formula.functions.T;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
 
@@ -33,6 +38,22 @@ public class AnnoTest {
                 }
             }
         });
+    }
+
+    @Test
+    public void test2() {
+        List<Employee> list = Employee.employeeList;
+        Class<?> clazz = list.get(0).getClass();
+        for (Field field : BeanUtils.getFields(clazz)) {
+//            String[] annoValue = AnnoUtils.getAnnoValueByField(field, JsonProperty.class, "access");
+            Annotation annotation = field.getAnnotation(JsonProperty.class);
+            T t = null;
+            if (annotation != null) {
+                System.out.println(annotation);
+//                Map map = ConvertUtils.cloneDeep(annotation.toString(), Map.class);
+//                System.out.println(map);
+            }
+        }
     }
 
 

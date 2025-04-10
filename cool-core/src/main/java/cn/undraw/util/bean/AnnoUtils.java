@@ -1,4 +1,6 @@
-package cn.undraw.util;
+package cn.undraw.util.bean;
+
+import cn.undraw.util.StrUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
@@ -84,6 +86,7 @@ public class AnnoUtils {
     }
 
 
+    @Deprecated
     /**
      * 获取类注解的值
      *
@@ -112,7 +115,7 @@ public class AnnoUtils {
     }
 
 
-
+    @Deprecated
     /**
      * 设置类注解的值
      *
@@ -125,6 +128,7 @@ public class AnnoUtils {
     }
 
 
+    @Deprecated
     /**
      * 设置类注解的值
      *
@@ -191,6 +195,7 @@ public class AnnoUtils {
     }
 
 
+    @Deprecated
     /**
      * 设置字段注解的值
      *
@@ -203,6 +208,7 @@ public class AnnoUtils {
     }
 
 
+    @Deprecated
     /**
      * 设置字段注解的值
      *

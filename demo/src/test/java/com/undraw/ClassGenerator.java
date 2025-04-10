@@ -111,8 +111,8 @@ public class ClassGenerator {
         sb.append("import java.io.Serializable;\n");
         sb.append("import java.time.LocalDate;\n");
         sb.append("import java.time.LocalDateTime;\n");
-        sb.append("import com.alibaba.excel.annotation.ExcelIgnore;\n");
-        sb.append("import com.alibaba.excel.annotation.ExcelProperty;\n\n");
+        sb.append("import cn.idev.excel.annotation.ExcelIgnore;\n");
+        sb.append("import cn.idev.excel.annotation.ExcelProperty;\n\n");
         sb.append("@Data\n");
         sb.append("@NoArgsConstructor\n");
         sb.append(String.format("@TableName(\"%s\")\n", tableName));

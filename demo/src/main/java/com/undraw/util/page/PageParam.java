@@ -1,6 +1,6 @@
 package com.undraw.util.page;
 
-import cn.undraw.util.AnnoUtils;
+import cn.undraw.util.bean.AnnoUtils;
 import cn.undraw.util.ConvertUtils;
 import cn.undraw.util.ReflectUtils;
 import cn.undraw.util.StrUtils;

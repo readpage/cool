@@ -1,7 +1,7 @@
 package com.undraw.controller;
 
 import cn.idev.excel.annotation.ExcelProperty;
-import cn.undraw.util.AnnoUtils;
+import cn.undraw.util.bean.AnnoUtils;
 import cn.undraw.util.ConvertUtils;
 import cn.undraw.util.StrUtils;
 import cn.undraw.util.log.annotation.OperateLog;
@@ -134,7 +134,7 @@ public class ExcelController {
     public void moveExport(HttpServletResponse response) {
         List<ExcelUtils.ExcelModel> excelModelList = new ArrayList<>(Arrays.asList(
                 new ExcelUtils.ExcelModel("employee", ConvertUtils.cloneDeep(Employee.employeeList, Employee1.class)),
-                new ExcelUtils.ExcelModel("employee2", new ArrayList()),
+                new ExcelUtils.ExcelModel("employee2", Employee.employeeList),
                 new ExcelUtils.ExcelModel("student", Student.studentList)
         ));
         ExcelUtils.moreExport(response, "多个工作表导出", excelModelList);

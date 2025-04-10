@@ -166,8 +166,8 @@ public class StrTest {
         String format = String.format("%s%06d", category.replaceAll("\\d+", ""), numbers.get(0) + 1L);
         System.out.println(format);
 
-        Integer a = new Integer(1);
-        Integer b = new Integer(1);
+        Integer a = Integer.valueOf(1);
+        Integer b = Integer.valueOf(1);
 
         System.out.println( a == b);
         System.out.println(Objects.equals(a, b));

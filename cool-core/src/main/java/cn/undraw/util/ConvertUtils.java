@@ -1,5 +1,6 @@
 package cn.undraw.util;
 
+import cn.undraw.util.bean.AnnoUtils;
 import cn.undraw.util.result.R;
 import cn.undraw.util.result.ResultEnum;
 import com.fasterxml.jackson.core.JsonProcessingException;

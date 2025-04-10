@@ -4,6 +4,7 @@ import cn.idev.excel.annotation.ExcelProperty;
 import cn.idev.excel.annotation.write.style.ContentStyle;
 import cn.idev.excel.enums.poi.HorizontalAlignmentEnum;
 import cn.idev.excel.enums.poi.VerticalAlignmentEnum;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -60,7 +61,7 @@ public class Employee implements Serializable {
 
     @Schema(title = "创建时间")
     @ExcelProperty("创建时间")
-//    @ColumnWidth(16)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private LocalDateTime createTime = LocalDateTime.now();
 
     public Employee(Long id, String name, String sex, int age, double salary) {

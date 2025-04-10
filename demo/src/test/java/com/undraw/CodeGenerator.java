@@ -17,7 +17,7 @@ public class CodeGenerator {
     private static final String URL = "jdbc:mysql://localhost:3306/cool?serverTimezone=GMT%2B8";
     private static final String USERNAME = "root";
     private static final String PASSWORD = "root";
-    private static final String ProjectPath = System.getProperty("user.dir") + File.separator + "cool-core-test";
+    private static final String ProjectPath = System.getProperty("user.dir") + File.separator + "demo";
 
     private static final String ParentPackage = "com.undraw";
 

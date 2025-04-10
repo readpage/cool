@@ -2,7 +2,6 @@ package com.undraw.util.excel;
 
 import cn.idev.excel.EasyExcel;
 import cn.idev.excel.ExcelWriter;
-import cn.idev.excel.converters.localdatetime.LocalDateTimeDateConverter;
 import cn.idev.excel.read.listener.PageReadListener;
 import cn.idev.excel.write.builder.ExcelWriterBuilder;
 import cn.idev.excel.write.builder.ExcelWriterSheetBuilder;
@@ -47,8 +46,7 @@ public class ExcelUtils {
                     list.addAll(dataList);
                 }))
                 .headRowNumber(headRowIndex).doRead();
-
-        return list;
+        return ConvertUtils.cloneDeep(list);
     }
 
     public static <T> List<T> read(MultipartFile file, Class<T> clazz) {
@@ -117,7 +115,7 @@ public class ExcelUtils {
                     writerSheetBuilder.head(excelModel.getClazz());
                 }
                 writerSheetBuilder.registerConverter(new LocalDateConverter());
-                writerSheetBuilder.registerConverter(new LocalDateTimeDateConverter());
+                writerSheetBuilder.registerConverter(new LocalDateTimeConverter());
                 writerSheetBuilder.registerWriteHandler(new AutoHeadColumnWidthStyleStrategy());
                 writerSheetBuilder.registerWriteHandler(new ImageCellWriteHandler());
                 Consumer<ExcelWriterSheetBuilder> c = excelModel.getC();

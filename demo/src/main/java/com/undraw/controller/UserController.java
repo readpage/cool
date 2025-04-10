@@ -2,6 +2,7 @@ package com.undraw.controller;
 
 
 import cn.undraw.util.log.annotation.OperateLog;
+import cn.undraw.util.log.enums.OperateTypeEnum;
 import cn.undraw.util.result.R;
 import com.undraw.domain.dto.UserParam;
 import com.undraw.domain.entity.User;
@@ -9,10 +10,14 @@ import com.undraw.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import static cn.undraw.util.log.enums.OperateTypeEnum.CREATE;
+import static cn.undraw.util.log.enums.OperateTypeEnum.UPDATE;
 
 /**
  * <p>
@@ -42,6 +47,27 @@ public class UserController {
     @PostMapping("/save")
     public R save(@Valid @RequestBody User user) {
         return R.ok(userService.save(user));
+    }
+
+    @Operation(summary = "修改用户")
+    @OperateLog(type = UPDATE)
+    @PutMapping("/update")
+    public R update(@Valid @RequestBody User user) {
+        return R.ok(userService.updateById(user));
+    }
+
+    @Operation(summary = "导入用户信息")
+    @OperateLog(type = OperateTypeEnum.IMPORT)
+    @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public R upload(@RequestBody MultipartFile file) {
+        return R.ok(userService.upload(file));
+    }
+
+    @Operation(summary = "导出用户信息")
+    @OperateLog(type = OperateTypeEnum.EXPORT)
+    @GetMapping("/export")
+    public void statExport(HttpServletResponse response, UserParam obj) {
+        userService.export(response, obj);
     }
 
 }

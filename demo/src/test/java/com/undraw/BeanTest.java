@@ -1,7 +1,9 @@
 package com.undraw;
 
+import cn.undraw.util.bean.AnnoUtils;
 import cn.undraw.util.bean.BeanUtils;
-import com.undraw.domain.entity.Role;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.undraw.domain.entity.User;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -12,6 +14,10 @@ public class BeanTest {
 
     @Test
     public void test() {
-        System.out.println(BeanUtils.getFieldName(Role::getNickname, Role::getName, Role::getCreateTime));
+        System.out.println(BeanUtils.getFieldName(User::getUsername, User::getPassword, User::getPhone));
+        BeanUtils.getFields(User.class).forEach(field -> {
+            Object access = AnnoUtils.getAnnoValueByField(field, JsonProperty.class, "access");
+            System.out.println(access);
+        });
     }
 }

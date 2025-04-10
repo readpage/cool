@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.undraw.domain.dto.UserParam;
 import com.undraw.domain.entity.User;
 import com.undraw.util.page.PageInfo;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -30,6 +32,19 @@ public interface UserService extends IService<User> {
      * @return
      */
     PageInfo<User> page(UserParam obj);
+
+    /**
+     * 导入用户信息
+     * @param file
+     * @return
+     */
+    boolean upload(MultipartFile file);
+
+    /**
+     * 导出用户信息
+     * @param response
+     */
+    void export(HttpServletResponse response, UserParam obj);
 
 
     boolean badSql();
