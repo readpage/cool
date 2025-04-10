@@ -5,6 +5,7 @@ import cn.undraw.util.StrUtils;
 import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -169,6 +170,35 @@ public class BeanUtils {
             fieldMap.put(field.getName(), field.getType());
         }
         return fieldMap;
+    }
+
+
+    /**
+     * 合并对象
+     * @param source 原来值
+     * @param target 目标值
+     */
+    public static void merge(Object source, Object target) {
+        try {
+            Class<?> sourceClass = source.getClass();
+            Class<?> targetClass = target.getClass();
+            Field[] sourceFields = sourceClass.getDeclaredFields();
+            for (Field field : sourceFields) {
+                field.setAccessible(true); // 确保可以访问私有字段
+                if (field.get(source) != null) { // 如果源对象中的字段非null
+                    try {
+                        Field targetField = targetClass.getDeclaredField(field.getName());
+                        if (!Modifier.isStatic(targetField.getModifiers())) {
+                            targetField.setAccessible(true);
+                            targetField.set(target, field.get(source)); // 将值复制到目标对象
+                        }
+                    } catch (NoSuchFieldException e) {
+                    }
+                }
+            }
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
     }
 
 }

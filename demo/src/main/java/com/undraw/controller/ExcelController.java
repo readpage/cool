@@ -78,7 +78,7 @@ public class ExcelController {
     @OperateLog(type = EXPORT)
     public void export(HttpServletResponse response) {
         try {
-            String[] name = AnnoUtils.getAnnoValueByField(Employee.class.getDeclaredField("name"), ExcelProperty.class);
+           Object o = AnnoUtils.getValue(Employee.class.getDeclaredField("name"), ExcelProperty.class);
         } catch (NoSuchFieldException e) {
             throw new RuntimeException(e);
         }

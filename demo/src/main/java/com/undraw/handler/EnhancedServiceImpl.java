@@ -44,7 +44,7 @@ public class EnhancedServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl
             Map<String, Object> param = new HashMap<>();
             param.put(Constants.ENTITY, entity);
             param.put(Constants.WRAPPER, function.apply(entity));
-            sqlSession.delete(sqlStatement, param);
+            sqlSession.selectList(sqlStatement, param);
         });
     }
 

@@ -66,7 +66,7 @@ public class UserController {
     @Operation(summary = "导出用户信息")
     @OperateLog(type = OperateTypeEnum.EXPORT)
     @GetMapping("/export")
-    public void statExport(HttpServletResponse response, UserParam obj) {
+    public void export(HttpServletResponse response, UserParam obj) {
         userService.export(response, obj);
     }
 

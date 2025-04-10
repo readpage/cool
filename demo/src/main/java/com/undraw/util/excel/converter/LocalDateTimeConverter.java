@@ -36,7 +36,6 @@ public class LocalDateTimeConverter implements Converter<LocalDateTime> {
     }
 
     public WriteCellData<String> convertToExcelData(LocalDateTime value, ExcelContentProperty contentProperty, GlobalConfiguration globalConfiguration) {
-
         return new WriteCellData(DateUtils.toString(value));
     }
 }

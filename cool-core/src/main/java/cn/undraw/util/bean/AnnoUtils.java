@@ -86,7 +86,6 @@ public class AnnoUtils {
     }
 
 
-    @Deprecated
     /**
      * 获取类注解的值
      *
@@ -114,101 +113,87 @@ public class AnnoUtils {
         return t;
     }
 
-
-    @Deprecated
     /**
-     * 设置类注解的值
-     *
+     * 获取字段注解的值
      * @param objClass  类class
      * @param annoClass 注解class
-     * @param t         值
+     * @return
      */
-    public static <T> void setAnnoValueByClass(Class<?> objClass, Class<? extends Annotation> annoClass, T t) {
-        setAnnoValueByClass(objClass, annoClass, null, t);
+    public static Object getValue(Class<?> objClass, Class<? extends Annotation> annoClass) {
+        return getValue(objClass, annoClass, "value");
+    }
+
+    /**
+     * 获取字段注解的值
+     * @param objClass  类class
+     * @param annoClass 注解class
+     * @return
+     */
+    public static Object getValue(Class<?> objClass, Class<? extends Annotation> annoClass, String attributeName) {
+        if (objClass != null) {
+            Annotation annotation = objClass.getAnnotation(annoClass);
+            return getValue(annotation, attributeName);
+        }
+        return null;
     }
 
 
-    @Deprecated
     /**
-     * 设置类注解的值
-     *
-     * @param objClass      类class
-     * @param annoClass     注解class
-     * @param annoFieldName 注解属性名称
-     * @param t             值
+     * 获取字段注解的值
+     * @param field
+     * @param annoClass 注解class
+     * @return
      */
-    public static <T> void setAnnoValueByClass(Class<?> objClass, Class<? extends Annotation> annoClass, String annoFieldName, T t) {
-        Annotation annotation = objClass.getAnnotation(annoClass);
-        try {
-            if (annotation != null) {
-                InvocationHandler invocationHandler = Proxy.getInvocationHandler(annotation);
-                Field field = invocationHandler.getClass().getDeclaredField("memberValues");
-                field.setAccessible(true);
-                Map<String, Object> memberValues = (Map<String, Object>) field.get(invocationHandler);
-                memberValues.put(Optional.ofNullable(annoFieldName).orElse("value"), t);
-            }
-        } catch (NoSuchFieldException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
+    public static Object getValue(Field field, Class<? extends Annotation> annoClass) {
+        return getValue(field, annoClass, "value");
+    }
+
+    /**
+     * 获取字段注解的值
+     * @param field
+     * @param annoClass 注解class
+     * @param attributeName 注解属性名称
+     * @return
+     */
+    public static Object getValue(Field field, Class<? extends Annotation> annoClass, String attributeName) {
+        if (field != null) {
+            Annotation annotation = field.getAnnotation(annoClass);
+            return getValue(annotation, attributeName);
         }
+        return null;
     }
 
 
     /**
      * 获取字段注解的值
      *
-     * @param field     字段对象
-     * @param annoClass 注解class
-     * @return 返回T泛型类型
+     * @param annotation  注解对象
+     * @param attributeName  注解属性名称
+     * @return
      */
-    public static <T> T getAnnoValueByField(Field field, Class<? extends Annotation> annoClass) {
-        return getAnnoValueByField(field, annoClass, null);
-    }
-
-
-    /**
-     * 获取字段注解的值
-     *
-     * @param field         字段对象
-     * @param annoClass     注解class
-     * @param annoFieldName 注解属性名称
-     * @return 返回T泛型类型
-     */
-    public static <T> T getAnnoValueByField(Field field, Class<? extends Annotation> annoClass, String annoFieldName) {
-        Annotation annotation = field.getAnnotation(annoClass);
-        T t = null;
+    public static Object getValue(Annotation annotation, String attributeName) {
         try {
             if (annotation != null) {
-                InvocationHandler invocationHandler = Proxy.getInvocationHandler(annotation);
-                Field f = invocationHandler.getClass().getDeclaredField("memberValues");
-                f.setAccessible(true);
-                Map<String, Object> memberValues = (Map<String, Object>) f.get(invocationHandler);
-                t = (T) memberValues.get(Optional.ofNullable(annoFieldName).orElse("value"));
+                InvocationHandler handler = Proxy.getInvocationHandler(annotation);
+                for(Method method : annotation.annotationType().getDeclaredMethods()) {
+                    if (method.getName().equals(attributeName) && method.getParameterCount() == 0) {
+                        return handler.invoke(annotation, method, new Object[]{"test"});
+                    }
+                }
             }
-        } catch (NoSuchFieldException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
+        } catch (Throwable e) {
             throw new RuntimeException(e);
         }
-        return t;
+        return null;
     }
 
 
     @Deprecated
-    /**
-     * 设置字段注解的值
-     *
-     * @param field     字段对象
-     * @param annoClass 注解class
-     * @param t         值
-     */
     public static <T> void setAnnoValueByField(Field field, Class<? extends Annotation> annoClass, T t) {
         setAnnoValueByField(field, annoClass, null, t);
     }
 
 
-    @Deprecated
     /**
      * 设置字段注解的值
      *
@@ -217,6 +202,7 @@ public class AnnoUtils {
      * @param annoFieldName 注解属性名称
      * @param t             值
      */
+    @Deprecated
     public static <T> void setAnnoValueByField(Field field, Class<? extends Annotation> annoClass, String annoFieldName, T t) {
         Annotation annotation = field.getAnnotation(annoClass);
         try {

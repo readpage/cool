@@ -2,6 +2,7 @@ package com.undraw.domain.entity;
 
 import cn.idev.excel.annotation.ExcelIgnore;
 import cn.idev.excel.annotation.ExcelProperty;
+import cn.undraw.util.decimal.annotation.DecimalFormat;
 import cn.undraw.util.phone.annotation.Phone;
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -26,6 +27,7 @@ import java.time.LocalDateTime;
  */
 @Data
 @Schema(title = "User对象", description = "用户对象")
+@DecimalFormat
 public class User implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -52,6 +54,9 @@ public class User implements Serializable {
     @Schema(title = "电话号码")
     @ExcelProperty(value = "电话号码")
     private String phone;
+
+    @TableField(exist = false)
+    private Double salary = 22.3578;
 
     @Schema(title = "创建时间")
     @ExcelProperty(value = "创建时间")

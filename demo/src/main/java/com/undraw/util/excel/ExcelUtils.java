@@ -9,6 +9,7 @@ import cn.idev.excel.write.metadata.WriteSheet;
 import cn.undraw.handler.exception.customer.CustomerException;
 import cn.undraw.util.ConvertUtils;
 import cn.undraw.util.StrUtils;
+import cn.undraw.util.bean.BeanUtils;
 import com.undraw.util.excel.converter.LocalDateConverter;
 import com.undraw.util.excel.converter.LocalDateTimeConverter;
 import com.undraw.util.excel.handler.ImageCellWriteHandler;
@@ -304,7 +305,12 @@ public class ExcelUtils {
         }
 
         public List getDataList() {
-            this.dataList = StrUtils.isNull(ConvertUtils.cloneDeep(dataList), new ArrayList());
+            List list = StrUtils.isNull(ConvertUtils.cloneDeep(dataList), new ArrayList());
+            for (int i = 0; i < dataList.size(); i++) {
+                Object o = dataList.get(i);
+                Object o2 = list.get(i);
+                BeanUtils.merge(o2, o);
+            }
             return dataList;
         }
 
