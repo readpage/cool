@@ -11,7 +11,6 @@
 
     <modules>
         <module>cool-core</module>
-        <module>cool-core-test</module>
         <module>demo</module>
     </modules>
 
@@ -20,22 +19,22 @@
     <!--阿里云maven代理仓库 https://developer.aliyun.com/mvn/guide -->
     <!-- 统一管理jar包版权 -->
     <properties>
-        <revision>0.2.5</revision>
+        <revision>0.2.6</revision>
         <java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <mysql.version>8.0.22</mysql.version>
-        <druid.version>1.2.9</druid.version>
-        <pagehelper.version>1.4.3</pagehelper.version>
-        <mybatis.plus.version>3.5.11</mybatis.plus.version>
-        <mybatis.plus.generator.version>3.5.11</mybatis.plus.generator.version>
-        <velocity.engine.core.version>2.3</velocity.engine.core.version>
-        <hutool.version>5.7.13</hutool.version>
-        <springdoc.version>1.7.0</springdoc.version>
-        <rocketmq.version>2.2.0</rocketmq.version>
         <spring-boot.version>3.4.2</spring-boot.version>
         <spring-cloud.version>2023.0.1</spring-cloud.version>
         <spring-cloud-alibaba.version>2023.0.1.0</spring-cloud-alibaba.version>
-        <easyexcel.version>1.2.7</easyexcel.version>
+        <mysql.version>8.0.22</mysql.version>
+        <druid.version>1.2.24</druid.version>
+        <mybatis.plus.version>3.5.11</mybatis.plus.version>
+        <mybatis.plus.generator.version>3.5.11</mybatis.plus.generator.version>
+        <velocity.engine.core.version>2.3</velocity.engine.core.version>
+        <pagehelper.version>2.1.0</pagehelper.version>
+        <springdoc.version>2.8.6</springdoc.version>
+        <rocketmq.version>2.2.0</rocketmq.version>
+        <hutool.version>5.7.13</hutool.version>
+        <easyexcel.version>3.4.0</easyexcel.version>
         <cool-core.version>${revision}</cool-core.version>
     </properties>
 
@@ -97,7 +96,7 @@
             </dependency>
             <dependency>
                 <groupId>org.springdoc</groupId>
-                <artifactId>springdoc-openapi-ui</artifactId>
+                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
                 <version>${springdoc.version}</version>
             </dependency>
 
@@ -124,6 +123,7 @@
                 <artifactId>lombok</artifactId>
                 <version>1.18.24</version>
             </dependency>
+
         </dependencies>
     </dependencyManagement>
 
@@ -133,11 +133,12 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
+                <version>3.11.0</version>
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
                     <encoding>${project.build.sourceEncoding}</encoding>
+                    <parameters>true</parameters>
                 </configuration>
             </plugin>
             <!-- 解决install的${revision}变量的转换 -->

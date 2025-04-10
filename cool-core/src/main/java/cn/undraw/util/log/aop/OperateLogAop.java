@@ -156,8 +156,8 @@ public class OperateLogAop {
         }
     }
 
-    @Value("${cool-core.filter.request-param:}")
-    private String requestParam;
+    @Value("${cool-core.filter.log-param:}")
+    private String logParam;
 
     /**
      * 设置请求信息
@@ -204,9 +204,9 @@ public class OperateLogAop {
                         s = ConvertUtils.toJson(argList);
                     }
                 }
-                if (!"".equals(requestParam)) {
+                if (StrUtils.isNotEmpty(logParam)) {
                     s = JsonFilterUtils.filter(s, (k, v) -> {
-                        List<String> keys = Arrays.asList(requestParam.split(", "));
+                        List<String> keys = Arrays.asList(logParam.split(", "));
                         if (keys.contains(k)) {
                             v = "******";
                         }

@@ -39,6 +39,7 @@ public class ConvertUtils {
     public static void config(ObjectMapper mapper) {
         //设置输入时忽略JSON字符串中存在而Java对象实际没有的属性
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
     }
 
     static {

@@ -46,7 +46,6 @@ public class GlobalWarnExceptionHandler {
     @ExceptionHandler({ MethodArgumentTypeMismatchException.class, HttpMessageNotReadableException.class, MissingServletRequestParameterException.class})
     @ResponseBody
     public R requestParamFormatException(HttpServletRequest req, Exception e) {
-        System.out.println(e.getMessage());
         Pattern pattern = Pattern.compile("CustomerException: (.+?)$");
         Matcher matcher = pattern.matcher(e.getMessage());
         String msg = "类型转换错误";
@@ -98,7 +97,7 @@ public class GlobalWarnExceptionHandler {
                     }
                     msg[0] = message;
                     return f;
-                }).collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
+                }).collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage, (oldValue, newValue) -> (oldValue + "; " + newValue)));
                 return R.fail(msg[0], map);
             }
         }

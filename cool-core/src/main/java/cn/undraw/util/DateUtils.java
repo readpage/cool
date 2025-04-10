@@ -54,7 +54,7 @@ public class DateUtils {
 
             return LocalDateTime.parse(dateTime, DateTimeFormatter.ofPattern(pattern));
         } catch (Exception e) {
-            throw new CustomerException("时间类型转换异常");
+            throw new CustomerException("时间参数[" + dateTime + "]类型转换异常");
         }
     }
 

@@ -37,7 +37,8 @@ public class TimeFormatConfig {
     private String dateFormat;
 
 
-    /** 
+    /**
+     * 反序列化
      * LocalDateTime转换器，用于转换RequestParam和PathVariable参数
      * @return org.springframework.core.convert.converter.Converter<java.lang.String,java.time.LocalDateTime>
      */
@@ -46,12 +47,17 @@ public class TimeFormatConfig {
         return new Converter<String, LocalDateTime>() {
             @Override
             public LocalDateTime convert(String source) {
-                return DateUtils.toDateTime(source);
+                try {
+                    return DateUtils.toDateTime(source);
+                } catch (Exception e) {
+                    throw new CustomerException("时间参数[" +source + "]类型转换异常");
+                }
             }
         };
     }
 
-    /** 
+    /**
+     * 反序列化
      * LocalDate转换器，用于转换RequestParam和PathVariable参数
      * @return org.springframework.core.convert.converter.Converter<java.lang.String,java.time.LocalDate>
      */
@@ -65,7 +71,8 @@ public class TimeFormatConfig {
         };
     }
 
-    /** 
+    /**
+     * 反序列化
      * LocalTime转换器，用于转换RequestParam和PathVariable参数
      * @return org.springframework.core.convert.converter.Converter<java.lang.String,java.time.LocalTime>
      */
@@ -77,7 +84,7 @@ public class TimeFormatConfig {
                 try {
                     return LocalTime.parse(source, DateTimeFormatter.ofPattern(TIME_PATTERN));
                 } catch (Exception e) {
-                    throw new CustomerException("时间类型转换异常");
+                    throw new CustomerException("时间参数[" +source + "]类型转换异常");
                 }
             }
         };
@@ -93,6 +100,7 @@ public class TimeFormatConfig {
         }
     }
 
+    // 反序列化
     @JsonComponent
     public class LocalDateDeserializer extends JsonDeserializer<LocalDate> {
         @Override
@@ -115,6 +123,7 @@ public class TimeFormatConfig {
         }
     }
 
+    // 序列化
     @JsonComponent
     public class LocalDateSerializer extends JsonSerializer<LocalDate> {
         @Override
