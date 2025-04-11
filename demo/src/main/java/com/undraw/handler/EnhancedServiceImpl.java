@@ -1,6 +1,7 @@
 package com.undraw.handler;
 
 import cn.undraw.util.ConvertUtils;
+import cn.undraw.util.StrUtils;
 import cn.undraw.util.bean.BeanUtils;
 import cn.undraw.util.bean.SFunction;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
@@ -11,24 +12,43 @@ import com.baomidou.mybatisplus.core.toolkit.Constants;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 public class EnhancedServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, T> {
 
-    public <T> boolean listByKey(Collection<T> entityList, SFunction<T, ?>...fun) {
-        String fieldName = BeanUtils.getFieldName(fun);
-        RootMapper rootMapper = (RootMapper) this.baseMapper;
-        Map<String, Object> param = new HashMap<>();
-        param.put(Constants.Q_WRAPPER_SQL_SELECT, fieldName);
-        rootMapper.listByKey(param);
-        return true;
+    private final int BATCH_SIZE = 200;
+
+    public List<T> listByKey(Collection<T> entityList, SFunction<T, ?>...fun) {
+        List list = new ArrayList();
+        if (entityList != null && entityList.size() > 0) {
+            String fieldName = BeanUtils.getFieldName(fun);
+            List<String> fieldNames = StrUtils.toList(fieldName, ",");
+            List<List<T>> lists = ConvertUtils.batchList(entityList, BATCH_SIZE / fieldNames.size());
+            for (List<T> list2 : lists) {
+                StringBuffer sb = new StringBuffer();
+                sb.append("WHERE (");
+                sb.append(fieldName);
+                sb.append(") IN (");
+                for (T entity : list2) {
+                    sb.append("(");
+                    for (String name : fieldNames) {
+                        Object fieldValue = BeanUtils.getFieldValue(entity, name);
+                        sb.append("'").append(fieldValue).append("'").append(",");
+                    }
+                    sb.delete(sb.length() - 1, sb.length());
+                    sb.append(")").append(",");
+                }
+                sb.delete(sb.length() - 1, sb.length());
+                sb.append(")");
+                RootMapper rootMapper = (RootMapper) this.baseMapper;
+                list.addAll(rootMapper.listByKey(sb.toString()));
+            }
+        }
+        return list;
     }
 
-    public <T, U>  boolean updateBatchByColumn(Collection<T> entityList, Function<T, Wrapper<U>> function) {
+    public <T, U> boolean updateBatchByColumn(Collection<T> entityList, Function<T, Wrapper<U>> function) {
         String sqlStatement = getSqlStatement(SqlMethod.UPDATE);
         return executeBatch(entityList, (sqlSession, entity) -> {
             Map<String, Object> param = new HashMap<>();
@@ -44,8 +64,19 @@ public class EnhancedServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl
             Map<String, Object> param = new HashMap<>();
             param.put(Constants.ENTITY, entity);
             param.put(Constants.WRAPPER, function.apply(entity));
-            sqlSession.selectList(sqlStatement, param);
+            sqlSession.delete(sqlStatement, param);
         });
+    }
+
+    public <T, U>  boolean saveOrUpdateBatchByColumn2(Collection<T> entityList, Function<T, Wrapper<U>> fun) {
+        T next = entityList.iterator().next();
+        System.out.println(fun);
+//        String fieldName = BeanUtils.getFieldName( fun);
+//        System.out.println(fieldName);
+        Wrapper<U> apply = fun.apply(next);
+        String sqlSelect = apply.getSqlSegment();
+        System.out.println(apply);
+        return false;
     }
 
     public <T, U>  boolean saveOrUpdateBatchByColumn(Collection<T> entityList, Function<T, Wrapper<U>> function) {

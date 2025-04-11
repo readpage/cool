@@ -1,7 +1,7 @@
 package com.undraw.mapper;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.undraw.domain.entity.User;
+import com.undraw.handler.RootMapper;
 import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
@@ -14,7 +14,7 @@ import java.util.List;
  * @author readpage
  * @since 2023-03-15 18:00
  */
-public interface UserMapper extends BaseMapper<User> {
+public interface UserMapper extends RootMapper<User> {
     @Select("SELECT * FROM user1")
     void badSql();
 

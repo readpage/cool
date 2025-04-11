@@ -59,4 +59,29 @@ public class BeanTest {
         System.out.println("user2: " + user2);
     }
 
+    @Test
+    public void equals() {
+        User user = new User();
+        user.setUsername("user");
+        user.setPassword("password2");
+        user.setAge(20);
+        User user2 = new User();
+        user2.setUsername("user2");
+        user2.setPassword("password2");
+        user2.setAge(20);
+        User user3 = new User();
+        user3.setUsername("user2");
+        user3.setPassword("password2");
+        user3.setAge(30);
+        System.out.println(BeanUtils.getFieldName(User::getUsername, User::getPassword, User::getPhone));
+        boolean b1 = BeanUtils.equals(user, user2, User::getUsername, User::getPassword);
+        System.out.println(b1);
+        boolean b2 = BeanUtils.equals(user2, user3, User::getUsername, User::getPassword);
+        System.out.println(b2);
+        boolean b3 = BeanUtils.equals(user, user2, User::getPassword, User::getAge);
+        System.out.println(b3);
+        boolean b4 = BeanUtils.equals(user2, user3, User::getPassword, User::getAge);
+        System.out.println(b4);
+    }
+
 }

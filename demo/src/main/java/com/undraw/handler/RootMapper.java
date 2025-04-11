@@ -3,15 +3,14 @@ package com.undraw.handler;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 import java.util.List;
-import java.util.Map;
 
 public interface RootMapper<T> extends BaseMapper<T> {
     /**
      * 根据key查询查询数据
-     * @param map
+     * @param whereSql
      * @return
      */
-    List<T> listByKey(Map map);
+    List<T> listByKey(String whereSql);
 
     /**
      * 自定义批量插入

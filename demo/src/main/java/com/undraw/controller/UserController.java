@@ -56,6 +56,12 @@ public class UserController {
         return R.ok(userService.updateById(user));
     }
 
+    @Operation(summary = "异常sql")
+    @GetMapping("/badSql")
+    public R badSql() {
+        return R.ok(userService.badSql());
+    }
+
     @Operation(summary = "导入用户信息")
     @OperateLog(type = OperateTypeEnum.IMPORT)
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

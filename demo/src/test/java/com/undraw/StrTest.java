@@ -4,7 +4,10 @@ import cn.undraw.util.ConvertUtils;
 import cn.undraw.util.DecimalUtils;
 import cn.undraw.util.StrUtils;
 import cn.undraw.util.URLUtils;
+import cn.undraw.util.bean.BeanUtils;
+import cn.undraw.util.bean.SFunction;
 import cn.undraw.util.snowflake.SnowflakeUtils;
+import com.undraw.domain.entity.User;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -33,7 +36,7 @@ public class StrTest {
         BigDecimal bigDecimal = null;
         System.out.println(bigDecimal);
 
-        Double a = new Double(2);
+        Double a = Double.valueOf(2);
         double b = a;
         System.out.println(b);
         System.out.println(DecimalUtils.toCurrency(null));
@@ -173,10 +176,14 @@ public class StrTest {
         System.out.println(Objects.equals(a, b));
     }
 
+    public <T> void listByKey(SFunction<T, ?>...fun) {
+        String fieldName = BeanUtils.getFieldName(fun);
+        System.out.println(fieldName);
+    }
+
     @Test
     public void test10() {
-        String test = getSort("test");
-        System.out.println(test);
+        listByKey(User::getUsername, User::getPassword, User::getCreateTime);
     }
 
     @Test
@@ -187,13 +194,5 @@ public class StrTest {
         System.out.println(contains);
     }
 
-    public String getSort(String sort) {
-        try {
-            ConvertUtils.cloneDeep(sort, Map.class);
-            return sort;
-        } catch (Exception e) {
-            return null;
-        }
-    }
 
 }
