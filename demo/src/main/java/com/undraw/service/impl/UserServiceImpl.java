@@ -61,9 +61,10 @@ public class UserServiceImpl extends EnhancedServiceImpl<UserMapper, User> imple
     @Override
     public boolean badSql() {
         List<User> userList = userMapper.selectList(null);
-        this.listByKey(userList, User::getUsername, User::getPassword);
         return this.saveOrUpdateBatchByColumn2(userList, o -> Wrappers.lambdaQuery(User.class)
                 .eq(User::getUsername, o.getUsername())
+                .eq(User::getPassword, o.getPassword())
+                .eq(User::getCreateTime, o.getCreateTime())
         );
     }
 

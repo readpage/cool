@@ -202,19 +202,19 @@ public class BeanUtils {
     }
 
     public static <T> boolean equals(Object v1, Object v2, SFunction<T, ?> ...columns) {
-        return equals(v1, v2, Arrays.asList(columns));
+        List<String> list = StrUtils.toList(getFieldName(columns), ",");
+        return equals(v1, v2, list);
     }
 
-    public static <T> boolean equals(Object v1, Object v2, List<SFunction<T, ?>> columns) {
-        for (SFunction<T, ?> column : columns) {
-            String fieldName = getFieldName(column);
+    public static <T> boolean equals(Object v1, Object v2, List<String> fieldNames) {
+        for (String fieldName : fieldNames) {
             Object fieldValue1 = BeanUtils.getFieldValue(v1, fieldName);
             Object fieldValue2 = BeanUtils.getFieldValue(v2, fieldName);
             if (!Objects.equals(fieldValue1, fieldValue2)) {
                 return false;
             }
         }
-       return true;
+        return true;
     }
 
 }
