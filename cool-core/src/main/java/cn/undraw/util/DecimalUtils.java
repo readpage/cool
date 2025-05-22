@@ -27,7 +27,7 @@ public class DecimalUtils {
         return add(ConvertUtils.toDouble(v1), ConvertUtils.toDouble(v2));
     }
 
-    /***
+    /**
      * 提供精确的加法运算。
      * @param v1 被加数
      * @param v1 加数
@@ -168,7 +168,73 @@ public class DecimalUtils {
                     "The scale must be a positive integer or zero");
         }
         if (isZero(v2)) return new BigDecimal("0");
-        return v1.divide(v2).setScale(scale, BigDecimal.ROUND_HALF_UP);
+        return v1.divide(v2).setScale(scale, RoundingMode.HALF_UP);
+    }
+
+    /**
+     * 提供精确的小数位舍入模式向下舍入。保留两位
+     *
+     * @param v     需要向下舍入的数字
+     * @return String 向下舍入后的结果
+     */
+    public static String floor(Double v) {
+        return floor(v, 2);
+    }
+
+    /**
+     * 提供精确的小数位舍入模式向下舍入。
+     *
+     * @param v     需要四舍五入的数字
+     * @param scale 小数点后保留几位
+     * @return String 四舍五入后的结果
+     */
+    public static String floor(String v, int scale) {
+        Double a = ConvertUtils.toDouble(v);
+        return floor(a, scale);
+    }
+
+    /**
+     * 提供精确的小数位舍入模式向下舍入。
+     *
+     * @param v     需要向下舍入的数字
+     * @param scale 小数点后保留几位
+     * @return String 向下舍入后的结果
+     */
+    public static String floor(Double v, int scale) {
+        return round(v, scale, RoundingMode.DOWN).toString();
+    }
+
+    /**
+     * 提供精确的小数位舍入模式向上舍入。保留两位
+     *
+     * @param v     需要向上舍入的数字
+     * @return String 向上舍入后的结果
+     */
+    public static String ceil(Double v) {
+        return floor(v, 2);
+    }
+
+    /**
+     * 提供精确的小数位舍入模式向上舍入。
+     *
+     * @param v     需要向上舍入的数字
+     * @param scale 小数点后保留几位
+     * @return String 向上舍入后的结果
+     */
+    public static String ceil(String v, int scale) {
+        Double a = ConvertUtils.toDouble(v);
+        return floor(a, scale);
+    }
+
+    /**
+     * 提供精确的小数位舍入模式向上舍入。
+     *
+     * @param v     需要向上舍入的数字
+     * @param scale 小数点后保留几位
+     * @return String 向上舍入后的结果
+     */
+    public static String ceil(Double v, int scale) {
+        return round(v, scale, RoundingMode.UP).toString();
     }
 
     /**
@@ -200,7 +266,6 @@ public class DecimalUtils {
      */
     public static String round(String v, int scale) {
         Double a = ConvertUtils.toDouble(v);
-        if (a == null) return "0";
         return round(a, scale);
     }
 
@@ -212,55 +277,24 @@ public class DecimalUtils {
      * @return String 四舍五入后的结果
      */
     public static String round(Double v, int scale) {
+        return round(v, scale, RoundingMode.DOWN).toString();
+    }
+
+    /**
+     * 提供精确的小数位处理。
+     *
+     * @param v     需要处理的数字
+     * @param scale 小数点后保留几位
+     * @return String 处理后的结果
+     */
+    public static String round(Double v, int scale, RoundingMode roundingMode) {
         if (v == null) return "0";
         if (scale < 0) {
             throw new IllegalArgumentException(
                     "The scale must be a positive integer or zero");
         }
-        BigDecimal b = BigDecimal.valueOf(v);
-        BigDecimal one = new BigDecimal("1");
-        return b.divide(one, scale, BigDecimal.ROUND_HALF_UP).toString();
-    }
-
-    /**
-     * 提供精确的小数位舍入模式向零舍入。保留两位
-     *
-     * @param v     需要四舍五入的数字
-     * @return String 四舍五入后的结果
-     */
-    public static String floor(Double v) {
-        return floor(v, 2);
-    }
-
-    /**
-     * 提供精确的小数位舍入模式向零舍入。
-     *
-     * @param v     需要四舍五入的数字
-     * @param scale 小数点后保留几位
-     * @return String 四舍五入后的结果
-     */
-    public static String floor(String v, int scale) {
-        Double a = ConvertUtils.toDouble(v);
-        if (a == null) return "0";
-        return floor(a, scale);
-    }
-
-    /**
-     * 提供精确的小数位舍入模式向零舍入。
-     *
-     * @param v     需要四舍五入的数字
-     * @param scale 小数点后保留几位
-     * @return String 四舍五入后的结果
-     */
-    public static String floor(Double v, int scale) {
-        if (v == null) return "0";
-        if (scale < 0) {
-            throw new IllegalArgumentException(
-                    "The scale must be a positive integer or zero");
-        }
-        BigDecimal b = BigDecimal.valueOf(v);
-        BigDecimal one = new BigDecimal("1");
-        return b.divide(one, scale, BigDecimal.ROUND_DOWN).toString();
+        BigDecimal value = BigDecimal.valueOf(v);
+        return value.setScale(scale, RoundingMode.UP).toString();
     }
 
     /**

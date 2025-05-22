@@ -1,9 +1,10 @@
 package cn.undraw.util.bean;
 
-import cn.undraw.util.StrUtils;
-
 import java.lang.annotation.Annotation;
-import java.lang.reflect.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -12,23 +13,6 @@ import java.util.stream.Collectors;
  * @date 2023-03-06 23:50
  */
 public class AnnoUtils {
-
-    /**
-     * 根据类类型实例化对象
-     * @return void
-     */
-    public static<T> T getConstructor(Class<T> clazz) {
-        if (StrUtils.isEmpty(clazz)) {
-            throw new IllegalArgumentException();
-        }
-        try {
-            Constructor defaultConstructor = clazz.getDeclaredConstructor();
-            defaultConstructor.setAccessible(true);
-            return (T) defaultConstructor.newInstance();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     /**
      * 获取class的所有属性

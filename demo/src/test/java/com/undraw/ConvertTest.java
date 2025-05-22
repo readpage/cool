@@ -35,18 +35,6 @@ public class ConvertTest {
             new Animal("狗", "狗头")
     ));
 
-    @Test
-    public void test() {
-        System.out.println(ConvertUtils.cloneDeep(new Animal("猫", "鱼"), Cat.class));
-        List<Cat> catList = (List<Cat>) ConvertUtils.copy(animalList, Cat.class);
-        System.out.println(catList);
-        System.out.println("-------------------");
-        Animal animal = new Animal("猫", "鱼");
-        Cat cat = ConvertUtils.copy(animal, Cat.class);
-        cat.setEat("猫粮");
-        System.out.println(animal);
-        System.out.println(cat);
-    }
 
     @Test
     public void test2() {

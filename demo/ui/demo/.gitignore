@@ -1,0 +1,13 @@
+# Logs
+logs
+*.log
+
+
+
+
+# Editor directories and files
+node_modules/
+.vscode/
+dist/
+.idea/
+vue-template/

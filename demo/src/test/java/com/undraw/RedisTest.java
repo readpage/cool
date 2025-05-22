@@ -10,6 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.RedisTemplate;
 
 import java.time.LocalDate;
+import java.util.List;
 
 /**
  * @author readpage
@@ -60,5 +61,11 @@ public class RedisTest {
         redisUtil.hSet("hash", "2024", Student.studentList.get(0));
         Student student = ConvertUtils.cloneDeep(redisUtil.hGet("hash", "2024"), Student.class);
         System.out.println(student);
+    }
+
+    @Test
+    public void scan() {
+        List<String> list = redisUtil.scan("r*");
+        System.out.println(list);
     }
 }

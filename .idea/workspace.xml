@@ -4,138 +4,31 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="18fbe13d-d477-4a78-a9bc-379cfd296fb0" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/demo/model/export.xlsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/model/import.xlsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/config/ExecutorAsyncConfig.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/config/FilterConfig.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/config/InitConfig.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/config/MyBatisPlusConfig.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/config/SpringDocConfig.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/controller/DateController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/controller/ExcelController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/controller/ExceptionController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/controller/FileController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/controller/FilterController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/controller/UserController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/domain/dto/DateParam.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/domain/dto/ImportDemo.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/domain/dto/UserParam.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/domain/dto/ValidParam.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/domain/entity/Role.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/domain/entity/SystemLog.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/domain/entity/User.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/domain/model/Employee.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/domain/model/Employee1.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/domain/model/Fruit.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/domain/model/Model.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/domain/model/Student.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/domain/vo/ExcelDB.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/filter/AuthFilter.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/handler/CustomSqlInjector.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/handler/EnhancedServiceImpl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/handler/MyMetaObjectHandler.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/handler/RootMapper.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/handler/method/InsertBatchMethod.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/handler/method/InsertOrUpdateBathMethod.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/handler/method/ListByKeyMethod.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/handler/method/MysqlInsertOrUpdateMethod.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/handler/method/SqlMethodChild.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/handler/method/UpdateBatchMethod.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/mapper/CodeGeneratorMapper.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/mapper/SystemLogMapper.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/mapper/UserMapper.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/service/SystemLogService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/service/UserService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/service/impl/OperateLogServiceImpl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/service/impl/SystemLogServiceImpl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/service/impl/UserServiceImpl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/util/ImageUtils.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/util/excel/AutoHeadColumnWidthStyleStrategy.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/util/excel/CellStyleModel.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/util/excel/CustomCellStyleHandler.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/util/excel/CustomMergeStrategy.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/util/excel/ExcelUtils.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/util/excel/converter/LocalDateConverter.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/util/excel/converter/LocalDateTimeConverter.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/util/excel/converter/UrlConverter.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/util/excel/converter/UrlListConverter.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/util/excel/handler/ImageCellWriteHandler.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/util/excel/handler/MergeHandler.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/util/page/PageInfo.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/util/page/PageParam.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/util/redis/RedisConfig.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/util/redis/RedisConfigCacheManager.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/util/redis/RedisUtil.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/resources/application-dev.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/resources/application-prod.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/resources/log4j2-prod.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/resources/mapper/CodeGeneratorMapper.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/resources/mapper/SystemLogMapper.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/main/resources/mapper/UserMapper.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/test/java/com/undraw/AnnoTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/test/java/com/undraw/BeanTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/test/java/com/undraw/ClassGenerator.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/test/java/com/undraw/CodeGenerator.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/test/java/com/undraw/ConvertTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/test/java/com/undraw/ConvertTest2.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/test/java/com/undraw/DateTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/test/java/com/undraw/DecimalTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/test/java/com/undraw/Demo2Test.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/test/java/com/undraw/DemoTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/test/java/com/undraw/EasyExcelExample.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/test/java/com/undraw/ExcelTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/test/java/com/undraw/FileTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/test/java/com/undraw/FileUtilsTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/test/java/com/undraw/IPTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/test/java/com/undraw/ImageUtilTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/test/java/com/undraw/KeyValueListManager.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/test/java/com/undraw/MatcherTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/test/java/com/undraw/RedisTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/test/java/com/undraw/ReflectTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/test/java/com/undraw/RestTemplateTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/test/java/com/undraw/SensitiveTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/test/java/com/undraw/SnowflakeTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/test/java/com/undraw/StrTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/test/java/com/undraw/ThreadTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cool-core-test/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/cool-core-test/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cool-core-test/src/main/java/com/undraw/controller/DateController.java" beforeDir="false" afterPath="$PROJECT_DIR$/cool-core-test/src/main/java/com/undraw/controller/DateController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cool-core-test/src/main/java/com/undraw/controller/ExcelController.java" beforeDir="false" afterPath="$PROJECT_DIR$/cool-core-test/src/main/java/com/undraw/controller/ExcelController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cool-core-test/src/main/java/com/undraw/controller/FileController.java" beforeDir="false" afterPath="$PROJECT_DIR$/cool-core-test/src/main/java/com/undraw/controller/FileController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cool-core-test/src/main/java/com/undraw/controller/ForwardController.java" beforeDir="false" afterPath="$PROJECT_DIR$/cool-core-test/src/main/java/com/undraw/controller/ForwardController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cool-core-test/src/main/java/com/undraw/domain/dto/ImportDemo.java" beforeDir="false" afterPath="$PROJECT_DIR$/cool-core-test/src/main/java/com/undraw/domain/dto/ImportDemo.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cool-core-test/src/main/java/com/undraw/domain/entity/Role.java" beforeDir="false" afterPath="$PROJECT_DIR$/cool-core-test/src/main/java/com/undraw/domain/entity/Role.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cool-core-test/src/main/java/com/undraw/domain/model/Employee.java" beforeDir="false" afterPath="$PROJECT_DIR$/cool-core-test/src/main/java/com/undraw/domain/model/Employee.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cool-core-test/src/main/java/com/undraw/domain/model/Employee1.java" beforeDir="false" afterPath="$PROJECT_DIR$/cool-core-test/src/main/java/com/undraw/domain/model/Employee1.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cool-core-test/src/main/java/com/undraw/domain/model/Student.java" beforeDir="false" afterPath="$PROJECT_DIR$/cool-core-test/src/main/java/com/undraw/domain/model/Student.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cool-core-test/src/main/java/com/undraw/domain/vo/ExcelDB.java" beforeDir="false" afterPath="$PROJECT_DIR$/cool-core-test/src/main/java/com/undraw/domain/vo/ExcelDB.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cool-core-test/src/main/java/com/undraw/util/excel/AutoHeadColumnWidthStyleStrategy.java" beforeDir="false" afterPath="$PROJECT_DIR$/cool-core-test/src/main/java/com/undraw/util/excel/AutoHeadColumnWidthStyleStrategy.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cool-core-test/src/main/java/com/undraw/util/excel/CustomCellStyleHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/cool-core-test/src/main/java/com/undraw/util/excel/CustomCellStyleHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cool-core-test/src/main/java/com/undraw/util/excel/CustomMergeStrategy.java" beforeDir="false" afterPath="$PROJECT_DIR$/cool-core-test/src/main/java/com/undraw/util/excel/CustomMergeStrategy.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cool-core-test/src/main/java/com/undraw/util/excel/ExcelUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/cool-core-test/src/main/java/com/undraw/util/excel/ExcelUtils.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cool-core-test/src/main/java/com/undraw/util/excel/converter/LocalDateConverter.java" beforeDir="false" afterPath="$PROJECT_DIR$/cool-core-test/src/main/java/com/undraw/util/excel/converter/LocalDateConverter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cool-core-test/src/main/java/com/undraw/util/excel/converter/LocalDateTimeConverter.java" beforeDir="false" afterPath="$PROJECT_DIR$/cool-core-test/src/main/java/com/undraw/util/excel/converter/LocalDateTimeConverter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cool-core-test/src/main/java/com/undraw/util/excel/converter/UrlConverter.java" beforeDir="false" afterPath="$PROJECT_DIR$/cool-core-test/src/main/java/com/undraw/util/excel/converter/UrlConverter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cool-core-test/src/main/java/com/undraw/util/excel/converter/UrlListConverter.java" beforeDir="false" afterPath="$PROJECT_DIR$/cool-core-test/src/main/java/com/undraw/util/excel/converter/UrlListConverter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cool-core-test/src/main/java/com/undraw/util/excel/handler/ImageCellWriteHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/cool-core-test/src/main/java/com/undraw/util/excel/handler/ImageCellWriteHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cool-core-test/src/main/java/com/undraw/util/excel/handler/MergeHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/cool-core-test/src/main/java/com/undraw/util/excel/handler/MergeHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cool-core-test/src/test/java/com/undraw/EasyExcelExample.java" beforeDir="false" afterPath="$PROJECT_DIR$/cool-core-test/src/test/java/com/undraw/EasyExcelExample.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cool-core-test/src/test/java/com/undraw/ExcelTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/cool-core-test/src/test/java/com/undraw/ExcelTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cool-core/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/cool-core/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cool-core/src/main/java/cn/undraw/config/TimeFormatConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/cool-core/src/main/java/cn/undraw/config/TimeFormatConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cool-core/src/main/java/cn/undraw/handler/exception/GlobalWarnExceptionHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/cool-core/src/main/java/cn/undraw/handler/exception/GlobalWarnExceptionHandler.java" afterDir="false" />
+    <list default="true" id="18fbe13d-d477-4a78-a9bc-379cfd296fb0" name="Changes" comment="update: spring-boot3">
+      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/controller/EmployeeController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/service/EmployeeService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/service/impl/EmployeeServiceImpl.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/demo/src/test/java/com/undraw/LambdaTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/demo/src/test/java/com/undraw/TmpTest.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cool-core/src/main/java/cn/undraw/util/ConvertUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/cool-core/src/main/java/cn/undraw/util/ConvertUtils.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cool-core/src/main/java/cn/undraw/util/DateUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/cool-core/src/main/java/cn/undraw/util/DateUtils.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cool-core/src/main/java/cn/undraw/util/log/aop/OperateLogAop.java" beforeDir="false" afterPath="$PROJECT_DIR$/cool-core/src/main/java/cn/undraw/util/log/aop/OperateLogAop.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cool-core/src/main/resources/META-INF/additional-spring-configuration-metadata.json" beforeDir="false" afterPath="$PROJECT_DIR$/cool-core/src/main/resources/META-INF/additional-spring-configuration-metadata.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/.gitattributes" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/demo/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/main/java/com/example/DemoApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/DemoApplication.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/main/java/com/example/controller/TestController.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/controller/TestController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cool-core/src/main/java/cn/undraw/util/DecimalUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/cool-core/src/main/java/cn/undraw/util/DecimalUtils.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cool-core/src/main/java/cn/undraw/util/StrUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/cool-core/src/main/java/cn/undraw/util/StrUtils.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cool-core/src/main/java/cn/undraw/util/bean/AnnoUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/cool-core/src/main/java/cn/undraw/util/bean/AnnoUtils.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cool-core/src/main/java/cn/undraw/util/bean/BeanUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/cool-core/src/main/java/cn/undraw/util/bean/BeanUtils.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo/src/main/java/com/undraw/controller/UserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/controller/UserController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo/src/main/java/com/undraw/domain/model/Employee.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/domain/model/Employee.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo/src/main/java/com/undraw/service/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/service/UserService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo/src/main/java/com/undraw/util/redis/RedisUtil.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/main/java/com/undraw/util/redis/RedisUtil.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo/src/main/resources/application-dev.yml" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/main/resources/application-dev.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/demo/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/main/resources/application.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/test/java/com/example/demo/DemoApplicationTests.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo/src/main/resources/mapper/UserMapper.xml" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/main/resources/mapper/UserMapper.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo/src/test/java/com/undraw/BeanTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/test/java/com/undraw/BeanTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo/src/test/java/com/undraw/ConvertTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/test/java/com/undraw/ConvertTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo/src/test/java/com/undraw/DateTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/test/java/com/undraw/DateTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo/src/test/java/com/undraw/DecimalTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/test/java/com/undraw/DecimalTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo/src/test/java/com/undraw/DemoTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/test/java/com/undraw/DemoTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo/src/test/java/com/undraw/RedisTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/test/java/com/undraw/RedisTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo/src/test/java/com/undraw/StrTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/test/java/com/undraw/StrTest.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -151,8 +44,8 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="AnnotationType" />
-        <option value="Interface" />
         <option value="Dockerfile" />
+        <option value="Interface" />
         <option value="Class" />
       </list>
     </option>
@@ -190,78 +83,97 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "JUnit.AnnoTest.test.executor": "Debug",
-    "JUnit.BeanTest.test.executor": "Debug",
-    "JUnit.ConvertTest.test.executor": "Run",
-    "JUnit.ConvertTest.test4.executor": "Run",
-    "JUnit.ConvertTest.test5.executor": "Run",
-    "JUnit.ConvertTest.test6.executor": "Run",
-    "JUnit.ConvertTest2.format.executor": "Run",
-    "JUnit.ConvertTest2.test.executor": "Run",
-    "JUnit.ConvertTest2.test1.executor": "Run",
-    "JUnit.ConvertTest2.test2.executor": "Run",
-    "JUnit.DateTest.test.executor": "Coverage",
-    "JUnit.DateTest.test2.executor": "JRebel Debug",
-    "JUnit.DecimalTest.test.executor": "Debug",
-    "JUnit.DecimalTest.test2.executor": "Debug",
-    "JUnit.DecimalTest.test3.executor": "Debug",
-    "JUnit.Demo2Test.test.executor": "Debug",
-    "JUnit.DemoApplicationTests.contextLoads.executor": "JRebel Debug",
-    "JUnit.DemoTest.test.executor": "Debug",
-    "JUnit.DemoTest.test2.executor": "Debug",
-    "JUnit.ExcelTest.color.executor": "Run",
-    "JUnit.ExcelTest.executor": "Debug",
-    "JUnit.ExcelTest.export.executor": "Run",
-    "JUnit.ExcelTest.fill.executor": "Run",
-    "JUnit.ExcelTest.test.executor": "Debug",
-    "JUnit.ExcelTest.writeCellDataWrite.executor": "Run",
-    "JUnit.IPTest.test.executor": "Run",
-    "JUnit.RedisTest.hash.executor": "Run",
-    "JUnit.RedisTest.test.executor": "Run",
-    "JUnit.RedisTest.test2.executor": "Run",
-    "JUnit.RedisTest.tets3.executor": "Run",
-    "JUnit.ReflectTest.test2.executor": "Run",
-    "JUnit.SensitiveTest.test.executor": "Run",
-    "JUnit.SensitiveTest.test2.executor": "Run",
-    "JUnit.SensitiveTest.test3.executor": "Run",
-    "Maven.cool [clean].executor": "Run",
-    "Maven.cool-core [clean].executor": "Run",
-    "Maven.cool-core [install].executor": "Run",
-    "Maven.cool-core [package].executor": "Run",
-    "Maven.demo [clean].executor": "Run",
-    "Maven.demo2 [clean].executor": "Run",
-    "RequestMappingsPanelOrder0": "0",
-    "RequestMappingsPanelOrder1": "1",
-    "RequestMappingsPanelWidth0": "75",
-    "RequestMappingsPanelWidth1": "75",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "Spring Boot.CoolCoreTestApplication.executor": "JRebel Debug",
-    "Spring Boot.Demo2Application.executor": "JRebel Debug",
-    "Spring Boot.DemoApplication.executor": "JRebel Debug",
-    "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "master",
-    "jdk.selected.JAVA_MODULE": "17",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "D:/code/Java/cool/demo/src/main/java/com/undraw/service/impl",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "project.structure.last.edited": "项目",
-    "project.structure.proportion": "0.15",
-    "project.structure.side.proportion": "0.2",
-    "run.configurations.included.in.services": "true",
-    "settings.editor.selected.configurable": "project.propCompiler",
-    "spring.configuration.checksum": "adc14bc5942187ae9b51210c3694fa90",
-    "vue.rearranger.settings.migration": "true",
-    "应用程序.EasyExcelExample.executor": "Debug"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;JUnit.AnnoTest.test.executor&quot;: &quot;Debug&quot;,
+    &quot;JUnit.AnnoTest.test2.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.BeanTest.copy.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.BeanTest.equals.executor&quot;: &quot;JRebel Debug&quot;,
+    &quot;JUnit.BeanTest.test (1).executor&quot;: &quot;Debug&quot;,
+    &quot;JUnit.BeanTest.test.executor&quot;: &quot;JRebel Debug&quot;,
+    &quot;JUnit.ConvertTest.test.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.ConvertTest.test4.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.ConvertTest.test5.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.ConvertTest.test6.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.ConvertTest2.format.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.ConvertTest2.test.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.ConvertTest2.test1.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.ConvertTest2.test2.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.DateTest.before.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.DateTest.between.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.DateTest.test.executor&quot;: &quot;Coverage&quot;,
+    &quot;JUnit.DateTest.test2.executor&quot;: &quot;JRebel Debug&quot;,
+    &quot;JUnit.DecimalTest.test.executor&quot;: &quot;Debug&quot;,
+    &quot;JUnit.DecimalTest.test2.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.DecimalTest.test3.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.DecimalTest.test4.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.Demo2Test.test.executor&quot;: &quot;Debug&quot;,
+    &quot;JUnit.DemoApplicationTests.contextLoads.executor&quot;: &quot;JRebel Debug&quot;,
+    &quot;JUnit.DemoTest.test.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.DemoTest.test2.executor&quot;: &quot;Debug&quot;,
+    &quot;JUnit.DemoTest.test3.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.ExcelTest.color.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.ExcelTest.executor&quot;: &quot;Debug&quot;,
+    &quot;JUnit.ExcelTest.export.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.ExcelTest.fill.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.ExcelTest.test.executor&quot;: &quot;Debug&quot;,
+    &quot;JUnit.ExcelTest.writeCellDataWrite.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.IPTest.test.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.LambdaTest.consumer.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.LambdaTest.group.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.LambdaTest.group2.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.LambdaTest.sort.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.MinioTest.test.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.MinioTest.test2.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.RedisTest.hash.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.RedisTest.scan.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.RedisTest.test.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.RedisTest.test2.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.RedisTest.tets3.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.ReflectTest.test2.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.SensitiveTest.test.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.SensitiveTest.test2.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.SensitiveTest.test3.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.StrTest.group.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.StrTest.test10.executor&quot;: &quot;JRebel Debug&quot;,
+    &quot;JUnit.TmpTest.test.executor&quot;: &quot;Run&quot;,
+    &quot;Maven.cool [clean].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.cool-core [clean].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.cool-core [install].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.cool-core [package].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.demo [clean].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.demo2 [clean].executor&quot;: &quot;Run&quot;,
+    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
+    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
+    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
+    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;Spring Boot.CoolCoreTestApplication.executor&quot;: &quot;JRebel Debug&quot;,
+    &quot;Spring Boot.Demo2Application.executor&quot;: &quot;JRebel Debug&quot;,
+    &quot;Spring Boot.DemoApplication.executor&quot;: &quot;JRebel Debug&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;jdk.selected.JAVA_MODULE&quot;: &quot;17&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/code/Java/algorithm&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;项目&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;run.configurations.included.in.services&quot;: &quot;true&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;fileTemplates&quot;,
+    &quot;spring.configuration.checksum&quot;: &quot;adc14bc5942187ae9b51210c3694fa90&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;,
+    &quot;应用程序.CodeGenerator.executor&quot;: &quot;Run&quot;,
+    &quot;应用程序.EasyExcelExample.executor&quot;: &quot;Debug&quot;
   }
-}]]></component>
+}</component>
   <component name="ReactorSettings">
     <option name="notificationShown" value="true" />
   </component>
@@ -299,7 +211,7 @@
     </option>
   </component>
   <component name="RunManager" selected="Spring Boot.DemoApplication">
-    <configuration name="RedisTest.hash" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+    <configuration name="DateTest.before" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="demo" />
       <extension name="coverage">
         <pattern>
@@ -308,14 +220,14 @@
         </pattern>
       </extension>
       <option name="PACKAGE_NAME" value="com.undraw" />
-      <option name="MAIN_CLASS_NAME" value="com.undraw.RedisTest" />
-      <option name="METHOD_NAME" value="hash" />
+      <option name="MAIN_CLASS_NAME" value="com.undraw.DateTest" />
+      <option name="METHOD_NAME" value="before" />
       <option name="TEST_OBJECT" value="method" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="ReflectTest.test2" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+    <configuration name="DemoTest.test" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="demo" />
       <extension name="coverage">
         <pattern>
@@ -324,30 +236,14 @@
         </pattern>
       </extension>
       <option name="PACKAGE_NAME" value="com.undraw" />
-      <option name="MAIN_CLASS_NAME" value="com.undraw.ReflectTest" />
-      <option name="METHOD_NAME" value="test2" />
-      <option name="TEST_OBJECT" value="method" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="SensitiveTest.test" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="demo" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="com.undraw.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="com.undraw" />
-      <option name="MAIN_CLASS_NAME" value="com.undraw.SensitiveTest" />
+      <option name="MAIN_CLASS_NAME" value="com.undraw.DemoTest" />
       <option name="METHOD_NAME" value="test" />
       <option name="TEST_OBJECT" value="method" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="SensitiveTest.test2" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+    <configuration name="DemoTest.test3" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="demo" />
       <extension name="coverage">
         <pattern>
@@ -356,32 +252,41 @@
         </pattern>
       </extension>
       <option name="PACKAGE_NAME" value="com.undraw" />
-      <option name="MAIN_CLASS_NAME" value="com.undraw.SensitiveTest" />
-      <option name="METHOD_NAME" value="test2" />
-      <option name="TEST_OBJECT" value="method" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="SensitiveTest.test3" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="demo" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="com.undraw.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="com.undraw" />
-      <option name="MAIN_CLASS_NAME" value="com.undraw.SensitiveTest" />
+      <option name="MAIN_CLASS_NAME" value="com.undraw.DemoTest" />
       <option name="METHOD_NAME" value="test3" />
       <option name="TEST_OBJECT" value="method" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="CoolCoreTestApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
-      <module name="cool-core-test" />
-      <option name="SPRING_BOOT_MAIN_CLASS" value="com.undraw.CoolCoreTestApplication" />
+    <configuration name="LambdaTest.sort" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="demo" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.undraw.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.undraw" />
+      <option name="MAIN_CLASS_NAME" value="com.undraw.LambdaTest" />
+      <option name="METHOD_NAME" value="sort" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="TmpTest.test" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="demo" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.undraw.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.undraw" />
+      <option name="MAIN_CLASS_NAME" value="com.undraw.TmpTest" />
+      <option name="METHOD_NAME" value="test" />
+      <option name="TEST_OBJECT" value="method" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -394,21 +299,20 @@
       </method>
     </configuration>
     <list>
-      <item itemvalue="JUnit.RedisTest.hash" />
-      <item itemvalue="JUnit.ReflectTest.test2" />
-      <item itemvalue="JUnit.SensitiveTest.test" />
-      <item itemvalue="JUnit.SensitiveTest.test2" />
-      <item itemvalue="JUnit.SensitiveTest.test3" />
+      <item itemvalue="JUnit.DateTest.before" />
+      <item itemvalue="JUnit.DemoTest.test3" />
+      <item itemvalue="JUnit.DemoTest.test" />
+      <item itemvalue="JUnit.LambdaTest.sort" />
+      <item itemvalue="JUnit.TmpTest.test" />
       <item itemvalue="Spring Boot.DemoApplication" />
-      <item itemvalue="Spring Boot.CoolCoreTestApplication" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="JUnit.SensitiveTest.test3" />
-        <item itemvalue="JUnit.SensitiveTest.test2" />
-        <item itemvalue="JUnit.SensitiveTest.test" />
-        <item itemvalue="JUnit.ReflectTest.test2" />
-        <item itemvalue="JUnit.RedisTest.hash" />
+        <item itemvalue="JUnit.DateTest.before" />
+        <item itemvalue="JUnit.DemoTest.test" />
+        <item itemvalue="JUnit.TmpTest.test" />
+        <item itemvalue="JUnit.DemoTest.test3" />
+        <item itemvalue="JUnit.LambdaTest.sort" />
       </list>
     </recent_temporary>
   </component>
@@ -706,7 +610,28 @@
       <workItem from="1744160783038" duration="3375000" />
       <workItem from="1744168904112" duration="8591000" />
       <workItem from="1744182746294" duration="164000" />
-      <workItem from="1744182921876" duration="16088000" />
+      <workItem from="1744182921876" duration="57593000" />
+      <workItem from="1744590745102" duration="3287000" />
+      <workItem from="1744595007285" duration="15645000" />
+      <workItem from="1744786607475" duration="21802000" />
+      <workItem from="1745023491102" duration="6271000" />
+      <workItem from="1745195695683" duration="23790000" />
+      <workItem from="1745395246866" duration="3670000" />
+      <workItem from="1745463769212" duration="5944000" />
+      <workItem from="1745800527182" duration="16000" />
+      <workItem from="1745803663417" duration="950000" />
+      <workItem from="1746512358328" duration="100000" />
+      <workItem from="1746688767316" duration="3632000" />
+      <workItem from="1746753126081" duration="1988000" />
+      <workItem from="1747012870799" duration="1931000" />
+      <workItem from="1747104584632" duration="741000" />
+      <workItem from="1747105573279" duration="3859000" />
+      <workItem from="1747391046750" duration="2583000" />
+      <workItem from="1747446011015" duration="6265000" />
+      <workItem from="1747477303586" duration="49000" />
+      <workItem from="1747477373448" duration="1000" />
+      <workItem from="1747477411550" duration="10000" />
+      <workItem from="1747625672614" duration="6702000" />
     </task>
     <task id="LOCAL-00001" summary="chore: 更新">
       <created>1710076178715</created>
@@ -722,7 +647,31 @@
       <option name="project" value="LOCAL" />
       <updated>1729245879547</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="feat: spring-boot3">
+      <option name="closed" value="true" />
+      <created>1744255082726</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1744255082726</updated>
+    </task>
+    <task id="LOCAL-00004" summary="update: spring-boot3">
+      <option name="closed" value="true" />
+      <created>1744280642865</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1744280642865</updated>
+    </task>
+    <task id="LOCAL-00005" summary="update: spring-boot3">
+      <option name="closed" value="true" />
+      <created>1744364500386</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1744364500386</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -741,20 +690,63 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="chore: 更新" />
-    <option name="LAST_COMMIT_MESSAGE" value="chore: 更新" />
+    <MESSAGE value="Changes" />
+    <MESSAGE value="feat: spring-boot3" />
+    <MESSAGE value="update: spring-boot3" />
+    <option name="LAST_COMMIT_MESSAGE" value="update: spring-boot3" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
-        <line-breakpoint enabled="true" type="java-line">
+        <line-breakpoint type="java-line">
           <url>file://$PROJECT_DIR$/cool-core-test/src/main/java/com/undraw/util/redis/RedisConfig.java</url>
           <line>67</line>
           <option name="timeStamp" value="7" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
+        <line-breakpoint type="java-line">
           <url>file://$PROJECT_DIR$/cool-core/src/main/java/cn/undraw/config/TimeFormatConfig.java</url>
           <line>49</line>
           <option name="timeStamp" value="27" />
+        </line-breakpoint>
+        <line-breakpoint type="java-line">
+          <url>file://$PROJECT_DIR$/demo/src/main/java/com/undraw/handler/EnhancedServiceImpl.java</url>
+          <line>143</line>
+          <option name="timeStamp" value="123" />
+        </line-breakpoint>
+        <line-breakpoint type="java-line">
+          <url>jar://$PROJECT_DIR$/../../../IDE/maven/repository/org/mybatis/mybatis/3.5.19/mybatis-3.5.19.jar!/org/apache/ibatis/session/defaults/DefaultSqlSession.class</url>
+          <line>165</line>
+          <option name="timeStamp" value="124" />
+        </line-breakpoint>
+        <line-breakpoint type="java-line">
+          <url>jar://$PROJECT_DIR$/../../../IDE/maven/repository/org/mybatis/mybatis/3.5.19/mybatis-3.5.19.jar!/org/apache/ibatis/executor/BatchExecutor.class</url>
+          <line>34</line>
+          <option name="timeStamp" value="128" />
+        </line-breakpoint>
+        <line-breakpoint type="java-line">
+          <url>jar://$PROJECT_DIR$/../../../IDE/maven/repository/org/mybatis/mybatis/3.5.19/mybatis-3.5.19.jar!/org/apache/ibatis/executor/statement/RoutingStatementHandler.class</url>
+          <line>24</line>
+          <option name="timeStamp" value="129" />
+        </line-breakpoint>
+        <line-breakpoint type="java-line">
+          <url>jar://$PROJECT_DIR$/../../../IDE/maven/repository/org/mybatis/mybatis/3.5.19/mybatis-3.5.19.jar!/org/apache/ibatis/executor/statement/PreparedStatementHandler.class</url>
+          <line>24</line>
+          <option name="timeStamp" value="130" />
+        </line-breakpoint>
+        <line-breakpoint type="java-line">
+          <url>jar://$PROJECT_DIR$/../../../IDE/maven/repository/org/mybatis/mybatis/3.5.19/mybatis-3.5.19.jar!/org/apache/ibatis/mapping/MappedStatement.class</url>
+          <line>151</line>
+          <option name="timeStamp" value="131" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/cool-core/src/main/java/cn/undraw/util/bean/BeanUtils.java</url>
+          <line>236</line>
+          <option name="timeStamp" value="166" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/demo/src/test/java/com/undraw/BeanTest.java</url>
+          <line>33</line>
+          <option name="timeStamp" value="167" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -764,8 +756,16 @@
         <PinnedItemInfo parentTag="org.springframework.aop.aspectj.MethodInvocationProceedingJoinPoint" memberName="signature" />
         <PinnedItemInfo parentTag="java.lang.String" memberName="value" />
         <PinnedItemInfo parentTag="cn.undraw.util.result.R" memberName="data" />
+        <PinnedItemInfo parentTag="org.apache.ibatis.scripting.defaults.RawSqlSource" memberName="sqlSource" />
+        <PinnedItemInfo parentTag="com.baomidou.mybatisplus.core.conditions.AbstractWrapper$$Lambda$1546/0x00000007c0d7b018" memberName="arg$2" />
+        <PinnedItemInfo parentTag="java.lang.reflect.Field" memberName="modifiers" />
       </pinned-members>
     </pin-to-top-manager>
+    <watches-manager>
+      <configuration name="SpringBootApplicationConfigurationType">
+        <watch expression="atch (InterruptedException e) {&#10;                    throw new RuntimeException(e);&#10;                }" />
+      </configuration>
+    </watches-manager>
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

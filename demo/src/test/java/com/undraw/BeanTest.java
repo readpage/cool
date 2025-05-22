@@ -84,4 +84,16 @@ public class BeanTest {
         System.out.println(b4);
     }
 
+    @Test
+    public void copy() {
+        User user = new User();
+        user.setUsername("user");
+        user.setPassword("password");
+        User copy = BeanUtils.copy(user);
+        copy.setAge(20);
+        copy.setPassword("password2");
+        System.out.println(copy);
+        System.out.println(user);
+    }
+
 }

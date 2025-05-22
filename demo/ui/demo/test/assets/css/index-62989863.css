@@ -1,0 +1,1 @@
+.u-form .el-form{display:grid;grid-template-columns:repeat(2,1fr)}@media only screen and (max-width: 768px){.u-form .el-form{grid-template-columns:repeat(1,1fr)}}.u-form .el-form .form-role{grid-column:1/-1}

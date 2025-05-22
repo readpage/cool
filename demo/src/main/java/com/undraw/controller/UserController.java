@@ -62,6 +62,7 @@ public class UserController {
         return R.ok(userService.badSql());
     }
 
+    // consumes：指定控制器支持的请求媒体类型。
     @Operation(summary = "导入用户信息")
     @OperateLog(type = OperateTypeEnum.IMPORT)
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

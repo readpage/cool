@@ -50,6 +50,9 @@ mybatis-plus:
   # 实体类别名,无需添加完整包路径
   type-aliases-package: com.undraw.domain
 
+# 分页插件动态数据源自动切换
+pagehelper:
+  autoRuntimeDialect: true
 
 cool-core:
   filter:
@@ -59,3 +62,4 @@ cool-core:
   snowflake:
     workerId: 1
     datacenterId: 1
+

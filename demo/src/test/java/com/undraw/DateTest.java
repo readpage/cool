@@ -70,9 +70,11 @@ public class DateTest {
     @Test
     public void between() {
         LocalDate startDate = LocalDate.parse("2025-02-01");
-        LocalDate endDate = LocalDate.parse("2025-02-28");
+        LocalDate endDate = LocalDate.parse("2025-04-28");
         long between = ChronoUnit.DAYS.between(startDate, endDate);
         System.out.println(between);
+        long between2 = ChronoUnit.MONTHS.between(startDate, endDate);
+        System.out.println(between2);
     }
 
     /**
@@ -103,6 +105,20 @@ public class DateTest {
         LocalTime localTime = LocalTime.now();
         System.out.println(localTime.withSecond(0).withNano(0) + "--" + localTime.withSecond(59).withNano(999_999_999));
         System.out.println(now.atTime(LocalTime.MIN) + "--" + now.atTime(LocalTime.MAX));
+    }
+
+    @Test
+    public void before() {
+        System.out.println(deadline());
+    }
+
+    public boolean deadline() {
+        // 获取当前时间
+        LocalDateTime now = LocalDateTime.now();
+
+        // 创建16:00的时间点
+        LocalTime timeOfDay = LocalTime.of(16, 0); // 16:00
+        return !now.toLocalTime().isBefore(timeOfDay);
     }
 
 }

@@ -21,6 +21,7 @@ import java.util.regex.Pattern;
  */
 
 public class StrTest {
+
     @Test
     public void test() {
         System.out.println(ConvertUtils.toJson((Object) null));

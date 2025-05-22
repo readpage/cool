@@ -53,7 +53,7 @@ public class Employee implements Serializable {
 
     @Schema(title = "工资")
     @ExcelProperty("工资")
-    private double salary;
+    private Double salary;
 
     @Schema(title = "创建日期")
     @ExcelProperty(value = "创建日期")
@@ -73,11 +73,10 @@ public class Employee implements Serializable {
     }
 
     public final static List<Employee> employeeList = new ArrayList<>(Arrays.asList(
-
             new Employee(1L, "刘一", "男", 23, 6500),
             new Employee(2L, "陈二", "男", 22, 7500),
             new Employee(3L, "张三", "男", 25, 8500),
-            new Employee(4L, "李四", "男", 21, 8000),
+            new Employee(4L, "李四", "男", 22, 8000),
             new Employee(5L, "王五", "女", 24, 8000),
             new Employee(6L, "赵六", "男", 23, 7800),
             new Employee(7L, "孙七", "女", 24, 8000),
@@ -85,11 +84,6 @@ public class Employee implements Serializable {
             new Employee(9L, "吴九", "女", 22, 8000),
             new Employee(10L, "郑十", "男", 24, 9300)
     ));
-
-    public int getAge() {
-        this.age = 1;
-        return age;
-    }
 
     private void hello() {
         System.out.println(String.format("hello %s!", this.name));

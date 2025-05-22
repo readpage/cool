@@ -107,21 +107,19 @@
             </dependency>
 
             <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>1.18.24</version>
+            </dependency>
+            <dependency>
                 <groupId>cn.idev.excel</groupId>
                 <artifactId>fastexcel</artifactId>
                 <version>${fastexcel.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>cn.undraw</groupId>
                 <artifactId>cool-core</artifactId>
                 <version>${cool-core.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok</artifactId>
-                <version>1.18.24</version>
             </dependency>
 
         </dependencies>

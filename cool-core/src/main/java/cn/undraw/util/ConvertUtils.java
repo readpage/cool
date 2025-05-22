@@ -1,6 +1,5 @@
 package cn.undraw.util;
 
-import cn.undraw.util.bean.AnnoUtils;
 import cn.undraw.util.result.R;
 import cn.undraw.util.result.ResultEnum;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -11,7 +10,6 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.BeanUtils;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
@@ -22,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 
 /**
@@ -246,43 +243,6 @@ public class ConvertUtils {
      */
     public static<T, U> List<U> cloneDeep(Collection<T> list) {
         return cloneDeep(list, (Class<U>) null);
-    }
-
-    /**
-     * Collection
-     * @param sources 源对象列表
-     * @param clazz 目标对象类型
-     * @return java.util.Collection<T>
-     */
-    @Deprecated
-    public static<T, U> List<T> copy(Collection<U> sources, Class<T> clazz) {
-        if (StrUtils.isEmpty(sources)) {
-            return null;
-        }
-        if (StrUtils.isEmpty(clazz)) {
-            throw new IllegalArgumentException();
-        }
-        return sources.stream().map(e -> copy(e, clazz)).collect(Collectors.toList());
-    }
-
-    /**
-     * 单个对象属性复制
-     * 两个对象将前者拷贝给后者 <p>如果两个类不一样时，只会拷贝属性一样的内容</p>
-     * @param source 复制源
-     * @param clazz 目标对象类型
-     * @return T
-     */
-    @Deprecated
-    public static<T> T copy(Object source, Class<T> clazz) {
-        if (StrUtils.isEmpty(source)) {
-            return null;
-        }
-        if (StrUtils.isEmpty(clazz)) {
-            throw new IllegalArgumentException();
-        }
-        T t = AnnoUtils.getConstructor(clazz);
-        BeanUtils.copyProperties(source, t);
-        return t;
     }
 
     /**

@@ -2,25 +2,18 @@ package com.undraw.util.redis;
 
 import cn.undraw.util.ConvertUtils;
 import cn.undraw.util.StrUtils;
-import io.lettuce.core.KeyScanCursor;
-import io.lettuce.core.RedisFuture;
-import io.lettuce.core.ScanArgs;
-import io.lettuce.core.ScanCursor;
-import io.lettuce.core.api.async.RedisAsyncCommands;
 import jakarta.annotation.Resource;
 import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.data.redis.core.ZSetOperations;
+import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
-import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 /**
  * Redis工具类
@@ -132,37 +125,32 @@ public class RedisUtil {
 
     /**
      * 获取 指定格式的所有key
-     * 迭代执行 SCAN 0 MATCH {pattern} COUNT 10000
+     * 迭代执行 SCAN 0 MATCH {pattern} COUNT 1000
      *
      * @param pattern       匹配规则
      * @return 指定格式的所有key
      */
     public List<String> scan(String pattern) {
-        //SCAN 0 MATCH {pattern} COUNT 10000
-        return  redisTemplate.execute(connection -> {
-            //scan 迭代遍历键，返回的结果可能会有重复，需要客户端去重复
-            Set<String> redisKeys = new HashSet<>();
-            //lettuce 原生api
-            RedisAsyncCommands conn = (RedisAsyncCommands) connection.getNativeConnection();
-            //游标
-            ScanCursor curs = ScanCursor.INITIAL;
-            try {
-                //采用 SCAN 命令，迭代遍历所有key
-                while (!curs.isFinished()) {
-                    long count = 10000L;
-                    ScanArgs args = ScanArgs.Builder.matches(pattern).limit(count);
-                    RedisFuture<KeyScanCursor<byte[]>> future = conn.scan(curs, args);
-                    KeyScanCursor<byte[]> keyCurs = future.get();
-                    List<byte[]> ks = keyCurs.getKeys();
-                    Set<String> set = ks.stream().map(bytes -> new String(bytes, StandardCharsets.UTF_8)).collect(Collectors.toSet());
-                    redisKeys.addAll(set);
-                    curs = keyCurs;
-                }
-            } catch (InterruptedException | ExecutionException e) {
-                throw new RuntimeException(e);
-            }
-            return new ArrayList<>(redisKeys);
-        }, true);
+        return scan(pattern, 1000);
+    }
+
+    /**
+     * 获取 指定格式的所有key
+     * 迭代执行 SCAN 0 MATCH {pattern} COUNT 1000
+     *
+     * @param pattern       匹配规则
+     * @param count         扫描数量
+     * @return 指定格式的所有key
+     */
+    public List<String> scan(String pattern, int count) {
+        Set<String> keys = new LinkedHashSet<>();
+        RedisSerializer serializer = redisTemplate.getKeySerializer();
+        ScanOptions scanOptions = ScanOptions.scanOptions().match(pattern).count(count).build();
+        Cursor<byte[]> cursor = redisTemplate.execute(connection -> connection.scan(scanOptions), true);
+        while (cursor.hasNext()) {
+            keys.add(String.valueOf(serializer.deserialize(cursor.next())));
+        }
+        return new ArrayList<>(keys);
     }
 
 

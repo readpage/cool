@@ -21,7 +21,7 @@
       <module name="cool" options="-parameters" />
       <module name="cool-core" options="-parameters" />
       <module name="cool-core-test" options="-parameters" />
-      <module name="demo" options="-parameters" />
+      <module name="demo" options="-parameters --add-exports java.base/sun.reflect.annotation=ALL-UNNAMED" />
     </option>
   </component>
 </project>

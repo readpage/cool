@@ -1,6 +1,7 @@
 package cn.undraw.util;
 
 import cn.undraw.util.bean.BeanUtils;
+import cn.undraw.util.bean.SFunction;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.util.CollectionUtils;
 
@@ -9,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -517,6 +519,120 @@ public class StrUtils {
      */
     public static int randomInt(int max){
         return randomInt(0, max);
+    }
+
+
+    /**
+     * 分组合计
+     * @param list
+     * @param fn
+     * @return
+     * @param <T>
+     * @param <U>
+     */
+    public static <T, U> List<T> groupBy(List<T> list, SFunction<T, ?>... fn) {
+        String fieldName = BeanUtils.getFieldName(fn);
+        if (list == null || list.size() == 0) {
+            return null;
+        }
+        Object o1 = list.get(0);
+        List<Field> fields = BeanUtils.getFields(o1.getClass());
+        Map<String, List<T>> map = new LinkedHashMap<>();
+
+        for (T o : list) {
+            StringBuffer sb = new StringBuffer();
+            for (Field field : fields) {
+                if (fieldName.contains(field.getName())) {
+                    Object fieldValue = BeanUtils.getFieldValue(o, field.getName());
+                    sb.append(fieldValue).append("-");
+                }
+            }
+            sb.delete(sb.length() - 1, sb.length());
+            String key = sb.toString();
+            List<T> list2 = map.get(key);
+            if (list2 == null) {
+                map.put(key, new ArrayList<>(Arrays.asList(o)));
+            } else {
+                list2.add(o);
+            }
+        }
+
+        List newList = new ArrayList();
+        for (List<T> value : map.values()) {
+            T t = groupByTotal(value, fn);
+            newList.add(t);
+        }
+
+        return newList;
+    }
+
+
+    /**
+     *
+     * @param list
+     * @return
+     * @param <T>
+     * @param <U>
+     */
+    public static <T, U> T groupByTotal(List<T> list) {
+        return groupByTotal(list, null);
+    }
+
+    /**
+     * 分组合计
+     * @param list
+     * @return
+     * @param <T>
+     * @param <U>
+     */
+    public static <T, U> T groupByTotal(List<T> list, SFunction<T, ?>... fn) {
+        if (list == null || list.size() == 0) {
+            return null;
+        }
+        String fieldName = StrUtils.isNull(BeanUtils.getFieldName(fn), "");
+
+        Object o1 = list.get(0);
+        List<Field> fields = BeanUtils.getFields(o1.getClass());
+        if (o1 == null) {
+            return null;
+        }
+        T obj = null;
+        obj = (T) BeanUtils.copy(o1);
+
+        for (int i = 1; i < list.size(); i++) {
+            T object = list.get(i);
+            for (Field field : fields) {
+                if (Modifier.isFinal(field.getModifiers()) || fieldName.contains(field.getName())) {
+                    continue;
+                }
+                Object v1 = BeanUtils.getFieldValue(obj, field.getName());
+                Object v2 = BeanUtils.getFieldValue(object, field.getName());
+                if (field.getType() == Double.class || field.getType() == double.class) {
+                    Double add = (Double) StrUtils.isNull(v1, 0.0) + (Double) StrUtils.isNull(v2, 0.0);
+                    BeanUtils.setFieldValue(obj, field.getName(), add);
+                }
+                if (field.getType() == Integer.class || field.getType() == int.class) {
+                    Integer add = (Integer) StrUtils.isNull(v1, 0) + (Integer) StrUtils.isNull(v2, 0);
+                    BeanUtils.setFieldValue(obj, field.getName(), add);
+                }
+                if (field.getType() == Long.class || field.getType() == long.class) {
+                    Long add = (Long) StrUtils.isNull(v1, 0L) + (Long) StrUtils.isNull(v2, 0L);
+                    BeanUtils.setFieldValue(obj, field.getName(), add);
+                }
+                if (field.getType() == String.class) {
+                    String add = (String) v1;
+                    if (StrUtils.isEmpty(add)) {
+                        add = (String) v2;
+                    } else {
+                        if (StrUtils.isNotEmpty(v2) && !add.contains((String) v2)) {
+                            add = add + "," + (String) v2;
+                        }
+                    }
+                    BeanUtils.setFieldValue(obj, field.getName(), add);
+                }
+            }
+        }
+        return obj;
     }
 
 }

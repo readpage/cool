@@ -29,4 +29,13 @@ public class DecimalTest {
     public void test3() {
         System.out.println(DecimalUtils.toPercent("0.568684"));
     }
+
+    @Test
+    public void test4() {
+        Double a = 0.010;
+        Double b = 0.010;
+        Double c = 0.010;
+        Double s = a + b + c;
+        System.out.println(s);
+    }
 }

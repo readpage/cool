@@ -3,6 +3,7 @@ package cn.undraw.util.bean;
 import cn.undraw.util.StrUtils;
 
 import java.lang.invoke.SerializedLambda;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -15,6 +16,22 @@ import java.util.stream.Collectors;
  */
 public class BeanUtils {
 
+    /**
+     * 根据类类型实例化对象
+     * @return void
+     */
+    public static<T> T getConstructor(Class<T> clazz) {
+        if (StrUtils.isEmpty(clazz)) {
+            throw new IllegalArgumentException();
+        }
+        try {
+            Constructor defaultConstructor = clazz.getDeclaredConstructor();
+            defaultConstructor.setAccessible(true);
+            return (T) defaultConstructor.newInstance();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     /**
      * 获取属性名称
@@ -61,6 +78,9 @@ public class BeanUtils {
     }
 
     public static <T> String getFieldName(SFunction<T, ?> ...columns) {
+        if (columns == null || columns.length == 0) {
+            return null;
+        }
         return getFieldName(Arrays.asList(columns));
     }
 
@@ -215,6 +235,21 @@ public class BeanUtils {
             }
         }
         return true;
+    }
+
+    /**
+     * 单个对象属性复制
+     * 两个对象将前者拷贝给后者 <p>如果两个类不一样时，只会拷贝属性一样的内容</p>
+     * @param o 复制源
+     * @return T
+     */
+    public static <T> T copy(T o) {
+        if (StrUtils.isEmpty(o)) {
+            return null;
+        }
+        T t = (T) getConstructor(o.getClass());
+        org.springframework.beans.BeanUtils.copyProperties(o, t);
+        return t;
     }
 
 }

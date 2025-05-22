@@ -25,6 +25,12 @@ public class DemoTest {
 
     @Test
     public void test3() {
+        Double a = 1.0;
+        Double b = 0.0;
+        Double c = 2.0;
+        System.out.println(Double.compare(b, 0));
+        System.out.println(Double.compare(a, b));
+        System.out.println(Double.compare(a, c));
         LocalDateTime now = LocalDateTime.now();
     }
 
