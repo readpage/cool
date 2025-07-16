@@ -16,7 +16,7 @@ public class RestTemplateTest {
 
     @Test
     public void test() {
-        File file = FileUtils.createSnowFile(System.getProperty("user.dir") + File.separator + "test.txt");
+        File file = FileUtils.createFile(System.getProperty("user.dir") + File.separator + "test.txt");
         System.out.println(file);
         file.delete();
 

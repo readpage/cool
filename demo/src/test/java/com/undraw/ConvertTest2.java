@@ -39,14 +39,14 @@ public class ConvertTest2 {
         Fruit fruit = new Fruit();
         BigDecimal decimal = new BigDecimal("2.2225");
         fruit.setPrice(decimal);
-        fruit.setScore(480535617.050000);
+        fruit.setScore(380535617.050000);
         fruit.setPrice2(new BigDecimal(480535617.050000));
-        fruit.setPrice3(new BigDecimal(480535617.050000));
+        fruit.setPrice3(new BigDecimal(580535617.050000));
         System.out.println("序列化前--------");
         System.out.println(fruit);
         System.out.println("序列化后----------");
-        Fruit newFruit = ConvertUtils.cloneDeep(fruit, Fruit.class);
-        System.out.println(newFruit);
+        String json = ConvertUtils.toJson(fruit);
+        System.out.println(json);
     }
 
     @Test

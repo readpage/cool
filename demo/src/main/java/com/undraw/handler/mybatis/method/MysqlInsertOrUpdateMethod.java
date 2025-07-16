@@ -1,4 +1,4 @@
-package com.undraw.handler.method;
+package com.undraw.handler.mybatis.method;
 
 import cn.undraw.util.StrUtils;
 import com.baomidou.mybatisplus.core.metadata.TableInfo;

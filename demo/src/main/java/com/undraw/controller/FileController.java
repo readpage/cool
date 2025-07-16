@@ -9,7 +9,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -36,8 +35,8 @@ public class FileController {
 
     @Operation(summary = "上传文件")
     @OperateLog(type = UPLOAD)
-    @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public R<?> upload(@RequestBody MultipartFile[] file) {
+    @PostMapping(value = "/upload", consumes = "multipart/form-data")
+    public R<?> upload(@RequestBody MultipartFile file) {
         LocalDate now = LocalDate.now();
         String prefix = "/basic/" + now.getYear() + "/" + now.getMonthValue() + "/" + now.getDayOfMonth();
         String upload = visit + FileUtils.upload(fileDir, file, prefix);

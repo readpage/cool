@@ -16,6 +16,7 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * <p>
@@ -57,6 +58,9 @@ public class User implements Serializable {
 
     @TableField(exist = false)
     private Double salary = 22.3578;
+
+    @TableField(exist = false)
+    private List<Long> ridList;
 
     @Schema(title = "创建时间")
     @ExcelProperty(value = "创建时间")

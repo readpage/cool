@@ -225,6 +225,10 @@ public class ExcelUtils {
         export(response, fileName, sheetName, dataList, head, null);
     }
 
+    public static <T> void export(HttpServletResponse response, String fileName, List<T> dataList, List<List<String>> head) {
+        export(response, fileName, null, dataList, head, null);
+    }
+
     public static <T> void export(HttpServletResponse response, String fileName, String sheetName, List<T> dataList, Class clazz, Consumer<ExcelWriterSheetBuilder> c) {
         export(response, fileName, sheetName, dataList, clazz, null, c);
     }
@@ -308,6 +312,9 @@ public class ExcelUtils {
             List list = StrUtils.isNull(ConvertUtils.cloneDeep(dataList), new ArrayList());
             for (int i = 0; i < dataList.size(); i++) {
                 Object o = dataList.get(i);
+                if (o instanceof List) {
+                    break;
+                }
                 Object o2 = list.get(i);
                 BeanUtils.merge(o2, o);
             }

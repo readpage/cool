@@ -4,7 +4,7 @@ package cn.undraw.util.filter;
 import cn.undraw.util.StrUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.safety.Whitelist;
+import org.jsoup.safety.Safelist;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -26,16 +26,19 @@ public class JsoupUtils {
     @Value("${cool-core.filter.xss}")
     private static boolean xss = true;
 
-    private static Whitelist whitelist = Whitelist.basicWithImages();
+    private static Safelist safelist = Safelist.relaxed();
 
 
     static {
-        whitelist.addAttributes(":all", "style", "class", "id"); // 允许所有标签的style, class, id属性
+        safelist.addTags("svg").addAttributes("svg","width", "height", "viewBox", "fill");
+        safelist.addTags("path").addAttributes("path","d");
+        safelist.addTags("header", "nav", "main", "aside", "article", "footer", "think");
+        safelist.addAttributes(":all", "style", "class", "id"); // 允许所有标签的style, class, id属性
     }
 
 
     public static String clean(String originStr) {
-        return Jsoup.clean(originStr, "", whitelist, OUTPUT_SETTINGS);
+        return Jsoup.clean(originStr, "", safelist, OUTPUT_SETTINGS);
     }
 
 

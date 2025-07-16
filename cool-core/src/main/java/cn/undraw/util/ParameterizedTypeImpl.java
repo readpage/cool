@@ -53,7 +53,7 @@ public class ParameterizedTypeImpl implements ParameterizedType {
         TypeVariable<?>[] formals = rawType.getTypeParameters();
         // check correct arity of actual type args
         if (formals.length != actualTypeArguments.length) {
-            throw new MalformedParameterizedTypeException(String.format("Mismatch of count of " +
+            throw new RuntimeException(String.format("Mismatch of count of " +
                                                                         "formal and actual type " +
                                                                         "arguments in constructor " +
                                                                         "of %s: %d formal argument(s) "+

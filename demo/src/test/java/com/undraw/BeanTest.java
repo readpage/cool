@@ -7,6 +7,10 @@ import com.undraw.domain.entity.User;
 import com.undraw.domain.model.Employee;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.junit.jupiter.api.Test;
+import org.springframework.expression.EvaluationContext;
+import org.springframework.expression.ExpressionParser;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.expression.spel.support.StandardEvaluationContext;
 
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
@@ -24,7 +28,7 @@ public class BeanTest {
         Employee employee = Employee.employeeList.get(0);
         String fieldName = null;
         for (Field field : BeanUtils.getFields(Employee.class)) {
-            Object access = AnnoUtils.getValue(field, JsonProperty.class, "access");
+            Object access = AnnoUtils.getValueByField(field, JsonProperty.class, "access");
             if (Objects.equals("READ_ONLY", String.valueOf(access))) {
                 fieldName = field.getName();
             }
@@ -38,11 +42,11 @@ public class BeanTest {
     @Test
     public void test1() {
         BeanUtils.getFields(User.class).forEach(field -> {
-            Object access = AnnoUtils.getValue(field, JsonProperty.class, "access");
+            Object access = AnnoUtils.getValueByField(field, JsonProperty.class, "access");
             System.out.println(access);
         });
         System.out.println("------------------");
-        Object title = AnnoUtils.getValue(User.class, Schema.class, "title");
+        Object title = AnnoUtils.getValueByClass(User.class, Schema.class, "title");
         System.out.println(title);
     }
 
@@ -88,12 +92,31 @@ public class BeanTest {
     public void copy() {
         User user = new User();
         user.setUsername("user");
-        user.setPassword("password");
+        user.setPassword("password1");
         User copy = BeanUtils.copy(user);
         copy.setAge(20);
         copy.setPassword("password2");
         System.out.println(copy);
         System.out.println(user);
+    }
+
+    @Test
+    public void invoke() {
+        Object bean = BeanUtils.getConstructor("com.undraw.BeanTest");
+        BeanUtils.invokeMethod(bean, "copy", new Object[]{});
+    }
+
+    @Test
+    public void el() {
+        User user = new User();
+        user.setUsername("user");
+        user.setPassword("password");
+        String str = "#user.password";
+        ExpressionParser parser = new SpelExpressionParser();
+        EvaluationContext context = new StandardEvaluationContext();
+        context.setVariable("user", user); // 将 person 对象添加到 context 中，以便在表达式中使用
+        String result = parser.parseExpression(str).getValue(context, String.class);
+        System.out.println(result);
     }
 
 }

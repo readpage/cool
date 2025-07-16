@@ -77,13 +77,13 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
             String originalFilename = files[i].getOriginalFilename();
             //创建不重复的文件
             File filePath = createFile(fileDir, originalFilename);
-            //文件上传返回值相对路径
-            String relativePath = prefix + "/" + filePath.getName();
             try {
                 files[i].transferTo(filePath);
             } catch (IOException e) {
                 throw new CustomerException("上传文件失败", e);
             }
+            //文件上传返回值相对路径
+            String relativePath = prefix + "/" + filePath.getName();
             if (i == 0) {
                 dest.append(relativePath);
             } else {
@@ -160,15 +160,15 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
 
 
     /**
-     * 创建不重复的文件，如果文件存在则文件名追加序号
+     * 创建不重复的文件
      * @param filePath
-     * @param disable 是否禁用生成不重复的文件
+     * @param nodup 文件存在则文件名追加序号 默认值false
      * @return java.io.File
      */
-    public static File createFile(String filePath, boolean disable) {
+    public static File createFile(String filePath, boolean nodup) {
         if (StrUtils.isEmpty(filePath)) throw new RuntimeException("文件路径为空");
         File file;
-        if (!disable) {
+        if (nodup) {
             file = getFile(filePath, 0);
         } else {
             file = new File(filePath);
@@ -181,35 +181,17 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         return file;
     }
 
-
     /**
-     * 创建不重复的文件，如果文件存在则文件名追加序号
+     * 创建不重复的文件
      * @param filePath
      * @return java.io.File
      */
     public static File createFile(String filePath) {
-        return createFile(filePath, false);
-    }
-
-    /**
-     * 创建不重复的文件，以雪花算法为名称
-     * @param filePath
-     * @return java.io.File
-     */
-    public static File createSnowFile(String filePath) {
         if (StrUtils.isEmpty(filePath)) throw new RuntimeException("文件路径为空");
         Path path = Paths.get(filePath);
         String parent = path.getParent().toString();
         String fileName = path.getFileName().toString();
-        String suffix = fileName.substring(fileName.lastIndexOf(".")); //后缀 如.png
-        fileName = SnowflakeUtils.nextId() + suffix;
-        File file = new File(parent + File.separator + fileName);
-        try {
-            FileUtils.touch(file);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return file;
+        return createFile(parent, fileName);
     }
 
     public static void download(String filePath, HttpServletResponse response) {

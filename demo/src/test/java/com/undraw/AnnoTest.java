@@ -1,9 +1,12 @@
 package com.undraw;
 
 
+import cn.idev.excel.annotation.ExcelProperty;
+import cn.undraw.util.bean.AnnoUtils;
 import cn.undraw.util.bean.BeanUtils;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.undraw.domain.model.Employee;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.apache.poi.ss.formula.functions.T;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -56,6 +59,19 @@ public class AnnoTest {
         }
     }
 
+    @Test
+    public void getValueByClass() {
+        Employee employee = Employee.employeeList.get(0);
+        Object valueByClass = AnnoUtils.getValueByClass(employee.getClass(), Schema.class, "title");
+        System.out.println(valueByClass);
+    }
 
+    @Test
+    public void getValueField() {
+        Employee employee = Employee.employeeList.get(0);
+        Field field = BeanUtils.getField(employee.getClass(), "crateDate");
+        String[] valueByField = (String[])AnnoUtils.getValueByField(field, ExcelProperty.class);
+        System.out.println(valueByField[0]);
+    }
 
 }

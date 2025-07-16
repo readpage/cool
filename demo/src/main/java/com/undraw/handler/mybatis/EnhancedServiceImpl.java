@@ -1,4 +1,4 @@
-package com.undraw.handler;
+package com.undraw.handler.mybatis;
 
 import cn.undraw.util.ConvertUtils;
 import cn.undraw.util.StrUtils;

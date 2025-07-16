@@ -6,9 +6,11 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 public class TmpTest {
+
     @Test
     public void test() {
-        System.out.println(test2());
+        Double a = 0.000;
+        System.out.println(a == 0);
     }
 
     public String test2() {

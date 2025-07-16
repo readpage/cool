@@ -52,6 +52,6 @@ public class DecimalSerializer extends JsonSerializer<Double> implements Context
             }
             return new DecimalSerializer();
         }
-        return serializerProvider.findNullValueSerializer(null);
+        return this;
     }
 }

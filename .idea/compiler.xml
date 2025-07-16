@@ -11,16 +11,12 @@
         <module name="cool-core" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel target="17">
-      <module name="cool-core-test" target="17" />
-      <module name="demo2" target="17" />
-    </bytecodeTargetLevel>
+    <bytecodeTargetLevel target="8" />
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="cool" options="-parameters" />
       <module name="cool-core" options="-parameters" />
-      <module name="cool-core-test" options="-parameters" />
       <module name="demo" options="-parameters --add-exports java.base/sun.reflect.annotation=ALL-UNNAMED" />
     </option>
   </component>

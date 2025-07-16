@@ -67,7 +67,7 @@ public class ExcelController {
     }
 
     @Operation(summary = "导入数据")
-    @PostMapping("/import")
+    @PostMapping(value = "/import")
     public R upload(@RequestBody MultipartFile file) {
         List<ImportDemo> list = ExcelUtils.read(file, ImportDemo.class);
         return R.ok(list);
@@ -78,14 +78,14 @@ public class ExcelController {
     @OperateLog(type = EXPORT)
     public void export(HttpServletResponse response) {
         try {
-           Object o = AnnoUtils.getValue(Employee.class.getDeclaredField("name"), ExcelProperty.class);
+           Object o = AnnoUtils.getValueByField(Employee.class.getDeclaredField("name"), ExcelProperty.class);
         } catch (NoSuchFieldException e) {
             throw new RuntimeException(e);
         }
         ExcelUtils.export(response, "导出", "sheet", Employee.employeeList);
     }
 
-    @GetMapping("/export2")
+    @GetMapping(value = "/export2")
     @Operation(summary = "导出excel2")
     @OperateLog(type = EXPORT)
     public void export2(HttpServletResponse response) {

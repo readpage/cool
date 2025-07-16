@@ -34,7 +34,9 @@ public class LambdaTest {
     private static List<Employee> employeeList = Employee.employeeList;
     @Test
     public void group() {
-        List<Employee> employees = StrUtils.groupBy(employeeList, Employee::getSex, Employee::getAge);
+        List<Employee> employees = StrUtils.groupBy(employeeList, o -> {
+            o.setId(0L);
+        }, Employee::getSex, Employee::getAge);
         System.out.println(employees);
     }
 
@@ -50,7 +52,7 @@ public class LambdaTest {
             if (Objects.equals(o1.getName(), "刘一")) return -1;
             if (Objects.equals(o2.getName(), "刘一")) return 1;
             return Double.compare(o2.getAge(), o1.getAge());
-        }).limit(3).collect(Collectors.toList());
+        }).limit(5).collect(Collectors.toList());
         System.out.println(list);
     }
 }

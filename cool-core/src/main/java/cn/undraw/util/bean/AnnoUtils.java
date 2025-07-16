@@ -1,37 +1,20 @@
 package cn.undraw.util.bean;
 
+import cn.undraw.util.StrUtils;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * @author readpage
  * @date 2023-03-06 23:50
  */
 public class AnnoUtils {
-
-    /**
-     * 获取class的所有属性
-     * @param objClass
-     * @return java.util.List<java.lang.reflect.Field>
-     */
-    @Deprecated
-    public static List<Field> getFields(Class<?> objClass) {
-        List<Field> fields = new ArrayList<>();
-        try {
-            Field[] declaredFields = objClass.getDeclaredFields();
-            if (declaredFields != null) {
-                fields = Arrays.stream(declaredFields).collect(Collectors.toList());
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return fields;
-    }
 
 
     /**
@@ -57,96 +40,21 @@ public class AnnoUtils {
         return field.isAnnotationPresent(annoClass);
     }
 
-
-    /**
-     * 获取类注解的值
-     *
-     * @param objClass  类class
-     * @param annoClass 注解class
-     * @return 返回T泛型类型
-     */
-    public static <T> T getAnnoValueByClass(Class<?> objClass, Class<? extends Annotation> annoClass) {
-        return getAnnoValueByClass(objClass, annoClass, null);
-    }
-
-
-    /**
-     * 获取类注解的值
-     *
-     * @param objClass      类class
-     * @param annoClass     注解class
-     * @param annoFieldName 注解属性名称
-     * @return 返回T泛型类型
-     */
-    public static <T> T getAnnoValueByClass(Class<?> objClass, Class<? extends Annotation> annoClass, String annoFieldName) {
-        Annotation annotation = objClass.getAnnotation(annoClass);
-        T t = null;
-        try {
-            if (annotation != null) {
-                InvocationHandler invocationHandler = Proxy.getInvocationHandler(annotation);
-                Field field = invocationHandler.getClass().getDeclaredField("memberValues");
-                field.setAccessible(true);
-                Map<String, Object> memberValues = (Map<String, Object>) field.get(invocationHandler);
-                t = (T) memberValues.get(Optional.ofNullable(annoFieldName).orElse("value"));
+    static Object invokeAnnotationMethod(Method method, Object annotation) {
+        if (annotation == null) {
+            return null;
+        } else {
+            try {
+                if (Proxy.isProxyClass(annotation.getClass())) {
+                    InvocationHandler handler = Proxy.getInvocationHandler(annotation);
+                    return handler.invoke(annotation, method, (Object[])null);
+                }
+                return method.invoke(annotation, new Object[0]);
+            } catch (Throwable e) {
+                throw new RuntimeException(e);
             }
-        } catch (NoSuchFieldException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
         }
-        return t;
     }
-
-    /**
-     * 获取字段注解的值
-     * @param objClass  类class
-     * @param annoClass 注解class
-     * @return
-     */
-    public static Object getValue(Class<?> objClass, Class<? extends Annotation> annoClass) {
-        return getValue(objClass, annoClass, "value");
-    }
-
-    /**
-     * 获取字段注解的值
-     * @param objClass  类class
-     * @param annoClass 注解class
-     * @return
-     */
-    public static Object getValue(Class<?> objClass, Class<? extends Annotation> annoClass, String attributeName) {
-        if (objClass != null) {
-            Annotation annotation = objClass.getAnnotation(annoClass);
-            return getValue(annotation, attributeName);
-        }
-        return null;
-    }
-
-
-    /**
-     * 获取字段注解的值
-     * @param field
-     * @param annoClass 注解class
-     * @return
-     */
-    public static Object getValue(Field field, Class<? extends Annotation> annoClass) {
-        return getValue(field, annoClass, "value");
-    }
-
-    /**
-     * 获取字段注解的值
-     * @param field
-     * @param annoClass 注解class
-     * @param attributeName 注解属性名称
-     * @return
-     */
-    public static Object getValue(Field field, Class<? extends Annotation> annoClass, String attributeName) {
-        if (field != null) {
-            Annotation annotation = field.getAnnotation(annoClass);
-            return getValue(annotation, attributeName);
-        }
-        return null;
-    }
-
 
     /**
      * 获取字段注解的值
@@ -156,27 +64,65 @@ public class AnnoUtils {
      * @return
      */
     public static Object getValue(Annotation annotation, String attributeName) {
-        try {
-            if (annotation != null) {
-                InvocationHandler handler = Proxy.getInvocationHandler(annotation);
-                for(Method method : annotation.annotationType().getDeclaredMethods()) {
-                    if (method.getName().equals(attributeName) && method.getParameterCount() == 0) {
-                        return handler.invoke(annotation, method, new Object[]{"test"});
-                    }
-                }
+        if (annotation != null) {
+            try {
+                Method method = annotation.annotationType().getDeclaredMethod(StrUtils.isNull(attributeName, "value"));
+                return invokeAnnotationMethod(method, annotation);
+            }  catch (NoSuchMethodException var3) {
+                return null;
             }
-        } catch (Throwable e) {
-            throw new RuntimeException(e);
         }
         return null;
     }
 
-
-    @Deprecated
-    public static <T> void setAnnoValueByField(Field field, Class<? extends Annotation> annoClass, T t) {
-        setAnnoValueByField(field, annoClass, null, t);
+    /**
+     * 获取类注解的值
+     *
+     * @param objClass      类class
+     * @param annoClass     注解class
+     * @param attributeName 注解属性名称
+     * @return 返回T泛型类型
+     */
+    public static Object getValueByClass(Class<?> objClass, Class<? extends Annotation> annoClass, String attributeName) {
+        Annotation annotation = objClass.getAnnotation(annoClass);
+        return getValue(annotation, attributeName);
     }
 
+    /**
+     * 获取类注解的值
+     *
+     * @param objClass  类class
+     * @param annoClass 注解class
+     * @return 返回T泛型类型
+     */
+    public static Object getValueByClass(Class<?> objClass, Class<? extends Annotation> annoClass) {
+        return getValueByClass(objClass, annoClass, null);
+    }
+
+    /**
+     * 获取字段注解的值
+     * @param field
+     * @param annoClass 注解class
+     * @param attributeName 注解属性名称
+     * @return
+     */
+    public static Object getValueByField(Field field, Class<? extends Annotation> annoClass, String attributeName) {
+        if (field != null) {
+            Annotation annotation = field.getAnnotation(annoClass);
+            return getValue(annotation, attributeName);
+        }
+        return null;
+    }
+
+    /**
+     * 获取字段注解的值
+     * @param field
+     * @param annoClass 注解class
+     * @return
+     */
+    public static Object getValueByField(Field field, Class<? extends Annotation> annoClass) {
+        return getValueByField(field, annoClass, "value");
+    }
 
     /**
      * 设置字段注解的值
@@ -187,7 +133,7 @@ public class AnnoUtils {
      * @param t             值
      */
     @Deprecated
-    public static <T> void setAnnoValueByField(Field field, Class<? extends Annotation> annoClass, String annoFieldName, T t) {
+    public static <T> void setValue(Field field, Class<? extends Annotation> annoClass, String annoFieldName, T t) {
         Annotation annotation = field.getAnnotation(annoClass);
         try {
             if (annotation != null) {
@@ -201,5 +147,11 @@ public class AnnoUtils {
             e.printStackTrace();
         }
     }
+
+    @Deprecated
+    public static <T> void setValue(Field field, Class<? extends Annotation> annoClass, T t) {
+        setValue(field, annoClass, null, t);
+    }
+
 
 }

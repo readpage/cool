@@ -1,12 +1,12 @@
-package com.undraw.handler;
+package com.undraw.handler.mybatis;
 
 import com.baomidou.mybatisplus.core.injector.AbstractMethod;
 import com.baomidou.mybatisplus.core.injector.DefaultSqlInjector;
 import com.baomidou.mybatisplus.core.metadata.TableInfo;
-import com.undraw.handler.method.InsertBatchMethod;
-import com.undraw.handler.method.ListByKeyMethod;
-import com.undraw.handler.method.MysqlInsertOrUpdateMethod;
-import com.undraw.handler.method.UpdateBatchMethod;
+import com.undraw.handler.mybatis.method.InsertBatchMethod;
+import com.undraw.handler.mybatis.method.ListByKeyMethod;
+import com.undraw.handler.mybatis.method.MysqlInsertOrUpdateMethod;
+import com.undraw.handler.mybatis.method.UpdateBatchMethod;
 
 import java.util.List;
 

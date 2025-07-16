@@ -6,11 +6,11 @@ spring:
     name: cool-core-test
   profiles:
     #需要使用的配置文件的后缀
-    active: dev
+    active: prod
   servlet:
     multipart:
       max-file-size: 50MB
-      max-request-size: 50MB
+      max-request-size: 100MB
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
     driver-class-name: com.mysql.cj.jdbc.Driver

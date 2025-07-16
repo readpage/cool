@@ -15,6 +15,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -530,36 +531,80 @@ public class StrUtils {
      * @param <T>
      * @param <U>
      */
-    public static <T, U> List<T> groupBy(List<T> list, SFunction<T, ?>... fn) {
+    public static <T, U> List<T> groupBy(List<T> list, cn.undraw.util.bean.SFunction<T, ?>... fn) {
+        return groupBy(list, null, fn);
+    }
+
+    /**
+     * 分组合计
+     * @param list
+     * @param con
+     * @param fn
+     * @return
+     * @param <T>
+     * @param <U>
+     */
+    public static <T, U> List<T> groupBy(List<T> list, Consumer<T> con, cn.undraw.util.bean.SFunction<T, ?>... fn) {
         String fieldName = BeanUtils.getFieldName(fn);
+        return groupBy(list, con, fieldName);
+    }
+
+    /**
+     * 分组合计
+     * @param list
+     * @return
+     * @param <T>
+     * @param <U>
+     */
+    public static <T, U> List<T> groupBy(List<T> list, String fieldName) {
+        return groupBy(list, null, fieldName);
+    }
+
+
+    /**
+     * 分组合计
+     * @param list
+     * @param con
+     * @param fieldName
+     * @return
+     * @param <T>
+     * @param <U>
+     */
+    public static <T, U> List<T> groupBy(List<T> list, Consumer<T> con, String fieldName) {
         if (list == null || list.size() == 0) {
-            return null;
+            return new ArrayList<>();
         }
         Object o1 = list.get(0);
         List<Field> fields = BeanUtils.getFields(o1.getClass());
         Map<String, List<T>> map = new LinkedHashMap<>();
 
         for (T o : list) {
+            T o2 = (T) BeanUtils.copy(o);
+            if (con != null) {
+                con.accept(o2);
+            }
             StringBuffer sb = new StringBuffer();
+
             for (Field field : fields) {
                 if (fieldName.contains(field.getName())) {
-                    Object fieldValue = BeanUtils.getFieldValue(o, field.getName());
+                    Object fieldValue = BeanUtils.getFieldValue(o2, field.getName());
                     sb.append(fieldValue).append("-");
                 }
             }
+
             sb.delete(sb.length() - 1, sb.length());
             String key = sb.toString();
             List<T> list2 = map.get(key);
             if (list2 == null) {
-                map.put(key, new ArrayList<>(Arrays.asList(o)));
+                map.put(key, new ArrayList<>(Arrays.asList(o2)));
             } else {
-                list2.add(o);
+                list2.add(o2);
             }
         }
 
         List newList = new ArrayList();
         for (List<T> value : map.values()) {
-            T t = groupByTotal(value, fn);
+            T t = groupByTotal(value, fieldName);
             newList.add(t);
         }
 
@@ -575,21 +620,34 @@ public class StrUtils {
      * @param <U>
      */
     public static <T, U> T groupByTotal(List<T> list) {
-        return groupByTotal(list, null);
+        return groupByTotal(list, "");
     }
 
     /**
      * 分组合计
      * @param list
+     * @param fn
      * @return
      * @param <T>
      * @param <U>
      */
     public static <T, U> T groupByTotal(List<T> list, SFunction<T, ?>... fn) {
+        String fieldName = StrUtils.isNull(BeanUtils.getFieldName(fn), "");
+        return groupByTotal(list, fieldName);
+    }
+
+    /**
+     * 分组合计
+     * @param list
+     * @param fieldName => fieldName1,fieldName2,fieldName3
+     * @return
+     * @param <T>
+     * @param <U>
+     */
+    public static <T, U> T groupByTotal(List<T> list, String fieldName) {
         if (list == null || list.size() == 0) {
             return null;
         }
-        String fieldName = StrUtils.isNull(BeanUtils.getFieldName(fn), "");
 
         Object o1 = list.get(0);
         List<Field> fields = BeanUtils.getFields(o1.getClass());

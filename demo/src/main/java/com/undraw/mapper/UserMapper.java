@@ -1,7 +1,7 @@
 package com.undraw.mapper;
 
 import com.undraw.domain.entity.User;
-import com.undraw.handler.RootMapper;
+import com.undraw.handler.mybatis.RootMapper;
 import org.apache.ibatis.annotations.Select;
 
 import java.util.List;

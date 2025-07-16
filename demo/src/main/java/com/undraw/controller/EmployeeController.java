@@ -25,7 +25,7 @@ public class EmployeeController {
 
     // produces：指定控制器支持的响应媒体类型。
     @Operation(summary = "返回用户列表的Flux流")
-    @GetMapping(value = "/getAllUsers" , produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @GetMapping(value = "/getAllUsers", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<Employee> getAllEmployees() {
         return employeeService.getAllEmployees();
     }

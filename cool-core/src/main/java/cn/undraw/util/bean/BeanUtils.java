@@ -1,12 +1,10 @@
 package cn.undraw.util.bean;
 
+import cn.undraw.util.ConvertUtils;
 import cn.undraw.util.StrUtils;
 
 import java.lang.invoke.SerializedLambda;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
+import java.lang.reflect.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -15,6 +13,18 @@ import java.util.stream.Collectors;
  * @date 2025-02-15 10:42
  */
 public class BeanUtils {
+
+    public static <T> Class<T> getClass(String className) {
+        try {
+            return (Class<T>)Class.forName(className);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static<T> T getConstructor(String className) {
+        return getConstructor(getClass(className));
+    }
 
     /**
      * 根据类类型实例化对象
@@ -126,16 +136,36 @@ public class BeanUtils {
      */
     public static Object invokeMethod(Object obj, String methodName, Object... params) {
         try {
-            Class<?>[] paramTypes = new Class[params.length];
-            for (int i = 0; i < params.length; i++) {
-                paramTypes[i] = params[i].getClass();
+            Method method = getMethod(obj.getClass(), methodName);
+            Type[] paramTypes = method.getGenericParameterTypes();
+            Object[] objects = new Object[paramTypes.length];
+            for (int i = 0; i < paramTypes.length; i++) {
+                Type paramType = paramTypes[i];
+                objects[i] = ConvertUtils.cloneDeep(params[0], getClass(paramType.getTypeName()));
             }
-            Method method = obj.getClass().getMethod(methodName, paramTypes);
             method.setAccessible(true);
-            return method.invoke(obj, params);
+            return method.invoke(obj, objects);
         } catch (Exception e) {
             throw new RuntimeException();
         }
+    }
+
+    public static Method getMethod(Class<?> clazz, String methodName) {
+        return Arrays.stream(clazz.getDeclaredMethods())
+                .filter(m -> m.getName().equals(methodName))
+                .findFirst()
+                .orElseThrow(() -> new NoSuchMethodError(methodName));
+    }
+
+    public static Field getField(Class<?> clazz, String fieldName) {
+        if (clazz != null) {
+            try {
+                return clazz.getDeclaredField(fieldName);
+            } catch (NoSuchFieldException e) {
+                return null;
+            }
+        }
+        return null;
     }
 
     /**

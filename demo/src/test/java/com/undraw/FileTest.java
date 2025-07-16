@@ -26,8 +26,8 @@ public class FileTest {
     @Test
     public void test() throws IOException {
         String fileDir = userDir + "/file/avatar.gif";
+        System.out.println(FileUtils.createFile(fileDir, true));
         System.out.println(FileUtils.createFile(fileDir));
-        System.out.println(FileUtils.createSnowFile(fileDir));
     }
 
     @Test

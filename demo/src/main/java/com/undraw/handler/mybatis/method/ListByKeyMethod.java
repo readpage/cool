@@ -1,4 +1,4 @@
-package com.undraw.handler.method;
+package com.undraw.handler.mybatis.method;
 
 import com.baomidou.mybatisplus.core.injector.AbstractMethod;
 import com.baomidou.mybatisplus.core.metadata.TableFieldInfo;

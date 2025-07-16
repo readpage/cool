@@ -1,4 +1,4 @@
-package com.undraw.handler;
+package com.undraw.handler.mybatis;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 

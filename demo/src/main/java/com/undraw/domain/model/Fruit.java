@@ -26,6 +26,7 @@ public class Fruit {
     @BigDecimalFormat(access = BigDecimalFormat.Access.TenThousand)
     private BigDecimal price3;
 
+    @DecimalFormat
     private Double score;
 
 }

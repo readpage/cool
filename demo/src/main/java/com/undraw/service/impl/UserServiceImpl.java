@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.github.pagehelper.PageHelper;
 import com.undraw.domain.dto.UserParam;
 import com.undraw.domain.entity.User;
-import com.undraw.handler.EnhancedServiceImpl;
+import com.undraw.handler.mybatis.EnhancedServiceImpl;
 import com.undraw.mapper.UserMapper;
 import com.undraw.service.UserService;
 import com.undraw.util.excel.ExcelUtils;
@@ -34,7 +34,10 @@ public class UserServiceImpl extends EnhancedServiceImpl<UserMapper, User> imple
 
     @Override
     public List<User> list(UserParam obj) {
-        return userMapper.selectList(null);
+        String sort = obj.sort(User.class, "id");
+        return userMapper.selectList(Wrappers.lambdaQuery(User.class)
+                .last(sort)
+        );
     }
 
     @Override

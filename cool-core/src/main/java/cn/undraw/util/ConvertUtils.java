@@ -314,7 +314,7 @@ public class ConvertUtils {
      * @param pageSize  每页条数
      * @return      分页集合对象
      */
-    public static List page(List list, int pageNum, int pageSize){
+    public static <T> List<T> page(List<T> list, int pageNum, int pageSize){
 
         List result = new ArrayList();
         if (list != null && list.size() > 0) {

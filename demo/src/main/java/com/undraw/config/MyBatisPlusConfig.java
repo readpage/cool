@@ -1,7 +1,7 @@
 package com.undraw.config;
 
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
-import com.undraw.handler.CustomSqlInjector;
+import com.undraw.handler.mybatis.CustomSqlInjector;
 import org.apache.ibatis.annotations.Mapper;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.context.annotation.Bean;

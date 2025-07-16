@@ -1,4 +1,4 @@
-package com.undraw.handler.method;
+package com.undraw.handler.mybatis.method;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -78,7 +78,7 @@ public class PageParam {
         List<Field> fields = ReflectUtils.getFields(clazz);
         for (Map.Entry<String, String> entry : map.entrySet()) {
             for (Field field : fields) {
-                Object exist = StrUtils.isNull(AnnoUtils.getValue(field, TableField.class, "exist"), true);
+                Object exist = StrUtils.isNull(AnnoUtils.getValueByField(field, TableField.class, "exist"), true);
                 if (Objects.equals(entry.getKey(), field.getName()) && ConvertUtils.toBoolean(exist)) {
                     String key = StrUtils.toUnderScoreCase(field.getName());
                     if ("asc".equals(entry.getValue())) {

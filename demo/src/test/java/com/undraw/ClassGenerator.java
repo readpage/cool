@@ -102,7 +102,7 @@ public class ClassGenerator {
         sb.append("package "+packageName+";\n\n");
         sb.append("import com.baomidou.mybatisplus.annotation.*;\n");
         sb.append("import com.fasterxml.jackson.annotation.JsonProperty;\n");
-        sb.append("import com.fasterxml.jackson.annotation.JsonSerialize;\n");
+        sb.append("import com.fasterxml.jackson.databind.annotation.JsonSerialize;\n");
         sb.append("import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;\n");
         sb.append("import io.swagger.v3.oas.annotations.media.Schema;\n");
         sb.append("import lombok.Data;\n");

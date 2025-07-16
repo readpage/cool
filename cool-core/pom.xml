@@ -90,7 +90,7 @@
         <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
-            <version>1.9.2</version>
+            <version>1.20.1</version>
         </dependency>
         <dependency>
             <groupId>org.lionsoul</groupId>
@@ -178,7 +178,7 @@
                     <!-- 如果希望发布后自动执行close和release操作，此处可以调整为true -->
                     <autoReleaseAfterClose>true</autoReleaseAfterClose>
                 </configuration>
-            </plugin>
+            </plugin><plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-compiler-plugin</artifactId><configuration><source>8</source><target>8</target></configuration></plugin>
         </plugins>
     </build>
 
