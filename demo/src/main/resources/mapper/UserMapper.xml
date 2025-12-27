@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.undraw.mapper.UserMapper">
+    <select id="userinfoList" resultType="map">
+        SELECT userid, badgenumber FROM user
+        <if test="list != null and list.size > 0">
+            WHERE id IN
+            <foreach collection="list" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+    <delete id="del">
+        <choose>
+            <when test="list != null and list.size > 0">
+                DELETE FROM user
+                WHERE id IN
+                <foreach collection="list" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </when>
+            <otherwise>
+                SELECT 0
+            </otherwise>
+        </choose>
+    </delete>
+</mapper>

@@ -1,0 +1,58 @@
+{
+  "properties": [
+    {
+      "name": "cool-core.filter.include",
+      "type": "java.lang.String",
+      "defaultValue": "",
+      "description": "开启xss，敏感词拦截的路径，如拦截所有路径:/**."
+    },
+    {
+      "name": "cool-core.filter.exclude",
+      "type": "java.lang.String",
+      "defaultValue": "",
+      "description": "排除xss，敏感词拦截的路径如:/test/**, /test2/**."
+    },
+    {
+      "name": "cool-core.filter.sensitive",
+      "type": "java.lang.Boolean",
+      "defaultValue": true,
+      "description": "是否开启敏感词过滤."
+    },
+    {
+      "name": "cool-core.filter.xss",
+      "type": "java.lang.Boolean",
+      "defaultValue": true,
+      "description": "是否开启xss代码过滤."
+    },
+    {
+      "name": "cool-core.filter.log-param",
+      "type": "java.lang.String",
+      "defaultValue": "",
+      "description": "日志参数属性过滤白名单:password, oldPwd, newPwd."
+    },
+    {
+      "name": "cool-core.snowflake.workerId",
+      "type": "java.lang.Integer",
+      "defaultValue": 0,
+      "description": "雪花算法参数，机器ID."
+    },
+    {
+      "name": "cool-core.snowflake.datacenterId",
+      "type": "java.lang.Integer",
+      "defaultValue": 0,
+      "description": "雪花算法参数，数据标识ID."
+    },
+    {
+      "name": "cool-core.date-format",
+      "type": "java.lang.String",
+      "defaultValue": "global",
+      "description": "timestamp-时间戳，global-国际化格式."
+    },
+    {
+      "name": "cool-core.model.camel-case",
+      "type": "java.lang.Boolean",
+      "defaultValue": true,
+      "description": "开启驼峰命名."
+    }
+  ]
+}

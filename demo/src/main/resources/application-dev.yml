@@ -1,0 +1,39 @@
+file:
+  upload: D:\Code\Java\cool\demo\upload
+  visit: http://173.10.108.150:7032/static
+
+springdoc:
+  swagger-ui:
+    operations-sorter: method
+  # 配置需要生成接口文档的扫描包
+  packages-to-scan: com.undraw.controller
+
+
+spring:
+  web:
+    resources:
+      # 设置静态资源的存放路径
+      static-locations: file:${server.file.upload}
+  mvc:
+    # 静态资源的访问路径，默认 /
+    static-path-pattern: /static/**
+  datasource:
+    url: jdbc:mysql://localhost:3306/cool?serverTimezone=GMT%2B8&allowMultiQueries=true
+    username: root
+    password: root
+  data:
+    redis:
+      redis:
+        host: 127.0.0.1
+        port: 6379
+        database: 0
+    mongodb:
+      host: localhost
+      port: 27017
+      database: basic
+      auto-index-creation: true
+
+mybatis-plus:
+  configuration:
+    # 配置日志
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
