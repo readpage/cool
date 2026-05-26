@@ -344,10 +344,10 @@ public class ConvertUtils {
      * @return            包含所有批次的列表
      */
     public static <T> List<List<T>> batchList(Collection<T> collection, int batchSize) {
-        List list = new ArrayList(collection);
-        if (list == null || batchSize <= 0) {
-            throw new IllegalArgumentException("List或batchSize必须有效。");
+        if (collection == null || batchSize <= 0) {
+            return new ArrayList<>();
         }
+        List list = new ArrayList(collection);
 
         List<List<T>> batches = new ArrayList<>();
         for (int i = 0; i < list.size(); i += batchSize) {

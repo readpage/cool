@@ -1,0 +1,21 @@
+{
+  "extends": "@vue/tsconfig/tsconfig.dom.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "erasableSyntaxOnly": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true,
+    "verbatimModuleSyntax": false, // 仅类型导入进行导入 否
+
+    "baseUrl": "./",  // 设置解析非相对模块名称的基本目录
+    // 设置模块名到基于baseUrl的路径映射,可以设置路径别名的语法提示
+    "paths": {
+      "@/*": ["src/*"],
+    },
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue"]
+}

@@ -19,6 +19,5 @@ public class RestTemplateTest {
         File file = FileUtils.createFile(System.getProperty("user.dir") + File.separator + "test.txt");
         System.out.println(file);
         file.delete();
-
     }
 }

@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.BiConsumer;
 
@@ -130,7 +131,7 @@ public class ModelServiceImpl implements ModelService {
                     for (String key : keys) {
                         Object o1 = v1.get(key);
                         Object o2 = v2.get(key);
-                        if (!Objects.equals(o1, o2)) {
+                        if (!equals(o1, o2)) {
                             b = false;
                             break;
                         }
@@ -172,6 +173,25 @@ public class ModelServiceImpl implements ModelService {
         }
         boolean b = modelMapper.delete(model) > 0;
         return false;
+    }
+
+    private boolean equals(Object o1, Object o2) {
+        if (o1 == o2) return true;
+        if (o1 == null || o2 == null) return false;
+        // 处理 BigDecimal 的 scale 差异 (如 1.0 vs 1.00)
+        if (o1 instanceof BigDecimal && o2 instanceof BigDecimal) {
+            return ((BigDecimal) o1).compareTo((BigDecimal) o2) == 0;
+        }
+        // 处理 Number 类型不匹配 (如 Integer vs Long)
+        if (o1 instanceof Number && o2 instanceof Number && o1.getClass() != o2.getClass()) {
+            return String.valueOf(o1).equals(String.valueOf(o2));
+        }
+        // 处理日期类型、数组等无法直接 equals 的类型，统一转 String 比较
+        if ((o1 instanceof java.time.temporal.Temporal || o1 instanceof java.util.Date || o1.getClass().isArray())
+                || (o2 instanceof java.time.temporal.Temporal || o2 instanceof java.util.Date || o2.getClass().isArray())) {
+            return String.valueOf(o1).equals(String.valueOf(o2));
+        }
+        return Objects.equals(o1, o2);
     }
 
     @Override

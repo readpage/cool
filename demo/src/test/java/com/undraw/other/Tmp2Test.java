@@ -6,8 +6,7 @@ import com.undraw.domain.entity.User;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.Collections;
-import java.util.Map;
+import java.util.*;
 
 @SpringBootTest
 public class Tmp2Test {
@@ -22,16 +21,17 @@ public class Tmp2Test {
         throw new CustomerException("警告");
     }
 
-   @Test
+    @Test
     public void test3() {
-       String join = String.join(",", Collections.nCopies(2, "?"));
-       System.out.println(join);
-       System.out.println(Collections.nCopies(2, "?"));
-       User user = new User();
-       user.setUsername("user");
-       user.setPassword("123456");
-       Map<String, Object> entry = BeanUtils.getEntry(user);
-       System.out.println(entry);
+        String join = String.join(",", Collections.nCopies(2, "?"));
+        System.out.println(join);
+        System.out.println(Collections.nCopies(2, "?"));
+        User user = new User();
+        user.setUsername("user");
+        user.setPassword("123456");
+
+        Map<String, Object> entry = BeanUtils.getEntry(user);
+        System.out.println(entry);
    }
 
 }

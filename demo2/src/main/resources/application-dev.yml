@@ -1,0 +1,18 @@
+springdoc:
+  swagger-ui:
+    operations-sorter: method
+  # 配置需要生成接口文档的扫描包
+  packages-to-scan: com.example.controller
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/cool?serverTimezone=GMT%2B8&allowMultiQueries=true
+    username: root
+    password: root
+
+
+# application.yml —— 生产环境默认不开启（不写即可）
+# 开发/调试时临时开启：
+cool:
+  sql:
+    logging: true

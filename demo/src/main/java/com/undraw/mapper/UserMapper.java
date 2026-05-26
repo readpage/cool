@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.undraw.domain.entity.User;
 import org.apache.ibatis.annotations.Select;
 
+import java.util.List;
+
 /**
  * <p>
  *  Mapper 接口
@@ -15,5 +17,8 @@ import org.apache.ibatis.annotations.Select;
 public interface UserMapper extends BaseMapper<User> {
     @Select("SELECT * FROM user1")
     void badSql();
+
+    @Select("SELECT * FROM user")
+    List<User> list();
 
 }

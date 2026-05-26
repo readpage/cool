@@ -12,6 +12,7 @@
     <modules>
         <module>cool-core</module>
         <module>demo</module>
+        <module>demo2</module>
     </modules>
 
     <!--版本依赖  https://start.spring.io/actuator/info -->

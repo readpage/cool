@@ -71,4 +71,12 @@ public class User implements Serializable {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
+
+    public User() {
+    }
+
+    public User(String password, Integer age) {
+        this.password = password;
+        this.age = age;
+    }
 }

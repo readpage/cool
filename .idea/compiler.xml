@@ -9,6 +9,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="demo" />
         <module name="cool-core" />
+        <module name="demo2" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel target="8" />
@@ -18,6 +19,7 @@
       <module name="cool" options="-parameters" />
       <module name="cool-core" options="-parameters" />
       <module name="demo" options="-parameters --add-exports java.base/sun.reflect.annotation=ALL-UNNAMED" />
+      <module name="demo2" options="-parameters --add-exports java.base/sun.reflect.annotation=ALL-UNNAMED --add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED --add-exports jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED --add-exports jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED" />
     </option>
   </component>
 </project>

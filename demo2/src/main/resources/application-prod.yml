@@ -1,0 +1,10 @@
+springdoc:
+  swagger-ui:
+    enabled: false
+  api-docs:
+    enabled: false
+
+logging:
+  config: classpath:log4j2-prod.xml
+  file:
+    path: logs

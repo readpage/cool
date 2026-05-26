@@ -1,0 +1,9 @@
+server:
+  port: 7034
+
+spring:
+  application:
+    name: demo
+  profiles:
+    #需要使用的配置文件的后缀
+    active: dev

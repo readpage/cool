@@ -102,6 +102,16 @@ public class BeanUtils {
      * @return 字段值
      */
     public static Object getFieldValue(Object obj, String fieldName) {
+        if (obj == null) {
+            return null;
+        } else if (obj instanceof Map) {
+            return ((Map) obj).get(fieldName);
+        } else if (obj instanceof Integer || obj instanceof Long || obj instanceof Double || obj instanceof Float || obj instanceof Boolean || obj instanceof Short || obj instanceof Byte || obj instanceof String) {
+            return obj;
+        } else if (obj != null && obj.getClass().isPrimitive()) {
+            return obj;
+        }
+
         try {
             Field field = obj.getClass().getDeclaredField(fieldName);
             field.setAccessible(true);

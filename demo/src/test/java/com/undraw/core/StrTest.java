@@ -50,7 +50,8 @@ public class StrTest {
         String format = String.format("%06d", 123);
         System.out.println(format);
     }
-//
+
+
 //    @Test
 //    public void test2() {
 //        String j = String.valueOf("9.318443295E7");
