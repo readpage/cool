@@ -48,8 +48,8 @@
           >
             <span @click.stop="onSort(item.prop!)">{{ item.label }}</span>
             <span class="u-caret-wrapper" :class="{ visible: sortProp === item.prop || hoverSort === item.prop }">
-              <i class="u-sort-caret ascending" :class="{ active: sortProp === item.prop && sortOrder === 'asc' }" @click.stop="onSort(item.prop!, 'asc')"></i>
-              <i class="u-sort-caret descending" :class="{ active: sortProp === item.prop && sortOrder === 'desc' }" @click.stop="onSort(item.prop!, 'desc')"></i>
+              <span class="u-caret-hit" @click.stop="onSort(item.prop!, 'asc')"><i class="u-sort-caret ascending" :class="{ active: sortProp === item.prop && sortOrder === 'asc' }"></i></span>
+              <span class="u-caret-hit" @click.stop="onSort(item.prop!, 'desc')"><i class="u-sort-caret descending" :class="{ active: sortProp === item.prop && sortOrder === 'desc' }"></i></span>
             </span>
           </div>
         </template>
@@ -440,6 +440,17 @@ defineExpose({ tableRef })
     &.visible {
       opacity: 1;
     }
+  }
+
+  :deep(.u-caret-hit) {
+    position: absolute;
+    left: 0;
+    width: 24px;
+    height: 7px;
+    cursor: pointer;
+
+    &:first-child { top: 0; }
+    &:last-child { bottom: 0; }
   }
 
   :deep(.u-sort-caret) {

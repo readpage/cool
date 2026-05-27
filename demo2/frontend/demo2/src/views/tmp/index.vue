@@ -1,25 +1,26 @@
 <template>
   <div class="demo-page">
-    <SearchPanel
+    <Search
       :config="config"
       @save-filter="saveFilter"
+      @search="handleSearch"
     />
     <p v-if="resultStr">查询结果：{{ resultStr }}</p>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch } from 'vue'
-import SearchPanel, { type SearchConfig, type FilterItem } from './search/index.vue'
+import { ref, reactive } from 'vue'
+import Search, { type SearchConfig, type FilterItem } from './search/index.vue'
 
-const STORAGE_KEY = 'search_panel_config'
+const STORAGE_KEY = 'search_config'
 
 const config = reactive<SearchConfig>({
-  currentField: 'title',
+  currentField: 'all',
   filter: [
-    { prop: 'title', label: '书名', operator: 'contains', exposed: true },
-    { prop: 'author', label: '作者', operator: 'contains', exposed: true },
-    { prop: 'category', label: '分类', operator: 'contains' },
+    { prop: 'title', label: '书名', operator: 'contains', filterMode: 'exposed' },
+    { prop: 'author', label: '作者', operator: 'contains', filterMode: 'exposed' },
+    { prop: 'category', label: '分类', operator: 'contains', filterMode: 'show' },
     { prop: 'price', label: '价格', operator: 'contains' },
     { prop: 'stock', label: '库存', operator: 'contains' },
     { prop: 'publisher', label: '出版社', operator: 'contains' },
@@ -33,7 +34,7 @@ function loadPersisted() {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) {
       const data = JSON.parse(raw)
-      if (data.currentField) config.currentField = data.currentField
+      Object.assign(config, data)
     }
   } catch { /* ignore */ }
 }
@@ -42,16 +43,14 @@ loadPersisted()
 
 const resultStr = ref('')
 
-// config 变化自动持久化
-watch(
-  () => config.currentField,
-  () => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ currentField: config.currentField }))
-  }
-)
+function saveFilter(cfg: SearchConfig) {
+  console.log('[index] saveFilter', cfg)
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg))
+}
 
-function saveFilter(payload: FilterItem[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({ filter: payload, currentField: config.currentField }))
+function handleSearch(filters: FilterItem[]) {
+  console.log('[index] handleSearch', filters)
+  resultStr.value = JSON.stringify(filters, null, 2)
 }
 </script>
 

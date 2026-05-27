@@ -32,6 +32,15 @@ public class FilterParam implements SqlParamProvider {
     /** 排序规则（单字段） */
     private SortItem sort;
 
+    /** 当前页码（从 1 开始），默认 1 */
+    private int current = 1;
+
+    /** 每页条数，默认 10；设为 0 表示不分页 */
+    private int size = 10;
+
+    /** 导出列定义（可选，仅导出时传） */
+    private List<ColumnItem> columns;
+
     // ==================== 内部类 ====================
 
     @Data
@@ -47,6 +56,21 @@ public class FilterParam implements SqlParamProvider {
     public static class SortItem {
         private String column;
         private String direction;
+    }
+
+    @Data
+    @Accessors(chain = true)
+    public static class ColumnItem {
+        /** 实体字段名（如 username / createTime），通过 getter 取值 */
+        private String prop;
+        /** 表头显示名 */
+        private String label;
+        /** 列宽（像素） */
+        private Integer width;
+        /** 最小列宽（备用） */
+        private Integer minWidth;
+        /** 对齐方式：left/center/right */
+        private String align;
     }
 
     /**
@@ -87,7 +111,22 @@ public class FilterParam implements SqlParamProvider {
             if (val == null || (val instanceof String s && s.isEmpty())) continue;
             if (first) { first = false; }
             else { where.append(" AND "); }
-            where.append(c.operator().toSql(c.column(), val, c.column() + "_", idx, namedParams));
+            if ("all".equalsIgnoreCase(c.column())) {
+                // 全字段匹配：对每个列生成 OR 条件
+                if (columns.isEmpty()) {
+                    where.append("1=0"); // 无可用列，查不出任何数据
+                } else {
+                    where.append("(");
+                    for (int i = 0; i < columns.size(); i++) {
+                        if (i > 0) where.append(" OR ");
+                        where.append(c.operator().toSql(columns.get(i), val,
+                                columns.get(i) + "_", idx, namedParams));
+                    }
+                    where.append(")");
+                }
+            } else {
+                where.append(c.operator().toSql(c.column(), val, c.column() + "_", idx, namedParams));
+            }
         }
 
         StringBuilder orderBy = new StringBuilder();

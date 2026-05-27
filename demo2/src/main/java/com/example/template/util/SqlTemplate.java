@@ -54,4 +54,46 @@ public class SqlTemplate {
         }
         return jdbc.query(finalSql, r.params(), new BeanPropertyRowMapper<>(resultType));
     }
+
+    /**
+     * 分页查询 — 自动 COUNT + LIMIT。
+     *
+     * @param sql        SQL 模板（可用 {{filter}} / {{sort}} 占位符）
+     * @param param      FilterParam（需包含 current/size 分页字段）
+     * @param resultType 返回实体类型
+     * @param <T>        实体类型
+     * @return 分页结果
+     */
+    public <T> PageResult<T> page(String sql, FilterParam param, Class<T> resultType) {
+        FilterParam.DaoResult r = param.buildForDao(sql);
+        String finalSql = sql
+                .replace("{{filter}}", r.filter())
+                .replace("{{sort}}",   r.sort());
+
+        int current = param.getCurrent() > 0 ? param.getCurrent() : 1;
+        int size    = param.getSize()    > 0 ? param.getSize()    : 10;
+
+        // 1. COUNT
+        String countSql = buildCountSql(finalSql);
+        if (properties.isLogging()) {
+            log.info("==> COUNT : {}", countSql);
+        }
+        Long total = jdbc.queryForObject(countSql, r.params(), Long.class);
+
+        // 2. LIMIT
+        String limitSql = finalSql + " LIMIT " + size + " OFFSET " + (current - 1) * size;
+        if (properties.isLogging()) {
+            log.info("==>  SQL : {}", limitSql);
+            log.info("==> PARAMS: {}", r.params());
+        }
+        List<T> records = jdbc.query(limitSql, r.params(), new BeanPropertyRowMapper<>(resultType));
+
+        return new PageResult<>(total != null ? total : 0, current, size, records);
+    }
+
+    /** 从 SQL 截取 COUNT：移除 ORDER BY，SELECT ... FROM → SELECT COUNT(*) FROM */
+    private String buildCountSql(String renderedSql) {
+        String sql = renderedSql.replaceAll("(?i)\\s+ORDER\\s+BY\\s+.*$", "");
+        return sql.replaceAll("(?i)^\\s*SELECT\\s+.+?\\s+FROM\\s+", "SELECT COUNT(*) FROM ");
+    }
 }

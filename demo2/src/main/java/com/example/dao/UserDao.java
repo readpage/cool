@@ -6,6 +6,7 @@ import com.example.template.annotation.Param;
 import com.example.template.annotation.Query;
 import com.example.template.annotation.SqlDao;
 import com.example.template.util.FilterParam;
+import com.example.template.util.PageResult;
 
 import java.util.List;
 
@@ -59,6 +60,14 @@ public interface UserDao {
             {{sort}}
             """)
     List<User> dynamicList(FilterParam params);
+
+    /** 分页查询 — 返回 PageResult，代理自动触发 COUNT + LIMIT */
+    @Query("""
+            SELECT id, username, password, age, phone, create_time, update_time
+            FROM user WHERE {{filter}}
+            {{sort}}
+            """)
+    PageResult<User> page(FilterParam params);
 
     // ==================== 写入（@Modify）====================
 

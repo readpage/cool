@@ -23,10 +23,11 @@ declare module 'vue' {
     ElSelect: typeof import('element-plus/es')['ElSelect']
     ElTable: typeof import('element-plus/es')['ElTable']
     ElTableColumn: typeof import('element-plus/es')['ElTableColumn']
-    ElTag: typeof import('element-plus/es')['ElTag']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    Search: typeof import('./src/components/table/search/index.vue')['default']
     Table: typeof import('./src/components/table/index.vue')['default']
     TableSettings: typeof import('./src/components/table/TableSettings.vue')['default']
+    Tool: typeof import('./src/components/table/tool/index.vue')['default']
   }
 }

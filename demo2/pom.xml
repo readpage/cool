@@ -68,6 +68,11 @@
             <groupId>cn.undraw</groupId>
             <artifactId>cool-core</artifactId>
         </dependency>
+        <!-- FastExcel 导入导出 -->
+        <dependency>
+            <groupId>cn.idev.excel</groupId>
+            <artifactId>fastexcel</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

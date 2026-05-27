@@ -6,6 +6,8 @@ import com.example.template.annotation.Param;
 import com.example.template.annotation.Query;
 import com.example.template.core.SqlResult;
 import com.example.template.core.SqlTemplateEngine;
+import com.example.template.util.FilterParam;
+import com.example.template.util.PageResult;
 import com.example.template.util.SqlParamProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,6 +68,12 @@ public class QueryProxyFactory {
             SqlResult result = engine.render(template, params);
             log(result.getSql(), params);
             Class<?> returnType = method.getReturnType();
+
+            // 分页查询：返回 PageResult
+            if (PageResult.class.isAssignableFrom(returnType)) {
+                return executePageQuery(result.getSql(), params, method, args);
+            }
+
             if (List.class.isAssignableFrom(returnType)) {
                 Class<?> elementType = resolveElementType(method.getGenericReturnType());
                 if (Map.class.isAssignableFrom(elementType))
@@ -80,6 +88,45 @@ public class QueryProxyFactory {
             List<?> list = jdbc.query(result.getSql(), params,
                     new BeanPropertyRowMapper<>(returnType));
             return list.isEmpty() ? null : list.get(0);
+        }
+
+        /** 分页查询：先 COUNT 再 LIMIT */
+        private <T> PageResult<T> executePageQuery(String renderedSql,
+                                                    Map<String, Object> params,
+                                                    Method method,
+                                                    Object[] args) {
+            FilterParam fp = findFilterParam(args);
+            int current = fp != null && fp.getCurrent() > 0 ? fp.getCurrent() : 1;
+            int size    = fp != null && fp.getSize()    > 0 ? fp.getSize()    : 10;
+
+            // 1. COUNT
+            String countSql = buildCountSql(renderedSql);
+            log(countSql, params);
+            Long total = jdbc.queryForObject(countSql, params, Long.class);
+
+            // 2. LIMIT 分页
+            String limitSql = renderedSql + " LIMIT " + size + " OFFSET " + (current - 1) * size;
+            Class<?> elementType = resolveElementType(method.getGenericReturnType());
+            @SuppressWarnings("unchecked")
+            List<T> records = (List<T>) jdbc.query(limitSql, params,
+                    new BeanPropertyRowMapper<>(elementType));
+
+            return new PageResult<>(total != null ? total : 0, current, size, records);
+        }
+
+        /** 从 SQL 截取 COUNT：移除 ORDER BY，SELECT ... FROM → SELECT COUNT(*) FROM */
+        private String buildCountSql(String renderedSql) {
+            String sql = renderedSql.replaceAll("(?i)\\s+ORDER\\s+BY\\s+.*$", "");
+            return sql.replaceAll("(?i)^\\s*SELECT\\s+.+?\\s+FROM\\s+", "SELECT COUNT(*) FROM ");
+        }
+
+        /** 从参数中提取 FilterParam */
+        private FilterParam findFilterParam(Object[] args) {
+            if (args == null) return null;
+            for (Object arg : args) {
+                if (arg instanceof FilterParam fp) return fp;
+            }
+            return null;
         }
 
         /**

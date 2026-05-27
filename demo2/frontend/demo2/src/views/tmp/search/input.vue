@@ -9,12 +9,10 @@
     >
       <template #prepend>
         <el-select
-          ref="selectRef"
           v-model="currentField"
           placeholder="请选择"
           filterable
           style="width: 120px"
-          @visible-change="onSelectVisibleChange"
           @change="onFieldChange"
         >
           <el-option
@@ -33,7 +31,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick } from 'vue'
+import { ref, computed } from 'vue'
 import { Search } from '@element-plus/icons-vue'
 
 interface FieldOption {
@@ -41,66 +39,47 @@ interface FieldOption {
   value: string
 }
 
-interface SearchResult {
-  [key: string]: string
-}
-
 const props = withDefaults(
   defineProps<{
-    options?: FieldOption[]
-    modelValue?: SearchResult
+    options: FieldOption[]
     initField?: string
     initKeyword?: string
   }>(),
   {
-    options: () => [
-      { label: '全字段', value: 'all' },
-      { label: '名称', value: 'name' },
-      { label: '编号', value: 'code' },
-      { label: '电话', value: 'phone' },
-      { label: '邮箱', value: 'email' },
-    ],
-    modelValue: () => ({}),
+    options: () => [],
     initField: '',
     initKeyword: '',
-  }
+  },
 )
 
 const emit = defineEmits<{
-  (e: 'search', value: SearchResult): void
+  (e: 'search', value: Record<string, string>): void
   (e: 'change', value: { field: string; keyword: string }): void
 }>()
 
-const fieldOptions = computed(() => props.options)
+/* ============ 内置全选项 ============ */
 
-const currentField = ref(props.initField || (fieldOptions.value[0]?.value ?? 'all'))
+const ALL_OPTION: FieldOption = { label: '全选', value: 'all' }
+
+const fieldOptions = computed(() =>
+  [ALL_OPTION, ...props.options.filter((o) => o.value !== 'all')],
+)
+
+const currentField = ref(props.initField || ALL_OPTION.value)
 const keyword = ref(props.initKeyword || '')
 
-const selectRef = ref()
+const currentFieldLabel = computed(() =>
+  fieldOptions.value.find((item) => item.value === currentField.value)?.label ?? '',
+)
+
+/* ============ 事件 ============ */
 
 function onFieldChange() {
   emit('change', { field: currentField.value, keyword: keyword.value })
 }
 
-function onSelectVisibleChange(visible: boolean) {
-  if (!visible) {
-    nextTick(() => {
-      const input = selectRef.value?.$el?.querySelector('input')
-      input?.blur()
-    })
-  }
-}
-
-const currentFieldLabel = computed(() => {
-  const option = fieldOptions.value.find((item) => item.value === currentField.value)
-  return option?.label ?? ''
-})
-
 function handleSearch() {
-  const params: SearchResult = {
-    [currentField.value]: keyword.value,
-  }
-  emit('search', params)
+  emit('search', { [currentField.value]: keyword.value })
 }
 </script>
 
@@ -108,7 +87,6 @@ function handleSearch() {
 .search-group {
   max-width: 400px;
   .search-input {
-
     :deep(.el-input-group__prepend) {
       background-color: var(--el-fill-color-blank);
       padding: 0;

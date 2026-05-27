@@ -61,6 +61,7 @@ public class ColumnExtractor {
 
     public static void checkColumn(List<String> allowed, String column) {
         if (allowed.isEmpty()) return;
+        if ("all".equalsIgnoreCase(column.strip())) return;   // 全字段匹配，无需校验
         if (!allowed.contains(column.strip()))
             throw new IllegalArgumentException("非法列名: \"" + column + "\"，允许: " + allowed);
     }
