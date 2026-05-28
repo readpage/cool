@@ -3,15 +3,15 @@
 
  Source Server         : localhost
  Source Server Type    : MySQL
- Source Server Version : 80030 (8.0.30)
+ Source Server Version : 80022 (8.0.22)
  Source Host           : localhost:3306
  Source Schema         : cool
 
  Target Server Type    : MySQL
- Target Server Version : 80030 (8.0.30)
+ Target Server Version : 80022 (8.0.22)
  File Encoding         : 65001
 
- Date: 28/05/2026 17:29:23
+ Date: 28/05/2026 23:53:48
 */
 
 SET NAMES utf8mb4;
@@ -31,7 +31,7 @@ CREATE TABLE `model`  (
   `update_time` datetime NULL DEFAULT NULL COMMENT '修改时间',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `username`(`username` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 54 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '模型' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 54 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '模型' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of model
@@ -63,7 +63,7 @@ CREATE TABLE `options`  (
   `update_time` datetime NULL DEFAULT NULL COMMENT '修改时间',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `module`(`type` ASC, `label` ASC, `value` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '选项' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '选项' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of options
@@ -110,12 +110,12 @@ CREATE TABLE `sys_config`  (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_config`(`config_group` ASC, `config_key` ASC, `user_id` ASC, `deleted` ASC) USING BTREE,
   INDEX `idx_deleted`(`deleted` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '通用配置表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '通用配置表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of sys_config
 -- ----------------------------
-INSERT INTO `sys_config` VALUES (1, 'table', 'user', 1, '{\"search\": {\"filter\": [{\"prop\": \"username\", \"label\": \"用户名\", \"operator\": \"contains\", \"filterMode\": \"exposed\"}, {\"prop\": \"phone\", \"label\": \"电话\", \"operator\": \"contains\", \"filterMode\": \"exposed\"}, {\"prop\": \"age\", \"label\": \"年龄\", \"operator\": \"eq\"}], \"currentField\": \"all\"}, \"stripe\": true, \"columns\": [{\"prop\": \"id\", \"align\": \"center\", \"label\": \"ID\", \"hidden\": true, \"minWidth\": 80}, {\"prop\": \"username\", \"align\": \"left\", \"label\": \"用户名\", \"width\": 179, \"hidden\": false, \"minWidth\": 140}, {\"prop\": \"age\", \"align\": \"right\", \"label\": \"年龄\", \"hidden\": false, \"minWidth\": 80}, {\"prop\": \"phone\", \"align\": \"left\", \"label\": \"电话\", \"hidden\": false, \"minWidth\": 160}, {\"prop\": \"createTime\", \"align\": \"center\", \"label\": \"创建时间\", \"width\": 0, \"hidden\": false, \"minWidth\": 180}, {\"prop\": \"updateTime\", \"align\": \"center\", \"label\": \"修改时间\", \"width\": 0, \"hidden\": false, \"minWidth\": 180}]}', 0, 0, '2026-05-28 15:36:02', '2026-05-28 16:24:53');
+INSERT INTO `sys_config` VALUES (1, 'table', 'user', 1, '{\"search\": {\"filter\": [{\"prop\": \"username\", \"label\": \"用户名\", \"operator\": \"contains\", \"filterMode\": \"exposed\"}, {\"prop\": \"sex\", \"label\": \"性别\", \"operator\": \"eq\", \"fieldType\": \"remote-select\", \"filterMode\": \"exposed\"}, {\"prop\": \"phone\", \"label\": \"电话\", \"operator\": \"contains\", \"filterMode\": \"hide\"}, {\"prop\": \"createTime\", \"label\": \"创建时间\", \"operator\": \"between\", \"fieldType\": \"daterange\", \"filterMode\": \"exposed\"}, {\"prop\": \"updateTime\", \"label\": \"修改时间\", \"operator\": \"between\", \"fieldType\": \"daterange\", \"filterMode\": \"hide\"}], \"currentField\": \"all\", \"filterValues\": [{\"value\": \"0\", \"column\": \"sex\", \"operator\": \"eq\"}]}, \"stripe\": true, \"columns\": [{\"prop\": \"id\", \"align\": \"center\", \"label\": \"ID\", \"hidden\": true, \"minWidth\": 80}, {\"prop\": \"username\", \"align\": \"left\", \"label\": \"用户名\", \"minWidth\": 140}, {\"prop\": \"age\", \"align\": \"left\", \"label\": \"年龄\", \"minWidth\": 80}, {\"prop\": \"sex\", \"align\": \"center\", \"label\": \"性别\", \"minWidth\": 80}, {\"prop\": \"phone\", \"align\": \"left\", \"label\": \"电话\", \"minWidth\": 160}, {\"prop\": \"createTime\", \"align\": \"center\", \"label\": \"创建时间\", \"minWidth\": 180}, {\"prop\": \"updateTime\", \"align\": \"center\", \"label\": \"修改时间\", \"minWidth\": 180}]}', 0, 0, '2026-05-28 15:36:02', '2026-05-28 23:52:41');
 
 -- ----------------------------
 -- Table structure for sys_config_history
@@ -134,7 +134,7 @@ CREATE TABLE `sys_config_history`  (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_history`(`config_group` ASC, `config_key` ASC, `version` ASC) USING BTREE,
   INDEX `idx_timeline`(`config_group` ASC, `config_key` ASC, `create_time` ASC) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '系统默认配置变更历史表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '系统默认配置变更历史表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of sys_config_history
