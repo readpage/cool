@@ -1,7 +1,6 @@
 springdoc:
   swagger-ui:
     operations-sorter: method
-  # 配置需要生成接口文档的扫描包
   packages-to-scan: com.example.controller
 
 spring:
@@ -10,9 +9,15 @@ spring:
     username: root
     password: root
 
+# MyBatis-Plus
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: auto
 
-# application.yml —— 生产环境默认不开启（不写即可）
-# 开发/调试时临时开启：
 cool:
   sql:
     logging: true

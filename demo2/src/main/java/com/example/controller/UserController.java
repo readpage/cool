@@ -36,4 +36,16 @@ public class UserController {
         return R.ok(userService.page(param));
     }
 
+    @Operation(summary = "保存用户（id=null 新增，id≠null 修改）")
+    @PostMapping
+    public R<Boolean> save(@RequestBody User user) {
+        return R.ok(userService.saveOrUpdate(user));
+    }
+
+    @Operation(summary = "根据ID删除用户")
+    @DeleteMapping("/{id}")
+    public R<Boolean> delete(@PathVariable Long id) {
+        return R.ok(userService.removeById(id));
+    }
+
 }

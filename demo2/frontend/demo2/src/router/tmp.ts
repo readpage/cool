@@ -10,7 +10,7 @@ Object.entries(modules).forEach(([key, value]) => {
 })
 arr.push({
   path: '/',
-  redirect: '/table'
+  redirect: '/user'
 })
 
 export default arr

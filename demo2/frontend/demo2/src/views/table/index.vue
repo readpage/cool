@@ -1,11 +1,25 @@
 <template>
-  <Table :config="tableConfig" :data="tableData" :selection="selection" :show-admin-btn="true" @change="saveConfig" @reset="resetConfig" @admin-confirm="adminConfirm" @query="onQuery" />
+  <Table
+    id="book"
+    :config="tableConfig"
+    :data="tableData"
+    :selection="selection"
+    :show-admin-btn="true"
+    @change="onConfigChange"
+    @reset="onReset"
+    @admin-confirm="onAdminConfirm"
+    @query="onQuery"
+  />
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import Table from '@/components/table/index.vue'
-import type { TableConfig, TableItem } from '@/components/table/index.vue'
+import type { TableConfig } from '@/types/table'
+import type { TableItem } from '@/components/table/index.vue'
+import { useConfigStore } from '@/store/config'
+
+const $store = useConfigStore()
 
 const tableData = ref([
   { id: 1, title: '深入浅出Vue.js',             author: '刘博文',      category: '前端开发', price: 79.00,   stock: 128, publisher: '人民邮电出版社', publishDate: '2019-03-01', status: '在售' },
@@ -18,7 +32,6 @@ const tableData = ref([
   { id: 8, title: '人月神话',                    author: 'Fred Brooks',    category: '软件工程', price: 49.00,   stock: 0,   publisher: '清华大学出版社', publishDate: '2015-04-01', status: '缺货' },
 ])
 
-const STORAGE_KEY = 'table-config'
 const initConfig = (): TableConfig => ({
   columns: [
     { prop: 'title',      label: '书名',       width: 200 },
@@ -31,44 +44,45 @@ const initConfig = (): TableConfig => ({
     { prop: 'status',     label: '状态',      minWidth: 100, align: 'center' },
   ],
   sort: { column: 'price', direction: 'desc' },
+  search: {
+    currentField: 'all',
+    filter: [
+      { prop: 'title', label: '书名', operator: 'contains', filterMode: 'exposed' },
+      { prop: 'author', label: '作者', operator: 'contains', filterMode: 'exposed' },
+      { prop: 'category', label: '分类', operator: 'contains', filterMode: 'show' },
+      { prop: 'price', label: '价格', operator: 'contains' },
+      { prop: 'stock', label: '库存', operator: 'contains' },
+      { prop: 'publisher', label: '出版社', operator: 'contains' },
+      { prop: 'publishDate', label: '出版日期', operator: 'contains' },
+      { prop: 'status', label: '状态', operator: 'contains' },
+    ],
+  },
 })
 
 const selection = ref(false)
 
-const tableConfig = ref<TableConfig>({} as TableConfig)
+/** 配置来源：store 缓存 → 代码兜底（appStore.init 已预加载） */
+const tableConfig = computed(() => $store.getConfig('book') ?? initConfig())
 
-function init() {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY)
-    tableConfig.value = saved ? JSON.parse(saved) : initConfig()
-  } catch {
-    tableConfig.value = initConfig()
-  }
-}
-
-init()
-const saveConfig = (config: TableConfig) => {
+// 配置变更 → appStore 统一保存
+function onConfigChange(config: TableConfig) {
   console.log('change', config)
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(config))
 }
 
 // 恢复默认设置
-const resetConfig = () => {
-  localStorage.removeItem(STORAGE_KEY)
-  tableConfig.value = initConfig()
+function onReset() {
+  console.log('reset to default')
 }
 
-// 管理员确认默认配置（保存为系统默认）
-function adminConfirm(columns: TableItem[]) {
+// 管理员确认默认配置
+function onAdminConfirm(columns: TableItem[]) {
   console.log('adminConfirm', columns)
 }
 
-// 查询参数变化（排序、筛选等）
+// 查询参数变化
 function onQuery(query: Record<string, any>) {
   console.log('query', query)
-  // 这里调用接口刷新数据
 }
-
 </script>
 
 <style lang="scss" scoped></style>

@@ -9,6 +9,7 @@ declare module 'vue' {
   export interface GlobalComponents {
     ElButton: typeof import('element-plus/es')['ElButton']
     ElCheckbox: typeof import('element-plus/es')['ElCheckbox']
+    ElDatePicker: typeof import('element-plus/es')['ElDatePicker']
     ElDivider: typeof import('element-plus/es')['ElDivider']
     ElDropdown: typeof import('element-plus/es')['ElDropdown']
     ElDropdownItem: typeof import('element-plus/es')['ElDropdownItem']
@@ -23,11 +24,14 @@ declare module 'vue' {
     ElSelect: typeof import('element-plus/es')['ElSelect']
     ElTable: typeof import('element-plus/es')['ElTable']
     ElTableColumn: typeof import('element-plus/es')['ElTableColumn']
+    ExposedFilter: typeof import('./src/components/table/search/ExposedFilter.vue')['default']
+    FilterValue: typeof import('./src/components/table/search/FilterValue.vue')['default']
+    Input: typeof import('./src/components/table/search/input.vue')['default']
+    Query: typeof import('./src/components/table/search/query.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     Search: typeof import('./src/components/table/search/index.vue')['default']
     Table: typeof import('./src/components/table/index.vue')['default']
     TableSettings: typeof import('./src/components/table/TableSettings.vue')['default']
-    Tool: typeof import('./src/components/table/tool/index.vue')['default']
   }
 }

@@ -1,7 +1,9 @@
 package com.example.service.impl;
 
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.dao.UserDao;
 import com.example.domain.entity.User;
+import com.example.mapper.UserMapper;
 import com.example.service.UserService;
 import com.example.template.util.FilterParam;
 import com.example.template.util.PageResult;
@@ -11,10 +13,10 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 /**
- * 用户服务实现
+ * 用户服务实现 — MyBatis-Plus ServiceImpl 提供标准 CRUD，FilterParam 查询走自定义 DAO
  */
 @Service
-public class UserServiceImpl implements UserService {
+public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
 
     @Resource
     private UserDao userDao;

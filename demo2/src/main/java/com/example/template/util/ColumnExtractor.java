@@ -65,4 +65,26 @@ public class ColumnExtractor {
         if (!allowed.contains(column.strip()))
             throw new IllegalArgumentException("非法列名: \"" + column + "\"，允许: " + allowed);
     }
+
+    /**
+     * 驼峰转下划线，用于前端 camelCase 参数与 SQL snake_case 列名统一匹配。
+     * <pre>{@code
+     * createTime  → create_time
+     * id          → id
+     * }</pre>
+     */
+    public static String toUnderScoreCase(String camelCase) {
+        if (camelCase == null || camelCase.isEmpty()) return camelCase;
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < camelCase.length(); i++) {
+            char c = camelCase.charAt(i);
+            if (Character.isUpperCase(c)) {
+                sb.append('_');
+                sb.append(Character.toLowerCase(c));
+            } else {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
+    }
 }

@@ -1,6 +1,9 @@
 package com.example.domain.entity;
 
 import cn.undraw.util.phone.annotation.Phone;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -20,11 +23,13 @@ import java.util.List;
  * @since 2023-03-15 18:00
  */
 @Data
+@TableName("user")
 @Schema(title = "User对象", description = "用户对象")
 public class User implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    @TableId(type = IdType.AUTO)
     private Long id;
 
     @Schema(title = "用户名")
@@ -41,6 +46,9 @@ public class User implements Serializable {
     @Phone
     @Schema(title = "电话号码")
     private String phone;
+
+    @Schema(title = "性别")
+    private String sex;
 
     private Double salary = 22.3578;
 

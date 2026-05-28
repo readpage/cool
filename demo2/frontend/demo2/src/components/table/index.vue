@@ -2,6 +2,13 @@
   <div class="u-table-wrapper">
     <!-- 表格导航工具栏 -->
     <div class="u-table-toolbar">
+      <Search
+        v-if="config.search"
+        :config="config.search"
+        :load-options="loadOptions"
+        @save-filter="onSearchSave"
+        @search="onSearchQuery"
+      />
       <TableSettings
         :config="config"
         :show-admin-btn="showAdminBtn"
@@ -55,7 +62,7 @@
         </template>
         <template #default="scope" v-if="item.type !== 'index'">
           <slot :name="item.prop" :row="scope.row" :index="scope.$index" :value="scope.row[item.prop]">
-            {{ scope.row[item.prop] }}
+            {{ translateValue(item.prop, scope.row[item.prop]) }}
           </slot>
         </template>
       </el-table-column>
@@ -85,6 +92,8 @@ import { useColumnResize } from './hooks/useColumnResize'
 import { useColumnReorder } from './hooks/useColumnReorder'
 import { useColumnSort } from './hooks/useColumnSort'
 import TableSettings from './TableSettings.vue'
+import Search, { type SearchConfig, type FilterItem } from './search/index.vue'
+import { useConfigStore } from '@/store/config'
 
 /** 列配置 */
 export interface TableItem {
@@ -110,6 +119,8 @@ export interface TableConfig {
   rowKey?: string
   /** 排序配置 { column, direction } */
   sort?: { column: string; direction: 'asc' | 'desc' }
+  /** 搜索配置 */
+  search?: SearchConfig
 }
 
 const props = defineProps<{
@@ -118,7 +129,23 @@ const props = defineProps<{
   /** 是否显示多选列 */
   selection?: boolean
   showAdminBtn?: boolean
+  /** 表格唯一标识，不传则沿用现有行为（向后兼容） */
+  id?: string
+  /** 选项加载器：type=选项类别，keyword=搜索关键词(可选)。用于表格翻译预加载和搜索下拉 */
+  loadOptions?: (type: string, keyword?: string) => Promise<{ label: string; value: string }[]>
 }>()
+
+const $store = useConfigStore()
+
+// ==================== 选项翻译（内部缓存）====================
+
+/** 字典翻译映射表：{ prop: { value: label } }，由 loadOptions 在 onMounted 中预加载 */
+const internalLookup = ref<Record<string, Record<string, string>>>({})
+
+function saveIfId(config: TableConfig) {
+  if (!props.id) return
+  $store.save(props.id, config)
+}
 
 const emit = defineEmits<{
   (e: 'selection-change', value: any[]): void
@@ -150,7 +177,7 @@ const { dragLineVisible, dragLineStyle, previewLineVisible, previewLineStyle, co
   wrapperRef: tableWrapperRef,
   columns: columnsRef,
   edgeThreshold: 12,
-  onResizeEnd: () => emit('change', props.config),
+  onResizeEnd: () => { emit('change', props.config); saveIfId(props.config) },
 })
 
 // 列排序拖拽
@@ -161,6 +188,7 @@ const { dropLineVisible, dropLineStyle, colHighlightVisible, colHighlightStyle, 
   onReorder: () => {
     reorderKey.value++
     emit('change', props.config)
+    saveIfId(props.config)
   },
 })
 
@@ -168,17 +196,47 @@ const { dropLineVisible, dropLineStyle, colHighlightVisible, colHighlightStyle, 
 const { sortProp, sortOrder, sort } = useColumnSort(props.config)
 const hoverSort = ref<string | null>(null)
 
+// 统一的查询事件构建
+function emitQuery() {
+  const filter = props.config.search?.filterValues ?? []
+  // 只传未隐藏的列（hidden !== true），用于 all 类型全字段搜索
+  const columns = props.config.columns.filter(c => !c.hidden)
+  emit('query', {
+    columns,
+    filter,
+    sort: props.config.sort || {},
+  })
+}
+
+// 搜索配置变更 → 持久化
+function onSearchSave(_cfg: SearchConfig) {
+  emit('change', props.config)
+  saveIfId(props.config)
+}
+
+// 搜索查询 → 调 API
+function onSearchQuery(filters: FilterItem[]) {
+  if (props.config.search) {
+    props.config.search.filterValues = filters
+  }
+  emitQuery()
+}
+
 const onSort = (prop: string, target?: 'asc' | 'desc') => {
   sort(prop, target)
   props.config.sort = sortProp.value && sortOrder.value
     ? { column: sortProp.value, direction: sortOrder.value }
     : undefined
   emit('change', props.config)
-  emit('query', {
-    columns: props.config.columns.filter(c => !c.hidden).map(c => c.prop!),
-    filter: {},
-    sort: props.config.sort || {},
-  })
+  saveIfId(props.config)
+  emitQuery()
+}
+
+/** 根据 internalLookup 翻译单元格值，未命中返回原值 */
+function translateValue(prop: string | undefined, rawValue: any): any {
+  if (!prop || rawValue == null) return rawValue
+  const dict = internalLookup.value[prop]
+  return dict ? (dict[String(rawValue)] ?? rawValue) : rawValue
 }
 
 const headerCellStyle = () => ({
@@ -192,6 +250,34 @@ const headerCellStyle = () => ({
 
 onMounted(async () => {
   await nextTick()
+
+  // 初始加载：自动触发一次查询
+  emitQuery()
+
+  // 选项翻译预加载：从 filter 中提取 fieldType 为 select/remote-select 的 prop，批量加载
+  if (props.loadOptions) {
+    const types = (props.config.search?.filter ?? [])
+      .filter(f => f.fieldType === 'select' || f.fieldType === 'remote-select')
+      .map(f => f.prop)
+    if (types.length > 0) {
+      const results = await Promise.all(
+        types.map(async (type) => {
+          try {
+            const items = await props.loadOptions!(type)  // 无 keyword → 全量加载
+            return { type, items }
+          } catch { return { type, items: [] as { label: string; value: string }[] } }
+        }),
+      )
+      const map: Record<string, Record<string, string>> = {}
+      for (const { type, items } of results) {
+        map[type] = {}
+        for (const item of items) {
+          map[type][item.value] = item.label
+        }
+      }
+      internalLookup.value = map
+    }
+  }
 
   // 初始化 align：未设置时，文本列默认 left，数值列默认 right
   const columns = props.config.columns
@@ -208,10 +294,10 @@ onMounted(async () => {
   if (props.config.stripe == null) props.config.stripe = true
   const total = columns.reduce((s, c) => s + (typeof c.width === 'number' ? c.width : 0), 0)
   if (total < (wrapper.clientWidth || 0)) {
-    // 倒序找最后一个可拖拽列
+    // 倒序找最后一个可拖拽列（已有 minWidth 的不参与弹性填充）
     for (let i = columns.length - 1; i >= 0; i--) {
       const c = columns[i]
-      if (c.resizable === false || isFixedCol(c)) continue
+      if (c.resizable === false || isFixedCol(c) || c.minWidth != null) continue
       const w = typeof c.width === 'number' ? c.width : 0
       c.minWidth = Math.max(w, 80)
       c.width = undefined
@@ -226,6 +312,7 @@ const onSettingConfirm = (cols: TableItem[]) => {
   cols.forEach(c => props.config.columns.push(c))
   reorderKey.value++
   emit('change', props.config)
+  saveIfId(props.config)
 }
 
 const onAdminConfirm = (cols: TableItem[]) => {
@@ -234,9 +321,11 @@ const onAdminConfirm = (cols: TableItem[]) => {
   reorderKey.value++
   emit('admin-confirm', cols.map(c => ({ ...c })))
   emit('change', props.config)
+  if (props.id) $store.saveAsSystem(props.id, props.config)
 }
 
 const onSettingReset = (cols: TableItem[]) => {
+  if (props.id) $store.resetToSystem(props.id, props.config)
   props.config.columns.splice(0, props.config.columns.length)
   cols.forEach(c => props.config.columns.push(c))
   reorderKey.value++
@@ -254,9 +343,9 @@ defineExpose({ tableRef })
 .u-table-toolbar {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  height: 36px;
-  padding: 0 6px;
+  justify-content: space-between;
+  min-height: 36px;
+  padding: 4px 6px;
   border: 1px solid #ebeef5;
   border-bottom: none;
   border-radius: 4px 4px 0 0;

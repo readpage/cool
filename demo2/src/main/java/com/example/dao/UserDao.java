@@ -56,7 +56,7 @@ public interface UserDao {
      */
     @Query("""
             SELECT id, username, password, age, phone, create_time, update_time
-            FROM user WHERE {{filter}}
+            FROM user {{filter}}
             {{sort}}
             """)
     List<User> dynamicList(FilterParam params);
@@ -64,7 +64,7 @@ public interface UserDao {
     /** 分页查询 — 返回 PageResult，代理自动触发 COUNT + LIMIT */
     @Query("""
             SELECT id, username, password, age, phone, create_time, update_time
-            FROM user WHERE {{filter}}
+            FROM user {{filter}}
             {{sort}}
             """)
     PageResult<User> page(FilterParam params);

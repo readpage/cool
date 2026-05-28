@@ -42,12 +42,11 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 3004,
     proxy: {
-      // http://localhost:7032/file/download?filePath=/upload/test2.xlsx
-      // '/api': {
-      //   target: 'http://localhost:7032',
-      //   changeOrigin: true,
-      //   rewrite: path => path.replace(/^\/api/, '')
-      // }
+      '/api': {
+        target: 'http://localhost:7034',
+        changeOrigin: true,
+        rewrite: path => path.replace(/^\/api/, '')
+      }
     }
   },
   // 打包

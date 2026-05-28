@@ -8,6 +8,7 @@ import lombok.experimental.Accessors;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -99,8 +100,32 @@ public class FilterParam implements SqlParamProvider {
      * 模板中可用 {@code {{filter}}} / {@code {{sort}}} 占位符。
      */
     public DaoResult buildForDao(String sqlTemplate) {
-        List<String> columns = ColumnExtractor.lastExtract(sqlTemplate);
-        validateColumns(columns);
+        // 前端传 camelCase（如 createTime），统一转 snake_case（如 create_time）与 SQL 列白名单匹配
+        if (filter != null) {
+            for (FilterItem f : filter) {
+                f.setColumn(ColumnExtractor.toUnderScoreCase(f.getColumn()));
+            }
+        }
+        if (sort != null && sort.getColumn() != null) {
+            sort.setColumn(ColumnExtractor.toUnderScoreCase(sort.getColumn()));
+        }
+
+        // SQL 模板提取列（用于校验） + 兜底
+        List<String> sqlColumns = ColumnExtractor.lastExtract(sqlTemplate);
+        validateColumns(sqlColumns);
+
+        // all 搜索时使用的列：前端 camelCase 转 snake_case 后与 SQL 白名单取交集，防注入
+        List<String> allSearchColumns;
+        if (this.columns != null && !this.columns.isEmpty()) {
+            allSearchColumns = this.columns.stream()
+                    .map(ColumnItem::getProp)
+                    .filter(Objects::nonNull)
+                    .map(ColumnExtractor::toUnderScoreCase)   // camelCase → snake_case
+                    .filter(sqlColumns::contains)
+                    .toList();
+        } else {
+            allSearchColumns = sqlColumns;
+        }
 
         Map<String, Object> namedParams = new LinkedHashMap<>();
         AtomicInteger idx = new AtomicInteger(0);
@@ -112,15 +137,15 @@ public class FilterParam implements SqlParamProvider {
             if (first) { first = false; }
             else { where.append(" AND "); }
             if ("all".equalsIgnoreCase(c.column())) {
-                // 全字段匹配：对每个列生成 OR 条件
-                if (columns.isEmpty()) {
+                // 全字段匹配：对每个可见列生成 OR 条件
+                if (allSearchColumns.isEmpty()) {
                     where.append("1=0"); // 无可用列，查不出任何数据
                 } else {
                     where.append("(");
-                    for (int i = 0; i < columns.size(); i++) {
+                    for (int i = 0; i < allSearchColumns.size(); i++) {
                         if (i > 0) where.append(" OR ");
-                        where.append(c.operator().toSql(columns.get(i), val,
-                                columns.get(i) + "_", idx, namedParams));
+                        where.append(c.operator().toSql(allSearchColumns.get(i), val,
+                                allSearchColumns.get(i) + "_", idx, namedParams));
                     }
                     where.append(")");
                 }
@@ -129,17 +154,17 @@ public class FilterParam implements SqlParamProvider {
             }
         }
 
-        StringBuilder orderBy = new StringBuilder();
-        if (sort != null) {
+        // 筛选 SQL 片段：有值时携带 WHERE 关键字，无值时为空字符串
+        String filterSql = hasAnyCondition() ? ("WHERE " + where.toString()) : "";
+
+        // 排序 SQL 片段：有值时携带 ORDER BY 关键字，无值时为空字符串
+        String sortSql = "";
+        if (sort != null && sort.getColumn() != null && !sort.getColumn().isBlank()) {
             String dir = "desc".equalsIgnoreCase(sort.getDirection()) ? "DESC" : "ASC";
-            orderBy.append("ORDER BY ").append(sort.getColumn()).append(" ").append(dir);
+            sortSql = "ORDER BY " + sort.getColumn() + " " + dir;
         }
 
-        return new DaoResult(
-                hasAnyCondition() ? where.toString() : "",
-                orderBy.toString(),
-                namedParams
-        );
+        return new DaoResult(filterSql, sortSql, namedParams);
     }
 
     // ==================== 内部方法 ====================

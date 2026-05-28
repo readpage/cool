@@ -5,23 +5,24 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="18fbe13d-d477-4a78-a9bc-379cfd296fb0" name="Changes" comment="update: spring-boot3">
-      <change beforePath="$PROJECT_DIR$/demo/docs/cool.sql" beforeDir="false" afterPath="$PROJECT_DIR$/demo/docs/cool.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/docs/menu.sql" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/auto-imports.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/auto-imports.d.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/components.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/components.d.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/pnpm-lock.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/pnpm-lock.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/table/index.vue" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/table/index.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/tmp/index.vue" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/tmp/index.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/tmp/search/ExposedFilter.vue" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/tmp/search/ExposedFilter.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/tmp/search/index.vue" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/tmp/search/index.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/tmp/search/input.vue" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/tmp/search/input.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/tmp/search/query.vue" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/tmp/search/query.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/table/search/index.vue" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/table/search/index.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/main.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/main.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/router/tmp.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/router/tmp.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/store/app.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/store/app.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/table/index.vue" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/table/index.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/vite.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/vite.config.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/demo2/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/Demo2Application.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/src/main/java/com/example/Demo2Application.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/controller/UserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/src/main/java/com/example/controller/UserController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/dao/UserDao.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/src/main/java/com/example/dao/UserDao.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/template/proxy/QueryProxyFactory.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/src/main/java/com/example/template/proxy/QueryProxyFactory.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/domain/entity/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/src/main/java/com/example/domain/entity/User.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/service/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/src/main/java/com/example/service/UserService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/service/impl/UserServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/src/main/java/com/example/service/impl/UserServiceImpl.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/template/util/ColumnExtractor.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/src/main/java/com/example/template/util/ColumnExtractor.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/template/util/FilterParam.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/src/main/java/com/example/template/util/FilterParam.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/template/util/SqlTemplate.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/src/main/java/com/example/template/util/SqlTemplate.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/src/main/resources/application-dev.yml" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/src/main/resources/application-dev.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -267,7 +268,7 @@
     &quot;run.configurations.included.in.services&quot;: &quot;true&quot;,
     &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
     &quot;spring.configuration.checksum&quot;: &quot;adc14bc5942187ae9b51210c3694fa90&quot;,
-    &quot;ts.external.directory.path&quot;: &quot;D:\\code\\Java\\cool\\demo\\ui\\cool-core\\node_modules\\typescript\\lib&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;D:\\code\\Java\\cool\\demo2\\frontend\\demo2\\node_modules\\typescript\\lib&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;,
     &quot;应用程序.CodeGenerator.executor&quot;: &quot;Run&quot;,
     &quot;应用程序.EasyExcelExample.executor&quot;: &quot;Debug&quot;,
@@ -841,6 +842,8 @@
       <workItem from="1779667596225" duration="2169000" />
       <workItem from="1779670396276" duration="21965000" />
       <workItem from="1779881475616" duration="6521000" />
+      <workItem from="1779926702422" duration="8437000" />
+      <workItem from="1779944808285" duration="12318000" />
     </task>
     <task id="LOCAL-00001" summary="chore: 更新">
       <created>1710076178715</created>
