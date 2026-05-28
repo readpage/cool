@@ -9,7 +9,7 @@ import { useAppStore } from './store/app'
 const app = createApp(App)
 app.use(pinia)
 
-// 应用初始化：预加载所有表格配置
+// 应用初始化：预加载所有表格配置 & 恢复选项缓存
 const appStore = useAppStore()
 appStore.init()
 

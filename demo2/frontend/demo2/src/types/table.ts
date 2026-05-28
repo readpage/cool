@@ -14,12 +14,15 @@ export interface TableItem {
   hidden?: boolean
 }
 
+/** 筛选操作符 */
+export type OperatorType = 'contains' | 'eq' | 'ne' | 'gt' | 'lt' | 'gte' | 'lte' | 'between' | 'in'
+
 /**
  * 筛选项
  */
 export interface FilterItem {
   column: string
-  operator: string
+  operator: OperatorType
   value: string | [string, string] | string[]
 }
 
@@ -29,7 +32,7 @@ export interface FilterItem {
 export interface ColumnConfig {
   prop: string
   label: string
-  operator?: string
+  operator?: OperatorType
   filterMode?: 'show' | 'exposed' | 'hide'
 
   /** 控件类型，缺省为 text（el-input） */
@@ -60,6 +63,11 @@ export interface TableConfig {
   rowKey?: string
   sort?: { column: string; direction: 'asc' | 'desc' }
   search?: SearchConfig
+
+  /** 全局选项映射表：{ prop: [{ label, value }] }，select / remote-select 共用。
+   * 由 Table 挂载时注入 optionsStore，表格翻译和筛选面板都从此读取。
+   * 静态 select 选项可直接写死在此；remote-select 由 loadOptions 异步填充。 */
+  optionsMap?: Record<string, { label: string; value: string }[]>
 }
 
 /**

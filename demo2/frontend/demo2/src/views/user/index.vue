@@ -13,12 +13,13 @@
 import { ref, computed } from 'vue'
 import Table from '@/components/table/index.vue'
 import type { TableConfig } from '@/types/table'
-import { useConfigStore } from '@/store/config'
+import { useTableConfigStore } from '@/store/table-config'
+import { useOptionsStore } from '@/store/options'
 
 /** api: POST /user/list ← 通过 Vite proxy 转发到后端 */
 const API = '/api/user/list'
 
-const $store = useConfigStore()
+const $store = useTableConfigStore()
 const tableData = ref<Record<string, any>[]>([])
 
 /** 代码兜底配置 — 仅当本地无缓存且服务端无数据时使用 */
@@ -37,22 +38,24 @@ const initConfig = (): TableConfig => ({
     currentField: 'all',
     filter: [
       { prop: 'username', label: '用户名', operator: 'contains', filterMode: 'exposed' },
-      { prop: 'sex',      label: '性别',   operator: 'eq',       fieldType: 'remote-select' },
-      { prop: 'phone',    label: '电话',   operator: 'contains', filterMode: 'exposed' },
-      { prop: 'age',      label: '年龄',   operator: 'eq'        },
+      { prop: 'sex',      label: '性别',   operator: 'eq',       fieldType: 'remote-select', filterMode: 'exposed' },
+      { prop: 'phone',    label: '电话',   operator: 'contains' },
+      { prop: 'createTime',      label: '创建时间',   operator: 'between', fieldType: 'daterange', filterMode: 'show'   },
+      { prop: 'updateTime',      label: '修改时间',   operator: 'between', fieldType: 'daterange'       },
     ],
   },
 })
 
-// ==================== 统一选项加载器 ====================
+// ==================== 选项加载器 → 委托 optionsStore ====================
 
-/** 选项加载器（type=选项类别，keyword=搜索关键词）。Table 内部据此完成表格翻译预加载和搜索下拉 */
-const loadOptions = async (type: string, keyword?: string) => {
-  const params = new URLSearchParams({ type, limit: keyword ? '20' : '200' })
-  if (keyword) params.set('keyword', keyword)
-  const res = await fetch(keyword ? `/api/option/search?${params}` : `/api/option/list?${params}`)
-  const json = await res.json()
-  return (json.data ?? []).map((item: any) => ({ label: item.label, value: item.value }))
+const loadOptions = (type: string, keyword?: string) => useOptionsStore().getOptions(type, keyword)
+
+// ==================== 测试种子 ====================
+
+/** 测试用：将 initConfig 注入 localStorage + 内存，当前页面立即生效（注释掉即不使用） */
+// seedConfig()
+function seedConfig() {
+  $store.seedConfig('user', initConfig())
 }
 
 // ==================== 配置 & 查询 ====================

@@ -42,6 +42,7 @@
       <FilterValue
         v-else-if="item.operator === 'in' && isSelectField(item.column)"
         v-model="item.value"
+        :column="item.column"
         :field-type="getFieldType(item.column)"
         operator="in"
         :options="getOptions(item.column)"
@@ -61,6 +62,7 @@
       <FilterValue
         v-else
         v-model="item.value"
+        :column="item.column"
         :field-type="getFieldType(item.column)"
         :operator="item.operator"
         :options="getOptions(item.column)"
@@ -80,22 +82,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, toRef } from 'vue'
 import { ArrowDown } from '@element-plus/icons-vue'
 import FilterValue from './FilterValue.vue'
+import { useSearchHelpers, type ColumnConfig } from './hooks/useSearchHelpers'
 
 /* ============ 类型 ============ */
 
-interface ColumnConfig {
-  prop: string
-  label: string
-  fieldType?: 'text' | 'date' | 'datetime' | 'daterange' | 'datetimerange' | 'select' | 'remote-select'
-  options?: ({ label: string; value: string } | string)[]
-}
-
 interface FilterCondition {
   column: string
-  operator: string
+  operator: 'contains' | 'eq' | 'ne' | 'gt' | 'lt' | 'gte' | 'lte' | 'between' | 'in'
   value: string | string[]
   valueStr: string
   display: boolean
@@ -105,8 +101,6 @@ interface OperatorOption {
   label: string
   value: string
 }
-
-type RemoteMethod = (query: string) => Promise<{ label: string; value: string }[]>
 
 /* ============ Props & Emits ============ */
 
@@ -121,42 +115,18 @@ const emit = defineEmits<{ (e: 'submit'): void }>()
 
 /* ============ 辅助 ============ */
 
-function getColByProp(prop: string): ColumnConfig | undefined {
-  return props.columns.find((c) => c.prop === prop)
-}
-
-function getFieldType(prop: string): string | undefined {
-  return getColByProp(prop)?.fieldType
-}
-
-function isDateRangeField(prop: string): boolean {
-  const ft = getFieldType(prop)
-  return ft === 'daterange' || ft === 'datetimerange'
-}
-
-function getDateRangeType(prop: string): string {
-  const ft = getFieldType(prop)
-  return ft === 'datetimerange' ? 'datetimerange' : 'daterange'
-}
-
-function getDateFormat(prop: string): string {
-  const ft = getFieldType(prop)
-  return ft === 'datetime' || ft === 'datetimerange' ? 'YYYY-MM-DD HH:mm:ss' : 'YYYY-MM-DD'
-}
-
-function isSelectField(prop: string): boolean {
-  const ft = getFieldType(prop)
-  return ft === 'select' || ft === 'remote-select'
-}
-
-function getOptions(prop: string) {
-  return getColByProp(prop)?.options
-}
-
-function getRemoteMethod(prop: string): RemoteMethod | undefined {
-  if (!props.loadOptions) return undefined
-  return (keyword: string) => props.loadOptions!(prop, keyword)
-}
+const {
+  getFieldType,
+  isDateRangeField,
+  getDateRangeType,
+  getDateFormat,
+  isSelectField,
+  getOptions,
+  getRemoteMethod,
+} = useSearchHelpers(
+  toRef(props, 'columns'),
+  toRef(props, 'loadOptions'),
+)
 
 /* ============ 计算属性 ============ */
 

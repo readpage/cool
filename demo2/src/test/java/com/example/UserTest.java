@@ -108,7 +108,7 @@ public class UserTest {
                 """;
 
         // 一行：String → FilterParam → dynamicList
-        List<User> users = userDao.dynamicList(mapper.readValue(json, FilterParam.class));
+        List<User> users = userDao.list(mapper.readValue(json, FilterParam.class));
 
         System.out.println(users);
     }
@@ -123,19 +123,19 @@ public class UserTest {
         FilterParam p1 = mapper.readValue("""
                 { "filter": [{ "column": "1;DROP TABLE", "operator": "eq", "value": "x" }] }
                 """, FilterParam.class);
-        assertThrows(IllegalArgumentException.class, () -> userDao.dynamicList(p1));
+        assertThrows(IllegalArgumentException.class, () -> userDao.list(p1));
 
         // operator 注入 → 枚举白名单拦截
         FilterParam p2 = mapper.readValue("""
                 { "filter": [{ "column": "username", "operator": "1=1", "value": "admin" }] }
                 """, FilterParam.class);
-        assertThrows(IllegalArgumentException.class, () -> userDao.dynamicList(p2));
+        assertThrows(IllegalArgumentException.class, () -> userDao.list(p2));
 
         // value 注入 → 参数化绑定
         FilterParam p3 = mapper.readValue("""
                 { "filter": [{ "column": "username", "operator": "contains", "value": "' OR '1'='1" }] }
                 """, FilterParam.class);
-        List<User> users = userDao.dynamicList(p3);
+        List<User> users = userDao.list(p3);
         assertTrue(users.isEmpty(), "OR 1=1 注入被参数化绑定阻止");
 
         System.out.println("SQL 注入防御: column/operator/value all passed");

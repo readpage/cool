@@ -23,12 +23,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public List<User> list(FilterParam param) {
-        return userDao.dynamicList(param);
+        return userDao.list(param);
     }
 
     @Override
     public PageResult<User> page(FilterParam param) {
-        return userDao.page(param);
+        List<User> users = userDao.list(param.startPage());
+        return new PageResult<>(param, users);
     }
 
 }

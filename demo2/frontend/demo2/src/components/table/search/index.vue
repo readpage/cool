@@ -32,13 +32,14 @@ import { ref, computed } from 'vue'
 import Input from './input.vue'
 import Query from './query.vue'
 import ExposedFilter from './ExposedFilter.vue'
+import { isEmptyValue } from './hooks/useSearchHelpers'
 
 /* ============ 类型 ============ */
 
 export interface ColumnConfig {
   prop: string
   label: string
-  operator?: string
+  operator?: 'contains' | 'eq' | 'ne' | 'gt' | 'lt' | 'gte' | 'lte' | 'between' | 'in'
   filterMode?: 'show' | 'exposed' | 'hide'
   fieldType?: 'text' | 'date' | 'datetime' | 'daterange' | 'datetimerange' | 'select' | 'remote-select'
   options?: ({ label: string; value: string } | string)[]
@@ -52,7 +53,7 @@ export interface SearchConfig {
 
 export type FilterItem = {
   column: string
-  operator: string
+  operator: 'contains' | 'eq' | 'ne' | 'gt' | 'lt' | 'gte' | 'lte' | 'between' | 'in'
   value: string | [string, string] | string[]
 }
 
@@ -114,17 +115,19 @@ function syncFilterMode() {
 
 function buildFilter(values: { column: string; operator: string; value: any; valueStr: string }[]): FilterItem[] {
   return values
-    .filter((c) => c.column)
+    .filter((c) => c.column && isEmptyValue(c))
     .map((c) => {
       let value: string | [string, string] | string[]
       if (c.operator === 'between') {
         value = [c.value[0] ?? '', c.value[1] ?? '']
       } else if (c.operator === 'in') {
-        value = c.valueStr?.split(',').map((v: string) => v.trim()).filter(Boolean) ?? []
+        value = Array.isArray(c.value)
+          ? c.value
+          : (c.valueStr?.split(',').map((v: string) => v.trim()).filter(Boolean) ?? [])
       } else {
         value = c.value
       }
-      return { column: c.column, operator: c.operator, value }
+      return { column: c.column, operator: c.operator as FilterItem['operator'], value }
     })
 }
 

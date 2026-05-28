@@ -106,13 +106,13 @@ import { Filter, Plus, Remove, Close } from '@element-plus/icons-vue'
 interface ColumnConfig {
   prop: string
   label: string
-  operator?: string
+  operator?: 'contains' | 'eq' | 'ne' | 'gt' | 'lt' | 'gte' | 'lte' | 'between' | 'in'
   filterMode?: 'show' | 'exposed' | 'hide'
 }
 
 interface FilterCondition {
   column: string
-  operator: string
+  operator: 'contains' | 'eq' | 'ne' | 'gt' | 'lt' | 'gte' | 'lte' | 'between' | 'in'
   value: string | string[]
   valueStr: string
   display: boolean
@@ -120,7 +120,7 @@ interface FilterCondition {
 
 type FilterResult = {
   column: string
-  operator: string
+  operator: 'contains' | 'eq' | 'ne' | 'gt' | 'lt' | 'gte' | 'lte' | 'between' | 'in'
   value: string | [string, string] | string[]
 }
 

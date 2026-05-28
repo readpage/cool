@@ -43,7 +43,7 @@ interface ColumnConfig {
 
 interface FilterCondition {
   column: string
-  operator: string
+  operator: 'contains' | 'eq' | 'ne' | 'gt' | 'lt' | 'gte' | 'lte' | 'between' | 'in'
   value: string | string[]
   valueStr: string
   display: boolean

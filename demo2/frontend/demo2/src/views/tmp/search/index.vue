@@ -36,7 +36,7 @@ import ExposedFilter from './ExposedFilter.vue'
 export interface ColumnConfig {
   prop: string
   label: string
-  operator?: string
+  operator?: 'contains' | 'eq' | 'ne' | 'gt' | 'lt' | 'gte' | 'lte' | 'between' | 'in'
   filterMode?: 'show' | 'exposed' | 'hide'
 }
 
@@ -48,7 +48,7 @@ export interface SearchConfig {
 
 export type FilterItem = {
   column: string
-  operator: string
+  operator: 'contains' | 'eq' | 'ne' | 'gt' | 'lt' | 'gte' | 'lte' | 'between' | 'in'
   value: string | [string, string] | string[]
 }
 
@@ -116,7 +116,7 @@ function buildFilter(values: { column: string; operator: string; value: any; val
       } else {
         value = c.value
       }
-      return { column: c.column, operator: c.operator, value }
+      return { column: c.column, operator: c.operator as FilterItem['operator'], value }
     })
 }
 

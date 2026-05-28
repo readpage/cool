@@ -21,31 +21,34 @@
     :placeholder="placeholder"
     class="cond-value"
     :teleported="false"
+    clearable
+    value-key="value"
   >
-    <el-option
-      v-for="opt in normalizedOptions"
-      :key="opt.value"
-      :label="opt.label"
-      :value="opt.value"
-    />
+      <el-option
+              v-for="opt in safeStaticOptions"
+              :key="opt.value"
+              :label="opt.label"
+              :value="opt.value"
+            />
   </el-select>
 
   <!-- 远程搜索下拉 -->
   <el-select
     v-else-if="fieldType === 'remote-select'"
-    :model-value="modelValue"
-    @update:model-value="emit('update:modelValue', $event)"
+    v-model="remoteModelValue"
     :multiple="operator === 'in'"
     :placeholder="placeholder"
     class="cond-value"
     :teleported="false"
+    clearable
     filterable
     remote
     :remote-method="onRemoteSearch"
     :loading="remoteLoading"
+    value-key="value"
   >
     <el-option
-      v-for="opt in remoteOptions"
+      v-for="opt in safeRemoteOptions"
       :key="opt.value"
       :label="opt.label"
       :value="opt.value"
@@ -63,7 +66,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 
 /* ============ 类型 ============ */
 
@@ -72,6 +75,10 @@ interface OptionItem {
   value: string
 }
 
+/* ============ 模块级共享缓存（同一列的远程选项在所有 FilterValue 实例间共享） ============ */
+
+const remoteOptionsCache = ref<Record<string, OptionItem[]>>({})
+
 /* ============ Props & Emits ============ */
 
 const props = defineProps<{
@@ -79,12 +86,14 @@ const props = defineProps<{
   /** 控件类型 */
   fieldType?: 'text' | 'date' | 'datetime' | 'daterange' | 'datetimerange' | 'select' | 'remote-select'
   /** 当前操作符（影响 select 是否多选） */
-  operator?: string
+  operator?: 'contains' | 'eq' | 'ne' | 'gt' | 'lt' | 'gte' | 'lte' | 'between' | 'in'
   placeholder?: string
   /** 静态选项（fieldType='select' 时使用） */
   options?: (OptionItem | string)[]
   /** 远程搜索方法（fieldType='remote-select' 时使用） */
   remoteMethod?: (query: string) => Promise<OptionItem[]>
+  /** 列名，用于共享远程搜索缓存 */
+  column?: string
 }>()
 
 const emit = defineEmits<{
@@ -105,16 +114,82 @@ const normalizedOptions = computed<OptionItem[]>(() => {
   )
 })
 
+/** 确保当前 modelValue 始终在选项中，防止另一个组件清除后此组件显示裸 value */
+const safeStaticOptions = computed<OptionItem[]>(() => {
+  const opts = normalizedOptions.value
+  const val = props.modelValue
+  if (!val || typeof val !== 'string' || opts.some((o) => o.value === val)) return opts
+  return [...opts, { label: val, value: val }]
+})
+
 /* ============ 远程搜索 ============ */
 
 const remoteOptions = ref<OptionItem[]>([])
 const remoteLoading = ref(false)
 
+/** 合并共享缓存 + 本地结果 + 当前值，确保 label 始终可解析 */
+const safeRemoteOptions = computed<OptionItem[]>(() => {
+  const cached = props.column ? (remoteOptionsCache.value[props.column] ?? []) : []
+  const merged: OptionItem[] = [...cached]
+  for (const opt of remoteOptions.value) {
+    if (!merged.some((o) => o.value === opt.value)) merged.push(opt)
+  }
+  const val = props.modelValue
+  if (val) {
+    const vals = Array.isArray(val) ? val : [val]
+    for (const v of vals) {
+      if (v && !merged.some((o) => o.value === v)) {
+        merged.push({ label: v, value: v })
+      }
+    }
+  }
+  return merged
+})
+
+/** 本地 v-model 中介：通过改变引用让 Element Plus 感知 options label 变化 */
+const remoteModelValue = ref<string | string[]>(props.modelValue)
+let propSyncing = false
+
+// prop → local
+watch(() => props.modelValue, (val) => {
+  if (propSyncing) return
+  remoteModelValue.value = Array.isArray(val) ? [...val] : val as any
+})
+
+// local → prop
+watch(remoteModelValue, (val) => {
+  if (propSyncing) return
+  emit('update:modelValue', val as string | string[])
+})
+
+// 缓存首次提供真实 label 时，创建新引用让 Element Plus 自动刷新显示
+watch(() => {
+  if (!props.column) return false
+  const cache = remoteOptionsCache.value[props.column]
+  if (!cache || cache.length === 0) return false
+  const val = props.modelValue
+  if (!val) return false
+  const vals = Array.isArray(val) ? val : [val]
+  return vals.every((v) => cache.some((o) => o.value === v && o.label !== v))
+}, (ready) => {
+  if (ready) {
+    propSyncing = true
+    remoteModelValue.value = Array.isArray(props.modelValue)
+      ? [...(props.modelValue as string[])]
+      : (props.modelValue as string)
+    propSyncing = false
+  }
+})
+
 async function onRemoteSearch(query: string) {
   if (!props.remoteMethod) return
   remoteLoading.value = true
   try {
-    remoteOptions.value = await props.remoteMethod(query)
+    const items = await props.remoteMethod(query)
+    remoteOptions.value = items
+    if (props.column) {
+      remoteOptionsCache.value = { ...remoteOptionsCache.value, [props.column]: items }
+    }
   } finally {
     remoteLoading.value = false
   }

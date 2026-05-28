@@ -36,6 +36,15 @@ public class PageResult<T> {
         this.list = list != null ? list : Collections.emptyList();
     }
 
+    /** 从 FilterParam 提取分页信息（total/current/size 已由代理自动填充） */
+    public PageResult(FilterParam param, List<T> list) {
+        this.total = param.getTotal();
+        this.current = param.getCurrent();
+        this.size = param.getSize();
+        this.pages = this.size > 0 ? (int) Math.ceil((double) this.total / this.size) : 0;
+        this.list = list != null ? list : Collections.emptyList();
+    }
+
     // ==================== getter / setter ====================
 
     public long getTotal() {

@@ -4,7 +4,7 @@
       ref="popoverRef"
       :visible="popoverVisible"
       placement="right-start"
-      :width="560"
+      :width="700"
       :show-arrow="false"
       :hide-after="0"
       :teleported="false"
@@ -43,6 +43,7 @@
                       placeholder="可选择"
                       class="cond-field"
                       :teleported="false"
+                      clearable
                       @change="onColumnChange(index)"
                     >
                       <el-option v-for="col in columns" :key="col.prop" :label="col.label" :value="col.prop" />
@@ -70,17 +71,18 @@
                       />
                     </template>
                     <!-- 文本范围：两个输入框 -->
-                    <template v-else>
-                      <el-input v-model="cond.value[0]" placeholder="最小值" class="cond-value" />
-                      <span class="between-sep">~</span>
-                      <el-input v-model="cond.value[1]" placeholder="最大值" class="cond-value" />
-                    </template>
+      <template v-else>
+                    <el-input v-model="cond.value[0]" placeholder="最小值" class="cond-value cond-value-between" />
+                    <span class="between-sep">~</span>
+                    <el-input v-model="cond.value[1]" placeholder="最大值" class="cond-value cond-value-between" />
+                  </template>
                   </template>
                   <template v-else-if="cond.operator === 'in'">
                     <!-- 下拉多选 -->
                     <FilterValue
                       v-if="isSelectField(cond.column)"
                       v-model="cond.value"
+                      :column="cond.column"
                       :field-type="getFieldType(cond.column)"
                       operator="in"
                       :options="getOptions(cond.column)"
@@ -93,6 +95,7 @@
                   <template v-else>
                     <FilterValue
                       v-model="cond.value"
+                      :column="cond.column"
                       :field-type="getFieldType(cond.column)"
                       :operator="cond.operator"
                       :options="getOptions(cond.column)"
@@ -136,13 +139,14 @@
 import { ref, computed } from 'vue'
 import { Filter, Plus, Remove, Close } from '@element-plus/icons-vue'
 import FilterValue from './FilterValue.vue'
+import { useSearchHelpers, OPERATOR_MAP, isEmptyValue } from './hooks/useSearchHelpers'
 
 /* ============ 类型 ============ */
 
 interface ColumnConfig {
   prop: string
   label: string
-  operator?: string
+  operator?: 'contains' | 'eq' | 'ne' | 'gt' | 'lt' | 'gte' | 'lte' | 'between' | 'in'
   filterMode?: 'show' | 'exposed' | 'hide'
   fieldType?: 'text' | 'date' | 'datetime' | 'daterange' | 'datetimerange' | 'select' | 'remote-select'
   options?: ({ label: string; value: string } | string)[]
@@ -150,7 +154,7 @@ interface ColumnConfig {
 
 interface FilterCondition {
   column: string
-  operator: string
+  operator: 'contains' | 'eq' | 'ne' | 'gt' | 'lt' | 'gte' | 'lte' | 'between' | 'in'
   value: string | string[]
   valueStr: string
   display: boolean
@@ -158,11 +162,9 @@ interface FilterCondition {
 
 type FilterResult = {
   column: string
-  operator: string
+  operator: 'contains' | 'eq' | 'ne' | 'gt' | 'lt' | 'gte' | 'lte' | 'between' | 'in'
   value: string | [string, string] | string[]
 }
-
-type RemoteMethod = (query: string) => Promise<{ label: string; value: string }[]>
 
 /* ============ Props & Emits ============ */
 
@@ -177,63 +179,22 @@ const emit = defineEmits<{
   (e: 'filter', value: FilterResult[]): void
 }>()
 
-/* ============ 字段类型辅助 ============ */
+/* ============ 辅助 hook ============ */
 
-/** 根据 fieldType 返回合法的操作符列表 */
-function getAvailableOperators(prop: string) {
-  const col = getColByProp(prop)
-  const ft = col?.fieldType ?? 'text'
-  const allowed = OPERATOR_MAP[ft] ?? OPERATOR_MAP.text
-  return props.operatorOptions.filter((op) => allowed.includes(op.value))
-}
-
-/** 每个 fieldType 允许的操作符 */
-const OPERATOR_MAP: Record<string, string[]> = {
-  text:           ['contains', 'eq', 'ne', 'gt', 'lt', 'gte', 'lte', 'between', 'in'],
-  date:           ['eq', 'ne', 'gt', 'lt', 'gte', 'lte', 'between'],
-  datetime:       ['eq', 'ne', 'gt', 'lt', 'gte', 'lte', 'between'],
-  daterange:      ['between'],
-  datetimerange:  ['between'],
-  select:         ['eq', 'ne', 'in'],
-  'remote-select':['eq', 'ne', 'in'],
-}
-
-function getColByProp(prop: string): ColumnConfig | undefined {
-  return props.columns.find((c) => c.prop === prop)
-}
-
-function getFieldType(prop: string): string | undefined {
-  return getColByProp(prop)?.fieldType
-}
-
-function isDateRangeField(prop: string): boolean {
-  const ft = getFieldType(prop)
-  return ft === 'daterange' || ft === 'datetimerange'
-}
-
-function getDateRangeType(prop: string): string {
-  const ft = getFieldType(prop)
-  return ft === 'datetimerange' ? 'datetimerange' : 'daterange'
-}
-
-function getDateFormat(prop: string): string {
-  const ft = getFieldType(prop)
-  return ft === 'datetime' || ft === 'datetimerange' ? 'YYYY-MM-DD HH:mm:ss' : 'YYYY-MM-DD'
-}
-
-function isSelectField(prop: string): boolean {
-  const ft = getFieldType(prop)
-  return ft === 'select' || ft === 'remote-select'
-}
-
-function getOptions(prop: string) {
-  return getColByProp(prop)?.options
-}
-
-function getRemoteMethod(prop: string): RemoteMethod | undefined {
-  if (!props.loadOptions) return undefined
-  return (keyword: string) => props.loadOptions!(prop, keyword)
-}
+const {
+  getFieldType,
+  isDateRangeField,
+  getDateRangeType,
+  getDateFormat,
+  isSelectField,
+  getOptions,
+  getRemoteMethod,
+  getAvailableOperators,
+} = useSearchHelpers(
+  computed(() => props.columns),
+  computed(() => props.loadOptions as any),
+  computed(() => props.operatorOptions),
+)
 
 /* ============ 条件状态 ============ */
 
@@ -287,14 +248,23 @@ function removeCondition(index: number) {
 
 function onColumnChange(index: number) {
   const col = props.columns.find((c) => c.prop === conditions.value[index].column)
-  if (!col) return
+  if (!col) {
+    // 列被清空或不存在，重置整行条件
+    conditions.value[index].operator = 'contains'
+    conditions.value[index].value = ''
+    conditions.value[index].valueStr = ''
+    return
+  }
   // 根据 fieldType 自动修正操作符
   const validOps = OPERATOR_MAP[col.fieldType ?? 'text'] ?? OPERATOR_MAP.text
   let nextOp = col.operator ?? defaultOperator(col)
   if (!validOps.includes(nextOp)) {
     nextOp = validOps[0]
   }
+  // 切换列时清除旧值，避免上一列的值不匹配新列的选项导致显示 raw value
   conditions.value[index].operator = nextOp
+  conditions.value[index].value = ''
+  conditions.value[index].valueStr = ''
   if (props.exposed?.includes(col.prop)) {
     conditions.value[index].display = true
   }
@@ -310,15 +280,9 @@ function buildFilterResult(): FilterResult[] {
       operator: c.operator,
       value:
         c.operator === 'between' ? [c.value[0] ?? '', c.value[1] ?? ''] :
-        c.operator === 'in' ? c.valueStr.split(',').map((v) => v.trim()).filter(Boolean) :
+        c.operator === 'in' ? (Array.isArray(c.value) ? c.value : c.valueStr.split(',').map((v) => v.trim()).filter(Boolean)) :
         c.value,
     }))
-}
-
-function isEmptyValue(c: FilterCondition): boolean {
-  if (c.operator === 'between') return c.value[0] !== '' || c.value[1] !== ''
-  if (c.operator === 'in') return c.valueStr !== ''
-  return c.value !== ''
 }
 
 function handleFilter() {
@@ -338,7 +302,6 @@ function handleClear() {
       c.value = ''
     }
   })
-  emit('filter', [])
 }
 
 /* ============ 暴露 ============ */
@@ -375,8 +338,8 @@ defineExpose({ conditions })
         display: flex;
         align-items: center;
         gap: 6px;
-        flex-wrap: wrap;
         flex: 1;
+        min-width: 0;
         padding-bottom: 20px;
       }
     }
@@ -491,6 +454,7 @@ defineExpose({ conditions })
     }
 
     .cond-value { flex: 1; min-width: 100px; }
+    .cond-value-between { flex: 1; min-width: 80px; max-width: 140px; }
     .between-sep { color: #909399; flex-shrink: 0; }
     .cond-display { flex-shrink: 0; }
 

@@ -6,7 +6,6 @@ import com.example.template.annotation.Param;
 import com.example.template.annotation.Query;
 import com.example.template.annotation.SqlDao;
 import com.example.template.util.FilterParam;
-import com.example.template.util.PageResult;
 
 import java.util.List;
 
@@ -19,11 +18,11 @@ public interface UserDao {
     // ==================== 查询（@Query）====================
 
     /** 无条件查全表 */
-    @Query("SELECT id, username, password, age, phone, create_time as createTime, update_time as updateTime FROM user")
+    @Query("SELECT id, username, password, age, sex, phone, create_time as createTime, update_time as updateTime FROM user")
     List<User> list();
 
     /** 按 ID 查单条 */
-    @Query("SELECT id, username, password, age, phone, create_time as createTime, update_time as updateTime FROM user WHERE id = #{id}")
+    @Query("SELECT id, username, password, age, sex, phone, create_time as createTime, update_time as updateTime FROM user WHERE id = #{id}")
     User findById(@Param("id") Long id);
 
     /**
@@ -55,19 +54,11 @@ public interface UserDao {
      * }</pre>
      */
     @Query("""
-            SELECT id, username, password, age, phone, create_time, update_time
+            SELECT id, username, password, age, sex, phone, create_time, update_time
             FROM user {{filter}}
             {{sort}}
             """)
-    List<User> dynamicList(FilterParam params);
-
-    /** 分页查询 — 返回 PageResult，代理自动触发 COUNT + LIMIT */
-    @Query("""
-            SELECT id, username, password, age, phone, create_time, update_time
-            FROM user {{filter}}
-            {{sort}}
-            """)
-    PageResult<User> page(FilterParam params);
+    List<User> list(FilterParam params);
 
     // ==================== 写入（@Modify）====================
 

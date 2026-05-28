@@ -75,6 +75,11 @@ public class QueryProxyFactory {
             }
 
             if (List.class.isAssignableFrom(returnType)) {
+                // 自动分页：FilterParam.paginate=true 时先 COUNT 再 LIMIT，total 写回 FilterParam
+                FilterParam fp = findFilterParam(args);
+                if (fp != null && fp.isPaginate()) {
+                    return executeImplicitPageQuery(result.getSql(), params, method, fp);
+                }
                 Class<?> elementType = resolveElementType(method.getGenericReturnType());
                 if (Map.class.isAssignableFrom(elementType))
                     return jdbc.queryForList(result.getSql(), params);
@@ -88,6 +93,29 @@ public class QueryProxyFactory {
             List<?> list = jdbc.query(result.getSql(), params,
                     new BeanPropertyRowMapper<>(returnType));
             return list.isEmpty() ? null : list.get(0);
+        }
+
+        /** 隐式分页：当 FilterParam.paginate=true 时，先 COUNT 再 LIMIT，total 写回 FilterParam */
+        private <T> List<T> executeImplicitPageQuery(String renderedSql,
+                                                      Map<String, Object> params,
+                                                      Method method,
+                                                      FilterParam fp) {
+            int current = fp.getCurrent() > 0 ? fp.getCurrent() : 1;
+            int size = fp.getSize() > 0 ? fp.getSize() : 10;
+
+            // 1. COUNT
+            String countSql = buildCountSql(renderedSql);
+            log(countSql, params);
+            Long total = jdbc.queryForObject(countSql, params, Long.class);
+            fp.setTotal(total != null ? total : 0);
+
+            // 2. LIMIT 分页
+            String limitSql = renderedSql + " LIMIT " + size + " OFFSET " + (current - 1) * size;
+            Class<?> elementType = resolveElementType(method.getGenericReturnType());
+            @SuppressWarnings("unchecked")
+            List<T> records = (List<T>) jdbc.query(limitSql, params,
+                    new BeanPropertyRowMapper<>(elementType));
+            return records;
         }
 
         /** 分页查询：先 COUNT 再 LIMIT */

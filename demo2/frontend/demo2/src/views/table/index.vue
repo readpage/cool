@@ -17,9 +17,9 @@ import { ref, computed } from 'vue'
 import Table from '@/components/table/index.vue'
 import type { TableConfig } from '@/types/table'
 import type { TableItem } from '@/components/table/index.vue'
-import { useConfigStore } from '@/store/config'
+import { useTableConfigStore } from '@/store/table-config'
 
-const $store = useConfigStore()
+const $store = useTableConfigStore()
 
 const tableData = ref([
   { id: 1, title: '深入浅出Vue.js',             author: '刘博文',      category: '前端开发', price: 79.00,   stock: 128, publisher: '人民邮电出版社', publishDate: '2019-03-01', status: '在售' },

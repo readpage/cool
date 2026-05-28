@@ -93,7 +93,7 @@ import { useColumnReorder } from './hooks/useColumnReorder'
 import { useColumnSort } from './hooks/useColumnSort'
 import TableSettings from './TableSettings.vue'
 import Search, { type SearchConfig, type FilterItem } from './search/index.vue'
-import { useConfigStore } from '@/store/config'
+import { useTableConfigStore } from '@/store/table-config'
 
 /** 列配置 */
 export interface TableItem {
@@ -135,7 +135,7 @@ const props = defineProps<{
   loadOptions?: (type: string, keyword?: string) => Promise<{ label: string; value: string }[]>
 }>()
 
-const $store = useConfigStore()
+const $store = useTableConfigStore()
 
 // ==================== 选项翻译（内部缓存）====================
 

@@ -2,9 +2,11 @@ package com.example.template.util;
 
 import com.example.template.util.FilterOperator.FilterCondition;
 import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +43,25 @@ public class FilterParam implements SqlParamProvider {
 
     /** 导出列定义（可选，仅导出时传） */
     private List<ColumnItem> columns;
+
+    /** 是否开启分页（不参与 JSON 序列化，由后端 startPage() 控制） */
+    @JsonIgnore
+    private transient boolean paginate = false;
+
+    /** 分页结果总数（由 QueryProxyFactory 执行 COUNT 后自动填充） */
+    @JsonIgnore
+    private transient long total;
+
+    // ==================== 分页控制 ====================
+
+    /**
+     * 开启分页。current/size 已由前端 JSON 反序列化填充，
+     * 此方法仅翻开关，告诉 QueryProxyFactory 自动执行 COUNT + LIMIT。
+     */
+    public FilterParam startPage() {
+        this.paginate = true;
+        return this;
+    }
 
     // ==================== 内部类 ====================
 
@@ -134,6 +155,7 @@ public class FilterParam implements SqlParamProvider {
         for (FilterCondition c : toConditions()) {
             Object val = c.value();
             if (val == null || (val instanceof String s && s.isEmpty())) continue;
+            if (val instanceof Collection<?> col && col.isEmpty()) continue;
             if (first) { first = false; }
             else { where.append(" AND "); }
             if ("all".equalsIgnoreCase(c.column())) {
@@ -187,7 +209,8 @@ public class FilterParam implements SqlParamProvider {
     private boolean hasAnyCondition() {
         for (FilterCondition c : toConditions()) {
             Object val = c.value();
-            if (val != null && (!(val instanceof String s) || !s.isEmpty())) return true;
+            if (val != null && (!(val instanceof String s) || !s.isEmpty())
+                    && !(val instanceof Collection<?> col && col.isEmpty())) return true;
         }
         return false;
     }
