@@ -3,31 +3,35 @@
     id="user"
     :config="tableConfig"
     :data="tableData"
+    selection
     :load-options="loadOptions"
-    showAdminBtn
-    @query="query"
+    :showAdminBtn="false"
+    @query="onQuery"
+    @change="onConfigChange"
   />
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import Table from '@/components/table/index.vue'
-import type { TableConfig } from '@/types/table'
+import type { TableConfig, TableQuery } from '@/types/table'
 import { useTableConfigStore } from '@/store/table-config'
 import { useOptionsStore } from '@/store/options'
 
-/** api: POST /user/list ← 通过 Vite proxy 转发到后端 */
-const API = '/api/user/list'
+/** api: POST /user/page ← 通过 Vite proxy 转发到后端 */
+const API = '/api/user/page'
 
 const $store = useTableConfigStore()
 const tableData = ref<Record<string, any>[]>([])
+
+// ==================== 配置 ====================
 
 /** 代码兜底配置 — 仅当本地无缓存且服务端无数据时使用 */
 const initConfig = (): TableConfig => ({
   columns: [
     { prop: 'id',         label: 'ID',       minWidth: 80,  align: 'center', hidden: true },
     { prop: 'username',   label: '用户名',   minWidth: 140 },
-    { prop: 'sex',        label: '性别',     minWidth: 80,  align: 'center' },
+    { prop: 'sex',        label: '性别',     minWidth: 80,  align: 'center', fieldType: 'remote-select', format: 'tag' },
     { prop: 'age',        label: '年龄',     minWidth: 80 },
     { prop: 'phone',      label: '电话',     minWidth: 160 },
     { prop: 'createTime', label: '创建时间', minWidth: 180, align: 'center' },
@@ -40,8 +44,8 @@ const initConfig = (): TableConfig => ({
       { prop: 'username', label: '用户名', operator: 'contains', filterMode: 'exposed' },
       { prop: 'sex',      label: '性别',   operator: 'eq',       fieldType: 'remote-select', filterMode: 'exposed' },
       { prop: 'phone',    label: '电话',   operator: 'contains' },
-      { prop: 'createTime',      label: '创建时间',   operator: 'between', fieldType: 'daterange', filterMode: 'show'   },
-      { prop: 'updateTime',      label: '修改时间',   operator: 'between', fieldType: 'daterange'       },
+      { prop: 'createTime',      label: '创建时间',   operator: 'between', fieldType: 'daterange', filterMode: 'exposed'   },
+      { prop: 'updateTime',      label: '修改时间',   operator: 'between', fieldType: 'daterange'      },
     ],
   },
 })
@@ -63,22 +67,31 @@ function seedConfig() {
 /** 配置来源：store 缓存 → 代码兜底（appStore.init 已预加载） */
 const tableConfig = computed(() => $store.getConfig('user') ?? initConfig())
 
-async function fetchList(query: Record<string, any>) {
+/**
+ * 统一查询入口：@query 返回的 payload 直接对齐后端 FilterParam 请求体
+ * 后端响应 PageResult：{ total, list } → 直接赋值，Table 自动识别分页
+ */
+async function fetchList(payload: TableQuery) {
   try {
     const res = await fetch(API, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(query),
+      body: JSON.stringify(payload),
     })
     const json = await res.json()
-    tableData.value = json.data ?? []
+    // ⭐ 一行搞定！Table 组件自动从 { list, total } 中提取数据和分页
+    tableData.value = json.data
   } catch (err) {
     console.error('获取用户列表失败', err)
   }
 }
 
-function query(query: Record<string, any>) {
-  fetchList(query)
+function onQuery(payload: TableQuery) {
+  fetchList(payload)
+}
+
+function onConfigChange(_config: TableConfig) {
+  $store.save('user', _config)
 }
 </script>
 

@@ -4,14 +4,14 @@
       <div class="exposed-tag">
         <span class="tag-label">{{ colLabelMap[item.column] ?? item.column }}</span>
         <span class="tag-separator">：</span>
-        <el-dropdown size="small" trigger="click" @command="(cmd: string) => item.operator = cmd">
+        <el-dropdown size="small" trigger="click" @command="(cmd: string) => item.operator = cmd as FilterCondition['operator']">
           <span class="tag-operator">
             {{ opLabelMap[item.operator] ?? item.operator }}
             <el-icon class="tag-arrow"><ArrowDown /></el-icon>
           </span>
           <template #dropdown>
             <el-dropdown-menu>
-              <el-dropdown-item v-for="op in operatorOptions" :key="op.value" :command="op.value">
+              <el-dropdown-item v-for="op in getAvailableOperators(item.column)" :key="op.value" :command="op.value">
                 {{ op.label }}
               </el-dropdown-item>
             </el-dropdown-menu>
@@ -85,22 +85,8 @@
 import { computed, toRef } from 'vue'
 import { ArrowDown } from '@element-plus/icons-vue'
 import FilterValue from './FilterValue.vue'
-import { useSearchHelpers, type ColumnConfig } from './hooks/useSearchHelpers'
-
-/* ============ 类型 ============ */
-
-interface FilterCondition {
-  column: string
-  operator: 'contains' | 'eq' | 'ne' | 'gt' | 'lt' | 'gte' | 'lte' | 'between' | 'in'
-  value: string | string[]
-  valueStr: string
-  display: boolean
-}
-
-interface OperatorOption {
-  label: string
-  value: string
-}
+import { useSearchHelpers, clearConditionValue } from './hooks/useSearchHelpers'
+import type { ColumnConfig, FilterCondition, OperatorOption } from './types'
 
 /* ============ Props & Emits ============ */
 
@@ -123,9 +109,11 @@ const {
   isSelectField,
   getOptions,
   getRemoteMethod,
+  getAvailableOperators,
 } = useSearchHelpers(
   toRef(props, 'columns'),
   toRef(props, 'loadOptions'),
+  toRef(props, 'operatorOptions'),
 )
 
 /* ============ 计算属性 ============ */
@@ -150,15 +138,7 @@ const opLabelMap = computed(() => {
 
 function clearDisplayConditions() {
   props.conditions.forEach((c) => {
-    if (!c.display) return
-    if (c.operator === 'between') {
-      c.value = ['', '']
-    } else if (c.operator === 'in') {
-      c.valueStr = ''
-      c.value = ''
-    } else {
-      c.value = ''
-    }
+    if (c.display) clearConditionValue(c)
   })
 }
 </script>

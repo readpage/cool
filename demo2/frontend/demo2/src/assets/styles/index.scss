@@ -1,1 +1,7 @@
 @forward '@/assets/styles/abstracts/mixins.scss';
+
+.u-small {
+  height: 28px !important;
+  padding: 5px 11px !important;
+  font-size: 12px !important;
+}

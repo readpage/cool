@@ -1,3 +1,7 @@
+/** 选项样式 */ export interface OptionStyle { tagType?: 'primary' | 'success' | 'warning' | 'danger' | 'info'; dotColor?: string }
+
+/** 选项条目 */ export interface OptionItem { label: string; value: string; style?: OptionStyle }
+
 /**
  * 表格列配置
  */
@@ -12,7 +16,19 @@ export interface TableItem {
   resizable?: boolean
   sortable?: boolean | 'custom'
   hidden?: boolean
+
+  /** 列数据类型：声明后自动启用选项翻译。select=静态选项，remote-select=动态加载 */
+  fieldType?: 'text' | 'select' | 'remote-select'
+
+  /** 静态选项（fieldType='select' 时使用），支持 { label, value, style? } 或纯字符串 */
+  options?: (OptionItem | string)[]
+
+  /** 单元格显示格式：text=纯文本（默认），tag=标签，dot=圆点+文本 */
+  format?: 'text' | 'tag' | 'dot'
 }
+
+/** 选项样式映射表：{ prop: { value: OptionStyle } } */
+export type OptionStyles = Record<string, Record<string, OptionStyle>>
 
 /** 筛选操作符 */
 export type OperatorType = 'contains' | 'eq' | 'ne' | 'gt' | 'lt' | 'gte' | 'lte' | 'between' | 'in'
@@ -52,6 +68,15 @@ export interface SearchConfig {
 }
 
 /**
+ * 分页查询响应体，{ list: 数据, total: 总数 }
+ * 传给 Table 组件的 data prop，组件自动显示分页器
+ */
+export interface PageResult {
+  list: Record<string, any>[]
+  total: number
+}
+
+/**
  * 表格完整配置
  */
 export interface TableConfig {
@@ -64,10 +89,18 @@ export interface TableConfig {
   sort?: { column: string; direction: 'asc' | 'desc' }
   search?: SearchConfig
 
-  /** 全局选项映射表：{ prop: [{ label, value }] }，select / remote-select 共用。
-   * 由 Table 挂载时注入 optionsStore，表格翻译和筛选面板都从此读取。
-   * 静态 select 选项可直接写死在此；remote-select 由 loadOptions 异步填充。 */
-  optionsMap?: Record<string, { label: string; value: string }[]>
+  /** 全局选项映射表：{ prop: OptionItem[] }，select / remote-select 共用。
+   * 表格翻译和筛选面板都从此读取。静态 select 选项可直接写死在此；
+   * OptionItem.style 可为每条选项指定 tag 颜色 / dot 颜色。 */
+  optionsMap?: Record<string, OptionItem[]>
+}
+
+/** 表格查询参数 */
+export interface TableQuery {
+  current: number
+  size: number
+  filter: FilterItem[]
+  sort?: { column: string; direction: string }
 }
 
 /**

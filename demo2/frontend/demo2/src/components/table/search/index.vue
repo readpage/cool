@@ -7,7 +7,9 @@
         :exposed="exposedProps"
         :operator-options="operatorOptions"
         :load-options="loadOptions"
+        :show-admin-btn="showAdminBtn"
         @filter="onFilter"
+        @admin-confirm="emit('admin-confirm')"
       />
       <Input
         :options="searchOptions"
@@ -27,35 +29,26 @@
   </div>
 </template>
 
+<script lang="ts">
+// 模块级导出（<script setup> 不支持 export 语法）
+export type { ColumnConfig, FilterResult } from './types'
+export { buildFilter } from './hooks/useSearchHelpers'
+export type { SearchConfig } from './types'
+// SearchConfig 是此文件特有，在此定义并导出
+export interface SearchConfig {
+  filter: import('./types').ColumnConfig[]
+  currentField?: string
+  filterValues?: import('./types').FilterResult[]
+}
+</script>
+
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import Input from './input.vue'
 import Query from './query.vue'
 import ExposedFilter from './ExposedFilter.vue'
-import { isEmptyValue } from './hooks/useSearchHelpers'
-
-/* ============ 类型 ============ */
-
-export interface ColumnConfig {
-  prop: string
-  label: string
-  operator?: 'contains' | 'eq' | 'ne' | 'gt' | 'lt' | 'gte' | 'lte' | 'between' | 'in'
-  filterMode?: 'show' | 'exposed' | 'hide'
-  fieldType?: 'text' | 'date' | 'datetime' | 'daterange' | 'datetimerange' | 'select' | 'remote-select'
-  options?: ({ label: string; value: string } | string)[]
-}
-
-export interface SearchConfig {
-  filter: ColumnConfig[]
-  currentField?: string
-  filterValues?: FilterItem[]
-}
-
-export type FilterItem = {
-  column: string
-  operator: 'contains' | 'eq' | 'ne' | 'gt' | 'lt' | 'gte' | 'lte' | 'between' | 'in'
-  value: string | [string, string] | string[]
-}
+import { buildFilter } from './hooks/useSearchHelpers'
+import type { ColumnConfig, FilterResult } from './types'
 
 /* ============ Props & Emits ============ */
 
@@ -63,11 +56,13 @@ export type FilterItem = {
 const props = defineProps<{
   config: SearchConfig
   loadOptions?: (type: string, keyword?: string) => Promise<{ label: string; value: string }[]>
+  showAdminBtn?: boolean
 }>()
 
 const emit = defineEmits<{
   (e: 'save-filter', value: SearchConfig): void
-  (e: 'search', value: FilterItem[]): void
+  (e: 'search', value: FilterResult[]): void
+  (e: 'admin-confirm'): void
 }>()
 
 /* ============ 常量 ============ */
@@ -113,27 +108,9 @@ function syncFilterMode() {
   })
 }
 
-function buildFilter(values: { column: string; operator: string; value: any; valueStr: string }[]): FilterItem[] {
-  return values
-    .filter((c) => c.column && isEmptyValue(c))
-    .map((c) => {
-      let value: string | [string, string] | string[]
-      if (c.operator === 'between') {
-        value = [c.value[0] ?? '', c.value[1] ?? '']
-      } else if (c.operator === 'in') {
-        value = Array.isArray(c.value)
-          ? c.value
-          : (c.valueStr?.split(',').map((v: string) => v.trim()).filter(Boolean) ?? [])
-      } else {
-        value = c.value
-      }
-      return { column: c.column, operator: c.operator as FilterItem['operator'], value }
-    })
-}
-
 /* ============ 事件处理 ============ */
 
-function onFilter(params: FilterItem[]) {
+function onFilter(params: FilterResult[]) {
   props.config.filterValues = params
   syncFilterMode()
   emit('save-filter', props.config)
@@ -151,7 +128,7 @@ function onInputChange(payload: { field: string; keyword: string }) {
 }
 
 function onSearch(params: Record<string, string>) {
-  const filter: FilterItem[] = Object.entries(params)
+  const filter: FilterResult[] = Object.entries(params)
     .filter(([, v]) => v)
     .map(([column, value]) => ({ column, operator: 'contains', value }))
   emit('search', filter)

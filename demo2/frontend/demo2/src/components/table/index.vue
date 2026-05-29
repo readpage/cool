@@ -1,13 +1,15 @@
 <template>
-  <div class="u-table-wrapper">
+  <div class="u-table">
     <!-- 表格导航工具栏 -->
     <div class="u-table-toolbar">
       <Search
         v-if="config.search"
         :config="config.search"
         :load-options="loadOptions"
+        :show-admin-btn="showAdminBtn"
         @save-filter="onSearchSave"
         @search="onSearchQuery"
+        @admin-confirm="onSearchAdminConfirm"
       />
       <TableSettings
         :config="config"
@@ -18,82 +20,121 @@
       />
     </div>
 
-    <div ref="tableWrapperRef" class="u-table">
-    <el-table
-      ref="tableRef"
-      :key="reorderKey"
-      :data="data"
-      :stripe="config.stripe"
-      :size="config.size"
-      :height="config.height"
-      :max-height="config.maxHeight"
-      :row-key="config.rowKey"
-      :header-cell-style="headerCellStyle"
-      @selection-change="emit('selection-change', $event)"
-      @row-click="(row: any, column: any, event: Event) => emit('row-click', row, column, event)"
-    >
-      <el-table-column v-if="selection" type="selection" width="50" />
-      <template v-for="(item, index) in config.columns" :key="item.prop || index">
-        <el-table-column
-          v-if="!item.hidden"
-        :type="item.type"
-        :label="item.label"
-        :prop="item.prop"
-        :width="item.width"
-        :min-width="item.minWidth"
-        :resizable="item.resizable !== false"
-        :align="item.align"
-        :header-align="item.align === 'right' ? 'center' : item.align"
-        :fixed="item.fixed"
-        show-overflow-tooltip
+    <div ref="tableWrapperRef" class="u-table-wrapper">
+      <el-table
+        ref="tableRef"
+        :key="reorderKey"
+        v-loading="debouncedLoading"
+        :data="tableRows"
+        :stripe="config.stripe"
+        :size="config.size"
+        :height="config.height"
+        :max-height="config.maxHeight"
+        :row-key="config.rowKey"
+        :header-cell-style="headerCellStyle"
+        @selection-change="(val: any[]) => { console.log('[table] selection-change 触发, 行数:', val.length, val); emit('selection-change', val); console.log('[table] updateSelection 函数存在?', !!updateSelection); updateSelection?.(val) }"
+        @row-dblclick="(row: any, column: any, event: Event) => { crudEditRow?.(row); emit('row-dblclick', row, column, event) }"
       >
-        <template #header v-if="item.prop && item.sortable !== false">
-          <div
-            class="u-sort-header"
-            @mouseenter="hoverSort = item.prop!"
-            @mouseleave="hoverSort = null"
-          >
-            <span @click.stop="onSort(item.prop!)">{{ item.label }}</span>
-            <span class="u-caret-wrapper" :class="{ visible: sortProp === item.prop || hoverSort === item.prop }">
-              <span class="u-caret-hit" @click.stop="onSort(item.prop!, 'asc')"><i class="u-sort-caret ascending" :class="{ active: sortProp === item.prop && sortOrder === 'asc' }"></i></span>
-              <span class="u-caret-hit" @click.stop="onSort(item.prop!, 'desc')"><i class="u-sort-caret descending" :class="{ active: sortProp === item.prop && sortOrder === 'desc' }"></i></span>
-            </span>
-          </div>
+        <el-table-column v-if="selection" type="selection" width="50" />
+        <template v-for="(item, index) in config.columns" :key="item.prop || index">
+          <el-table-column
+            v-if="!item.hidden"
+          :type="item.type"
+          :label="item.label"
+          :prop="item.prop"
+          :width="item.width"
+          :min-width="item.minWidth"
+          :resizable="item.resizable !== false"
+          :align="item.align"
+          :header-align="item.align === 'right' ? 'center' : item.align"
+          :fixed="item.fixed"
+          show-overflow-tooltip
+        >
+          <template #header v-if="item.prop && item.sortable !== false">
+            <div
+              class="u-sort-header"
+              @mouseenter="hoverSort = item.prop!"
+              @mouseleave="hoverSort = null"
+            >
+              <span @click.stop="onSort(item.prop!)">{{ item.label }}</span>
+              <span class="u-caret-wrapper" :class="{ visible: sortProp === item.prop || hoverSort === item.prop }">
+                <span class="u-caret-hit" @click.stop="onSort(item.prop!, 'asc')"><i class="u-sort-caret ascending" :class="{ active: sortProp === item.prop && sortOrder === 'asc' }"></i></span>
+                <span class="u-caret-hit" @click.stop="onSort(item.prop!, 'desc')"><i class="u-sort-caret descending" :class="{ active: sortProp === item.prop && sortOrder === 'desc' }"></i></span>
+              </span>
+            </div>
+          </template>
+          <template #default="scope" v-if="item.type !== 'index'">
+            <slot :name="item.prop" :row="scope.row" :index="scope.$index" :value="scope.row[item.prop]">
+              <template v-if="item.fieldType && item.format === 'tag'">
+                <el-tag
+                  :type="getTagType(item.prop!, scope.row[item.prop])"
+                  size="small"
+                >
+                  {{ translateValue(item.prop, scope.row[item.prop]) }}
+                </el-tag>
+              </template>
+              <template v-else-if="item.fieldType && item.format === 'dot'">
+                <span class="u-dot-cell">
+                  <span
+                    class="u-dot"
+                    :style="{ background: getDotColor(item.prop!, scope.row[item.prop]) }"
+                  />{{ translateValue(item.prop, scope.row[item.prop]) }}
+                </span>
+              </template>
+              <template v-else>
+                {{ translateValue(item.prop, scope.row[item.prop]) }}
+              </template>
+            </slot>
+          </template>
+        </el-table-column>
         </template>
-        <template #default="scope" v-if="item.type !== 'index'">
-          <slot :name="item.prop" :row="scope.row" :index="scope.$index" :value="scope.row[item.prop]">
-            {{ translateValue(item.prop, scope.row[item.prop]) }}
-          </slot>
-        </template>
-      </el-table-column>
-      </template>
-    </el-table>
-    <!-- 列背景高亮 -->
-    <div v-show="columnHighlightVisible" class="col-highlight" :style="columnHighlightStyle"></div>
-    <!-- 拖拽实线：点击后固定在原始列边界 -->
-    <div v-show="dragLineVisible" class="drag-line" :style="dragLineStyle"></div>
-    <!-- 拖拽虚线：跟随鼠标预览新位置 -->
-    <div v-show="previewLineVisible" class="preview-line" :style="previewLineStyle"></div>
-    <!-- 列排序 drop 指示线 -->
-    <div v-show="dropLineVisible" class="drop-line" :style="dropLineStyle"></div>
-    <!-- 列排序：拖拽列背景高亮 -->
-    <div v-show="colHighlightVisible" class="col-reorder-highlight" :style="colHighlightStyle"></div>
-    <!-- 列排序拖拽列名提示 -->
-    <div v-show="reorderTooltipVisible" class="reorder-tooltip" :style="reorderTooltipStyle">{{ reorderTooltipLabel }}</div>
-    <!-- 列宽拖拽像素提示框 -->
-    <div v-show="tooltipVisible" class="resize-tooltip" :style="tooltipStyle">{{ tooltipText }}</div>
-  </div>
+      </el-table>
+      <!-- 分页器：仅当 data 为 PageResult 时自动显示 -->
+      <div v-if="isPaginated" class="u-table-pagination">
+        <el-pagination
+          v-model:current-page="currentPage"
+          v-model:page-size="pageSize"
+          :total="totalCount"
+          :page-sizes="pageSizes"
+          layout="total, sizes, prev, pager, next, jumper"
+          small
+          background
+          @current-change="emitQuery"
+          @size-change="onSizeChange"
+        />
+      </div>
+      <TableOverlay
+        :column-highlight-visible="columnHighlightVisible"
+        :column-highlight-style="columnHighlightStyle"
+        :drag-line-visible="dragLineVisible"
+        :drag-line-style="dragLineStyle"
+        :preview-line-visible="previewLineVisible"
+        :preview-line-style="previewLineStyle"
+        :tooltip-visible="tooltipVisible"
+        :tooltip-style="tooltipStyle"
+        :tooltip-text="tooltipText"
+        :drop-line-visible="dropLineVisible"
+        :drop-line-style="dropLineStyle"
+        :col-highlight-visible="colHighlightVisible"
+        :col-highlight-style="colHighlightStyle"
+        :reorder-tooltip-visible="reorderTooltipVisible"
+        :reorder-tooltip-style="reorderTooltipStyle"
+        :reorder-tooltip-label="reorderTooltipLabel"
+      />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick, watch } from 'vue'
+import { ref, computed, watch, nextTick, onMounted, inject } from 'vue'
 import { useColumnResize } from './hooks/useColumnResize'
 import { useColumnReorder } from './hooks/useColumnReorder'
 import { useColumnSort } from './hooks/useColumnSort'
 import TableSettings from './TableSettings.vue'
-import Search, { type SearchConfig, type FilterItem } from './search/index.vue'
-import { useTableConfigStore } from '@/store/table-config'
+import TableOverlay from './TableOverlay.vue'
+import Search, { type SearchConfig, type FilterResult } from './search/index.vue'
+import { useTableInit } from './hooks/useTableInit'
+import type { TableQuery, PageResult, OptionItem } from '@/types/table'
 
 /** 列配置 */
 export interface TableItem {
@@ -107,6 +148,15 @@ export interface TableItem {
   resizable?: boolean
   sortable?: boolean | 'custom'
   hidden?: boolean
+
+  /** 列数据类型：声明后自动启用选项翻译。select=静态，remote-select=动态 */
+  fieldType?: 'text' | 'select' | 'remote-select'
+
+  /** 静态选项（fieldType='select' 时使用） */
+  options?: ({ label: string; value: string; style?: any } | string)[]
+
+  /** 单元格显示格式：text=纯文本（默认），tag=标签，dot=圆点+文本 */
+  format?: 'text' | 'tag' | 'dot'
 }
 
 /** 表格配置（服务端返回，不含 data） */
@@ -125,7 +175,8 @@ export interface TableConfig {
 
 const props = defineProps<{
   config: TableConfig
-  data: Record<string, any>[]
+  /** 表格数据：纯数组（无分页）或 PageResult { list, total }（自动显示分页器） */
+  data: Record<string, any>[] | PageResult
   /** 是否显示多选列 */
   selection?: boolean
   showAdminBtn?: boolean
@@ -133,39 +184,105 @@ const props = defineProps<{
   id?: string
   /** 选项加载器：type=选项类别，keyword=搜索关键词(可选)。用于表格翻译预加载和搜索下拉 */
   loadOptions?: (type: string, keyword?: string) => Promise<{ label: string; value: string }[]>
+  /** 加载状态 */
+  loading?: boolean
 }>()
 
-const $store = useTableConfigStore()
+// ==================== 智能 data 派生 ====================
 
-// ==================== 选项翻译（内部缓存）====================
+/** 判断 data 是否是分页对象（有 list + total） */
+const isPaginated = computed(() =>
+  props.data !== null && typeof props.data === 'object' && !Array.isArray(props.data),
+)
 
-/** 字典翻译映射表：{ prop: { value: label } }，由 loadOptions 在 onMounted 中预加载 */
-const internalLookup = ref<Record<string, Record<string, string>>>({})
+/** 实际表格行数据 */
+const tableRows = computed(() =>
+  Array.isArray(props.data) ? props.data : (props.data as PageResult).list ?? [],
+)
 
-function saveIfId(config: TableConfig) {
-  if (!props.id) return
-  $store.save(props.id, config)
-}
+/** 分页总数 */
+const totalCount = computed(() =>
+  Array.isArray(props.data) ? 0 : (props.data as PageResult).total ?? 0,
+)
+
+// ==================== 延迟 loading：防止快速渲染闪烁 ====================
+
+const loadingDebounceTimer = ref<ReturnType<typeof setTimeout>>()
+const debouncedLoading = ref(false)
+
+watch(
+  () => props.loading,
+  (val) => {
+    if (val) {
+      // loading → true：等 200ms 再真正显示
+      clearTimeout(loadingDebounceTimer.value)
+      loadingDebounceTimer.value = setTimeout(() => {
+        debouncedLoading.value = true
+      }, 200)
+    } else {
+      // loading → false：立即隐藏 + 取消等待中的定时器
+      clearTimeout(loadingDebounceTimer.value)
+      debouncedLoading.value = false
+    }
+  },
+  { immediate: true },
+)
+
+// ==================== Table 自管分页状态 ====================
+
+const currentPage = ref(1)
+const pageSize = ref(10)
+const pageSizes = [10, 20, 50, 100]
+
+/** 删完最后一页 → 自动回退并重新请求 */
+watch(totalCount, (t) => {
+  if (!isPaginated.value) return
+  const max = Math.ceil(t / pageSize.value) || 1
+  if (currentPage.value > max) {
+    currentPage.value = max
+    nextTick(() => emitQuery())
+  }
+})
 
 const emit = defineEmits<{
   (e: 'selection-change', value: any[]): void
-  (e: 'row-click', row: any, column: any, event: Event): void
+  (e: 'row-dblclick', row: any, column: any, event: Event): void
   /** 配置变更（列宽、筛选、排序配置等），返回完整 config */
   (e: 'change', config: TableConfig): void
   /** 管理员确认默认配置 */
   (e: 'admin-confirm', columns: TableItem[]): void
   /** 恢复系统默认 */
   (e: 'reset'): void
-  /** 查询参数变化（排序、筛选等），返回 query 对象 */
-  (e: 'query', query: Record<string, any>): void
+  /** 查询参数变化（筛选/排序/分页），payload 对齐后端 FilterParam */
+  (e: 'query', payload: TableQuery): void
 }>()
+
+/** 注入 crud 的 selection 同步函数（如果父级是 crud 组件） */
+const updateSelection = inject<((rows: any[]) => void) | null>('crud:updateSelection', null)
+
+/** 向 crud 注册 tableRef，供 crud 调用 clearSelection 等方法 */
+const registerTableRef = inject<((ref: any) => void) | null>('crud:registerTableRef', null)
+
+/** 注入 crud 的编辑行函数（单击行时打开修改对话框） */
+const crudEditRow = inject<((row: any) => void) | null>('crud:editRow', null)
 
 const tableRef = ref()
 const tableWrapperRef = ref<HTMLElement>()
 const reorderKey = ref(0) // 排序后 +1 强制重绘
 
-// debug: 确认 stripe 传值
-watch(() => props.config.stripe, (v) => console.log('[table] stripe changed:', v), { immediate: true })
+onMounted(() => {
+  registerTableRef?.(tableRef)
+})
+
+// ==================== 初始化（onMounted 逻辑）====================
+
+const { internalLookup, internalStyles } = useTableInit({
+  config: props.config,
+  tableRows,
+  tableWrapperRef,
+  loadOptions: props.loadOptions,
+  emitQuery,
+})
 
 const isFixedCol = (item: TableItem) => !!item.fixed
 
@@ -177,7 +294,7 @@ const { dragLineVisible, dragLineStyle, previewLineVisible, previewLineStyle, co
   wrapperRef: tableWrapperRef,
   columns: columnsRef,
   edgeThreshold: 12,
-  onResizeEnd: () => { emit('change', props.config); saveIfId(props.config) },
+  onResizeEnd: () => { emit('change', props.config) },
 })
 
 // 列排序拖拽
@@ -188,7 +305,6 @@ const { dropLineVisible, dropLineStyle, colHighlightVisible, colHighlightStyle, 
   onReorder: () => {
     reorderKey.value++
     emit('change', props.config)
-    saveIfId(props.config)
   },
 })
 
@@ -199,26 +315,26 @@ const hoverSort = ref<string | null>(null)
 // 统一的查询事件构建
 function emitQuery() {
   const filter = props.config.search?.filterValues ?? []
-  // 只传未隐藏的列（hidden !== true），用于 all 类型全字段搜索
-  const columns = props.config.columns.filter(c => !c.hidden)
   emit('query', {
-    columns,
+    current: currentPage.value,
+    size: pageSize.value,
     filter,
-    sort: props.config.sort || {},
+    sort: props.config.sort,
   })
 }
 
 // 搜索配置变更 → 持久化
 function onSearchSave(_cfg: SearchConfig) {
   emit('change', props.config)
-  saveIfId(props.config)
 }
 
 // 搜索查询 → 调 API
-function onSearchQuery(filters: FilterItem[]) {
+function onSearchQuery(filters: FilterResult[]) {
   if (props.config.search) {
     props.config.search.filterValues = filters
   }
+  // 筛选变化 → 重置到第一页
+  currentPage.value = 1
   emitQuery()
 }
 
@@ -227,8 +343,17 @@ const onSort = (prop: string, target?: 'asc' | 'desc') => {
   props.config.sort = sortProp.value && sortOrder.value
     ? { column: sortProp.value, direction: sortOrder.value }
     : undefined
+  // 排序变化 → 重置到第一页
+  currentPage.value = 1
   emit('change', props.config)
-  saveIfId(props.config)
+  emitQuery()
+}
+
+// ==================== 分页事件 ====================
+
+/** 每页条数变化 → 已在 v-model 中更新，重置到第一页 */
+function onSizeChange(_size: number) {
+  currentPage.value = 1
   emitQuery()
 }
 
@@ -239,72 +364,44 @@ function translateValue(prop: string | undefined, rawValue: any): any {
   return dict ? (dict[String(rawValue)] ?? rawValue) : rawValue
 }
 
+const TAG_TYPES = ['primary', 'success', 'warning', 'danger', 'info'] as const
+const DOT_COLORS = ['#409eff', '#67c23a', '#e6a23c', '#f56c6c', '#909399']
+
+/** 根据字符串 hash 自动分配一个固定的 type/color，同一 value 始终得到同一颜色 */
+function autoStyle(v: string) {
+  const hash = [...v].reduce((h, c) => h + c.charCodeAt(0), 0)
+  const idx = Math.abs(hash) % TAG_TYPES.length
+  return { tagType: TAG_TYPES[idx], dotColor: DOT_COLORS[idx] }
+}
+
+/** 获取指定值对应的 el-tag type（显式 style > 自动 fallback） */
+function getTagType(prop: string, rawValue: any): 'primary' | 'success' | 'warning' | 'danger' | 'info' {
+  if (rawValue == null) return 'info'
+  const styleMap = internalStyles.value[prop]
+  if (styleMap) {
+    const s = styleMap[String(rawValue)]
+    if (s?.tagType) return s.tagType
+  }
+  return autoStyle(String(rawValue)).tagType
+}
+
+/** 获取指定值对应的 dot 颜色（显式 style > 自动 fallback） */
+function getDotColor(prop: string, rawValue: any): string {
+  if (rawValue == null) return '#ccc'
+  const styleMap = internalStyles.value[prop]
+  if (styleMap) {
+    const s = styleMap[String(rawValue)]
+    if (s?.dotColor) return s.dotColor
+  }
+  return autoStyle(String(rawValue)).dotColor
+}
+
 const headerCellStyle = () => ({
   background: '#f5f7fa',
   color: '#606266',
 })
 
-// ========================
-// 初始化：对齐 + 撑满
-// ========================
 
-onMounted(async () => {
-  await nextTick()
-
-  // 初始加载：自动触发一次查询
-  emitQuery()
-
-  // 选项翻译预加载：从 filter 中提取 fieldType 为 select/remote-select 的 prop，批量加载
-  if (props.loadOptions) {
-    const types = (props.config.search?.filter ?? [])
-      .filter(f => f.fieldType === 'select' || f.fieldType === 'remote-select')
-      .map(f => f.prop)
-    if (types.length > 0) {
-      const results = await Promise.all(
-        types.map(async (type) => {
-          try {
-            const items = await props.loadOptions!(type)  // 无 keyword → 全量加载
-            return { type, items }
-          } catch { return { type, items: [] as { label: string; value: string }[] } }
-        }),
-      )
-      const map: Record<string, Record<string, string>> = {}
-      for (const { type, items } of results) {
-        map[type] = {}
-        for (const item of items) {
-          map[type][item.value] = item.label
-        }
-      }
-      internalLookup.value = map
-    }
-  }
-
-  // 初始化 align：未设置时，文本列默认 left，数值列默认 right
-  const columns = props.config.columns
-  columns.forEach(c => {
-    if (c.align === undefined && c.prop) {
-      const val = props.data[0]?.[c.prop]
-      c.align = typeof val === 'number' ? 'right' : 'left'
-    }
-  })
-
-  // 未撑满时，最后一列 width → minWidth，弹性填满
-  const wrapper = tableWrapperRef.value
-  if (!wrapper) return
-  if (props.config.stripe == null) props.config.stripe = true
-  const total = columns.reduce((s, c) => s + (typeof c.width === 'number' ? c.width : 0), 0)
-  if (total < (wrapper.clientWidth || 0)) {
-    // 倒序找最后一个可拖拽列（已有 minWidth 的不参与弹性填充）
-    for (let i = columns.length - 1; i >= 0; i--) {
-      const c = columns[i]
-      if (c.resizable === false || isFixedCol(c) || c.minWidth != null) continue
-      const w = typeof c.width === 'number' ? c.width : 0
-      c.minWidth = Math.max(w, 80)
-      c.width = undefined
-      break
-    }
-  }
-})
 
 // 列设置面板事件
 const onSettingConfirm = (cols: TableItem[]) => {
@@ -312,7 +409,6 @@ const onSettingConfirm = (cols: TableItem[]) => {
   cols.forEach(c => props.config.columns.push(c))
   reorderKey.value++
   emit('change', props.config)
-  saveIfId(props.config)
 }
 
 const onAdminConfirm = (cols: TableItem[]) => {
@@ -321,11 +417,15 @@ const onAdminConfirm = (cols: TableItem[]) => {
   reorderKey.value++
   emit('admin-confirm', cols.map(c => ({ ...c })))
   emit('change', props.config)
-  if (props.id) $store.saveAsSystem(props.id, props.config)
+}
+
+/** 搜索面板"保存为系统默认" → 触发 admin-confirm 到父组件 */
+function onSearchAdminConfirm() {
+  emit('admin-confirm', props.config.columns.map(c => ({ ...c })))
+  emit('change', props.config)
 }
 
 const onSettingReset = (cols: TableItem[]) => {
-  if (props.id) $store.resetToSystem(props.id, props.config)
   props.config.columns.splice(0, props.config.columns.length)
   cols.forEach(c => props.config.columns.push(c))
   reorderKey.value++
@@ -336,23 +436,18 @@ defineExpose({ tableRef })
 </script>
 
 <style lang="scss" scoped>
-.u-table-wrapper {
+.u-table {
   width: 100%;
 }
 
 .u-table-toolbar {
   display: flex;
-  align-items: center;
   justify-content: space-between;
   min-height: 36px;
   padding: 4px 6px;
-  border: 1px solid #ebeef5;
-  border-bottom: none;
-  border-radius: 4px 4px 0 0;
-  background: #fafafa;
 }
 
-.u-table {
+.u-table-wrapper {
   width: 100%;
   position: relative;
 
@@ -407,93 +502,6 @@ defineExpose({ tableRef })
   &.resizing :deep(.el-table__header th) {
     cursor: col-resize !important;
     &::after { cursor: col-resize !important; }
-  }
-
-  // 列宽拖拽高亮（蓝色）
-  .col-highlight {
-    position: absolute;
-    background-color: rgba(#e6f7ff, 0.4);
-    pointer-events: none;
-    z-index: 1;
-  }
-
-  // 列排序拖拽高亮（浅灰白）
-  .col-reorder-highlight {
-    position: absolute;
-    background-color: rgba(0, 0, 0, 0.04);
-    pointer-events: none;
-    z-index: 1;
-  }
-
-  // 拖拽实线：固定在原始列边界
-  .drag-line {
-    position: absolute;
-    width: 1px;
-    height: 100%;
-    background-color: #409eff;
-    pointer-events: none;
-    z-index: 99;
-  }
-
-  // 拖拽虚线：跟随鼠标预览新位置
-  .preview-line {
-    position: absolute;
-    width: 1px;
-    height: 100%;
-    border-left: 1px dashed #409eff;
-    pointer-events: none;
-    z-index: 98;
-  }
-
-  // 列排序 drop 指示线
-  .drop-line {
-    position: absolute;
-    width: 1px;
-    height: 100%;
-    background-color: #f56c6c;
-    pointer-events: none;
-    z-index: 97;
-  }
-
-  // 列排序拖拽列名提示
-  .reorder-tooltip {
-    position: fixed;
-    padding: 4px 10px;
-    font-size: 12px;
-    color: #fff;
-    background-color: rgba(0, 0, 0, 0.72);
-    border-radius: 4px;
-    white-space: nowrap;
-    pointer-events: none;
-    z-index: 9999;
-  }
-
-  // 列宽拖拽像素提示框
-  .resize-tooltip {
-    position: absolute;
-    padding: 2px 8px;
-    font-size: 12px;
-    line-height: 20px;
-    color: #fff;
-    background-color: rgba(0, 0, 0, 0.75);
-    border-radius: 4px;
-    white-space: nowrap;
-    pointer-events: none;
-    z-index: 100;
-    transform: translateX(-50%);
-
-    &::after {
-      content: '';
-      position: absolute;
-      left: 50%;
-      bottom: -4px;
-      transform: translateX(-50%);
-      width: 0;
-      height: 0;
-      border-left: 4px solid transparent;
-      border-right: 4px solid transparent;
-      border-top: 4px solid rgba(0, 0, 0, 0.75);
-    }
   }
 
   :deep(.dragging) {
@@ -567,5 +575,29 @@ defineExpose({ tableRef })
       }
     }
   }
+}
+
+.u-table-pagination {
+  display: flex;
+  justify-content: flex-start;
+  padding: 12px 6px 4px;
+  border: 1px solid #ebeef5;
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  background: #fafafa;
+}
+
+/* dot 单元格样式 */
+.u-dot-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.u-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 </style>

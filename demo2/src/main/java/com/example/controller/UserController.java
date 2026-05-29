@@ -48,4 +48,10 @@ public class UserController {
         return R.ok(userService.removeById(id));
     }
 
+    @Operation(summary = "批量删除用户")
+    @DeleteMapping("/batch")
+    public R<Boolean> deleteBatch(@RequestBody List<Long> ids) {
+        return R.ok(userService.removeByIds(ids));
+    }
+
 }

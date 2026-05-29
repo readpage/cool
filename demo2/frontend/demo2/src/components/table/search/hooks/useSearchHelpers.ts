@@ -1,15 +1,8 @@
 import { type Ref, computed } from 'vue'
+import type { ColumnConfig, FieldType, FilterOperator, FilterCondition, FilterResult, OptionItem, OperatorOption } from '../types'
 
-/* ============ 类型 ============ */
-
-export interface ColumnConfig {
-  prop: string
-  label: string
-  fieldType?: 'text' | 'date' | 'datetime' | 'daterange' | 'datetimerange' | 'select' | 'remote-select'
-  options?: ({ label: string; value: string } | string)[]
-}
-
-export type RemoteMethod = (query: string) => Promise<{ label: string; value: string }[]>
+export type { ColumnConfig, FieldType, FilterOperator, FilterCondition, FilterResult, OptionItem, OperatorOption }
+export type RemoteMethod = (query: string) => Promise<OptionItem[]>
 
 /* ============ 常量 ============ */
 
@@ -28,9 +21,46 @@ export const OPERATOR_MAP: Record<string, string[]> = {
 
 /** 判断筛选条件是否填写了有效值（为 true 表示有值，应保留） */
 export function isEmptyValue(c: { operator: string; value: any; valueStr?: string }): boolean {
-  if (c.operator === 'between') return Array.isArray(c.value) ? (c.value[0] !== '' || c.value[1] !== '') : c.value !== ''
+  if (c.operator === 'between') {
+    if (c.value == null) return false
+    return Array.isArray(c.value) ? (c.value[0] !== '' || c.value[1] !== '') : false
+  }
   if (c.operator === 'in') return Array.isArray(c.value) ? c.value.length > 0 : (c.valueStr ?? '') !== ''
   return c.value !== ''
+}
+
+/** 根据 fieldType 返回默认操作符 */
+export function defaultOperator(col?: { fieldType?: string }): FilterOperator {
+  const ft = col?.fieldType
+  if (ft === 'daterange' || ft === 'datetimerange') return 'between'
+  if (ft === 'select' || ft === 'remote-select') return 'eq'
+  return 'contains'
+}
+
+/** 将内部条件数组转为 FilterResult[]，供 query.vue 和 index.vue 共用 */
+export function buildFilter(values: FilterCondition[]): FilterResult[] {
+  return values
+    .filter((c) => c.column && isEmptyValue(c))
+    .map((c): FilterResult => ({
+      column: c.column,
+      operator: c.operator,
+      value:
+        c.operator === 'between' ? [c.value[0] ?? '', c.value[1] ?? ''] :
+        c.operator === 'in' ? (Array.isArray(c.value) ? c.value : c.valueStr.split(',').map((v) => v.trim()).filter(Boolean)) :
+        c.value,
+    }))
+}
+
+/** 清除符合条件的值，供 query.vue 和 ExposedFilter.vue 共用 */
+export function clearConditionValue(c: FilterCondition) {
+  if (c.operator === 'between') {
+    c.value = ['', '']
+  } else if (c.operator === 'in') {
+    c.valueStr = ''
+    c.value = ''
+  } else {
+    c.value = ''
+  }
 }
 
 /* ============ Hook ============ */
@@ -40,64 +70,59 @@ export function isEmptyValue(c: { operator: string; value: any; valueStr?: strin
  */
 export function useSearchHelpers(
   columns: Ref<ColumnConfig[]>,
-  loadOptions?: Ref<((type: string, keyword?: string) => Promise<{ label: string; value: string }[]>) | undefined>,
-  operatorOptions?: Ref<{ label: string; value: string }[]>,
+  loadOptions?: Ref<((type: string, keyword?: string) => Promise<OptionItem[]>) | undefined>,
+  operatorOptions?: Ref<OperatorOption[]>,
 ) {
-  /** 根据 prop 查找列配置 */
+  const colMap = computed(() => {
+    const map: Record<string, ColumnConfig> = {}
+    for (const c of columns.value) map[c.prop] = c
+    return map
+  })
+
   function getColByProp(prop: string): ColumnConfig | undefined {
-    return columns.value.find((c) => c.prop === prop)
+    return colMap.value[prop]
   }
 
-  /** 获取字段类型 */
-  function getFieldType(prop: string): string | undefined {
+  function getFieldType(prop: string): FieldType | undefined {
     return getColByProp(prop)?.fieldType
   }
 
-  /** 是否为日期范围字段 */
   function isDateRangeField(prop: string): boolean {
     const ft = getFieldType(prop)
     return ft === 'daterange' || ft === 'datetimerange'
   }
 
-  /** 日期范围选择器类型 */
   function getDateRangeType(prop: string): string {
     const ft = getFieldType(prop)
     return ft === 'datetimerange' ? 'datetimerange' : 'daterange'
   }
 
-  /** 日期格式化字符串 */
   function getDateFormat(prop: string): string {
     const ft = getFieldType(prop)
     return ft === 'datetime' || ft === 'datetimerange' ? 'YYYY-MM-DD HH:mm:ss' : 'YYYY-MM-DD'
   }
 
-  /** 是否为下拉（含远程搜索） */
   function isSelectField(prop: string): boolean {
     const ft = getFieldType(prop)
     return ft === 'select' || ft === 'remote-select'
   }
 
-  /** 获取静态选项 */
   function getOptions(prop: string) {
     return getColByProp(prop)?.options
   }
 
-  /** 获取远程搜索方法 */
   function getRemoteMethod(prop: string): RemoteMethod | undefined {
     if (!loadOptions?.value) return undefined
     return (keyword: string) => loadOptions.value!(prop, keyword)
   }
 
-  /** 根据 fieldType 返回合法的操作符列表（computed 返回函数，支持响应式 operatorOptions） */
-  const getAvailableOperators = computed(() => {
+  function getAvailableOperators(prop: string) {
     const ops = operatorOptions?.value ?? []
-    return (prop: string) => {
-      const col = getColByProp(prop)
-      const ft = col?.fieldType ?? 'text'
-      const allowed = OPERATOR_MAP[ft] ?? OPERATOR_MAP.text
-      return ops.filter((op) => allowed.includes(op.value))
-    }
-  })
+    const col = getColByProp(prop)
+    const ft = col?.fieldType ?? 'text'
+    const allowed = OPERATOR_MAP[ft] ?? OPERATOR_MAP.text
+    return ops.filter((op) => allowed.includes(op.value))
+  }
 
   return {
     getColByProp,

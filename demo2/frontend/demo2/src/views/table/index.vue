@@ -66,17 +66,17 @@ const tableConfig = computed(() => $store.getConfig('book') ?? initConfig())
 
 // 配置变更 → appStore 统一保存
 function onConfigChange(config: TableConfig) {
-  console.log('change', config)
+  $store.save('book', config)
 }
 
 // 恢复默认设置
 function onReset() {
-  console.log('reset to default')
+  $store.resetToSystem('book', initConfig())
 }
 
 // 管理员确认默认配置
-function onAdminConfirm(columns: TableItem[]) {
-  console.log('adminConfirm', columns)
+function onAdminConfirm(_columns: TableItem[]) {
+  $store.saveAsSystem('book', tableConfig.value)
 }
 
 // 查询参数变化

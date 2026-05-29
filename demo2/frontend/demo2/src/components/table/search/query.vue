@@ -124,7 +124,9 @@
         <el-divider class="panel-divider" />
 
         <div class="panel-footer">
-          <div class="footer-left"><el-button text>另存为</el-button></div>
+          <div class="footer-left">
+            <el-button v-if="showAdminBtn" text type="primary" @click="emit('admin-confirm')">保存为系统默认</el-button>
+          </div>
           <div class="footer-right">
             <el-button @click="handleClear">清除筛选值</el-button>
             <el-button type="primary" :disabled="!canSubmit" @click="handleFilter">筛选</el-button>
@@ -136,35 +138,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, toRef } from 'vue'
 import { Filter, Plus, Remove, Close } from '@element-plus/icons-vue'
 import FilterValue from './FilterValue.vue'
-import { useSearchHelpers, OPERATOR_MAP, isEmptyValue } from './hooks/useSearchHelpers'
-
-/* ============ 类型 ============ */
-
-interface ColumnConfig {
-  prop: string
-  label: string
-  operator?: 'contains' | 'eq' | 'ne' | 'gt' | 'lt' | 'gte' | 'lte' | 'between' | 'in'
-  filterMode?: 'show' | 'exposed' | 'hide'
-  fieldType?: 'text' | 'date' | 'datetime' | 'daterange' | 'datetimerange' | 'select' | 'remote-select'
-  options?: ({ label: string; value: string } | string)[]
-}
-
-interface FilterCondition {
-  column: string
-  operator: 'contains' | 'eq' | 'ne' | 'gt' | 'lt' | 'gte' | 'lte' | 'between' | 'in'
-  value: string | string[]
-  valueStr: string
-  display: boolean
-}
-
-type FilterResult = {
-  column: string
-  operator: 'contains' | 'eq' | 'ne' | 'gt' | 'lt' | 'gte' | 'lte' | 'between' | 'in'
-  value: string | [string, string] | string[]
-}
+import { useSearchHelpers, OPERATOR_MAP, defaultOperator, buildFilter, clearConditionValue } from './hooks/useSearchHelpers'
+import type { ColumnConfig, FilterCondition, FilterResult } from './types'
 
 /* ============ Props & Emits ============ */
 
@@ -173,10 +151,12 @@ const props = defineProps<{
   operatorOptions: { label: string; value: string }[]
   exposed?: string[]
   loadOptions?: (type: string, keyword?: string) => Promise<{ label: string; value: string }[]>
+  showAdminBtn?: boolean
 }>()
 
 const emit = defineEmits<{
   (e: 'filter', value: FilterResult[]): void
+  (e: 'admin-confirm'): void
 }>()
 
 /* ============ 辅助 hook ============ */
@@ -191,9 +171,9 @@ const {
   getRemoteMethod,
   getAvailableOperators,
 } = useSearchHelpers(
-  computed(() => props.columns),
-  computed(() => props.loadOptions as any),
-  computed(() => props.operatorOptions),
+  toRef(props, 'columns'),
+  toRef(props, 'loadOptions') as any,
+  toRef(props, 'operatorOptions'),
 )
 
 /* ============ 条件状态 ============ */
@@ -208,19 +188,11 @@ function createCondition(initialColumn = ''): FilterCondition {
   const defaultOp = defaultOperator(col)
   return {
     column: initialColumn,
-    operator: col?.operator ?? defaultOp,
+    operator: (col?.operator ?? defaultOp) as FilterCondition['operator'],
     value: '',
     valueStr: '',
     display: col?.filterMode === 'exposed',
   }
-}
-
-/** 根据 fieldType 返回默认操作符 */
-function defaultOperator(col?: ColumnConfig): string {
-  const ft = col?.fieldType
-  if (ft === 'daterange' || ft === 'datetimerange') return 'between'
-  if (ft === 'select' || ft === 'remote-select') return 'eq'
-  return 'contains'
 }
 
 /* ============ 初始化 ============ */
@@ -257,9 +229,9 @@ function onColumnChange(index: number) {
   }
   // 根据 fieldType 自动修正操作符
   const validOps = OPERATOR_MAP[col.fieldType ?? 'text'] ?? OPERATOR_MAP.text
-  let nextOp = col.operator ?? defaultOperator(col)
+  let nextOp = (col.operator ?? defaultOperator(col)) as FilterCondition['operator']
   if (!validOps.includes(nextOp)) {
-    nextOp = validOps[0]
+    nextOp = validOps[0] as FilterCondition['operator']
   }
   // 切换列时清除旧值，避免上一列的值不匹配新列的选项导致显示 raw value
   conditions.value[index].operator = nextOp
@@ -272,36 +244,14 @@ function onColumnChange(index: number) {
 
 /* ============ 构建与提交 ============ */
 
-function buildFilterResult(): FilterResult[] {
-  return conditions.value
-    .filter((c) => c.column && isEmptyValue(c))
-    .map((c): FilterResult => ({
-      column: c.column,
-      operator: c.operator,
-      value:
-        c.operator === 'between' ? [c.value[0] ?? '', c.value[1] ?? ''] :
-        c.operator === 'in' ? (Array.isArray(c.value) ? c.value : c.valueStr.split(',').map((v) => v.trim()).filter(Boolean)) :
-        c.value,
-    }))
-}
-
 function handleFilter() {
-  const result = buildFilterResult()
+  const result = buildFilter(conditions.value)
   emit('filter', result)
   popoverVisible.value = false
 }
 
 function handleClear() {
-  conditions.value.forEach((c) => {
-    if (c.operator === 'between') {
-      c.value = ['', '']
-    } else if (c.operator === 'in') {
-      c.valueStr = ''
-      c.value = ''
-    } else {
-      c.value = ''
-    }
-  })
+  conditions.value.forEach(clearConditionValue)
 }
 
 /* ============ 暴露 ============ */
