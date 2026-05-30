@@ -93,6 +93,19 @@ public class FilterParam implements SqlParamProvider {
         private Integer minWidth;
         /** 对齐方式：left/center/right */
         private String align;
+
+        /**
+         * 前端组件类型：input / date-range / remote-select 等
+         */
+        private String fieldType;
+
+        /**
+         * 远程选项加载标识（fieldType='remote-select' 时，前端传）
+         * 用作 loadOptions(type) 的 type 参数，解决不同表同名字段的选项冲突。
+         * 例如用户表 sex → "user_sex"，宠物表 sex → "pet_sex"。
+         * 后端导入时用于匹配选项映射。
+         */
+        private String optionType;
     }
 
     /**

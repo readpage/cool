@@ -1,30 +1,25 @@
 package com.example.controller;
 
-import cn.idev.excel.FastExcel;
-import cn.idev.excel.write.handler.CellWriteHandler;
-import cn.idev.excel.write.handler.SheetWriteHandler;
-import cn.idev.excel.write.handler.context.CellWriteHandlerContext;
-import cn.idev.excel.write.handler.context.SheetWriteHandlerContext;
-import cn.idev.excel.write.metadata.style.WriteCellStyle;
-import cn.idev.excel.write.metadata.style.WriteFont;
-import cn.idev.excel.write.style.HorizontalCellStyleStrategy;
+import cn.undraw.util.result.R;
 import com.example.domain.entity.User;
+import com.example.service.ImportBatchResult;
+import com.example.service.OptionService;
 import com.example.service.UserService;
 import com.example.template.util.FilterParam;
+import com.example.util.excel.ExcelUtils;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
-import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.ss.util.CellRangeAddress;
-import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Excel 导入导出
@@ -37,119 +32,55 @@ public class ExcelController {
     @Resource
     private UserService userService;
 
+    @Resource
+    private OptionService optionService;
+
     @Operation(summary = "动态表头导出 Excel")
     @PostMapping("/export")
     public void export(@RequestBody FilterParam param, HttpServletResponse response) throws IOException {
-        // 1. 复用 Service 查询
         List<User> users = userService.list(param);
-
-        // 2. 构建表头
-        List<FilterParam.ColumnItem> cols = param.getColumns();
-        List<List<String>> headers = cols.stream()
-                .map(c -> Collections.singletonList(c.getLabel()))
-                .collect(Collectors.toList());
-
-        // 3. 构建行数据：通过实体 getter 取值
-        List<List<Object>> data = users.stream()
-                .map(user -> {
-                    BeanWrapperImpl bw = new BeanWrapperImpl(user);
-                    return cols.stream()
-                            .map(c -> bw.getPropertyValue(c.getProp()))
-                            .collect(Collectors.toList());
-                })
-                .collect(Collectors.toList());
-
-        // 4. 设置响应头
-        String filename = URLEncoder.encode("导出数据.xlsx", StandardCharsets.UTF_8);
-        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        response.setCharacterEncoding("UTF-8");
-        response.setHeader("Content-Disposition", "attachment;filename=" + filename);
-
-        // 5. 导出
-        FastExcel.write(response.getOutputStream())
-                .head(headers)
-                .registerWriteHandler(headerStyleStrategy())
-                .registerWriteHandler(new CellAlignHandler(cols))   // 仅实际数据行设置居中
-                .registerWriteHandler(new ColumnWidthHandler(cols)) // 仅列宽，不用 setDefaultColumnStyle
-                .sheet("数据")
-                .doWrite(data);
+        ExcelUtils.export(response, "导出数据", param, users);
     }
 
-    // ==================== 样式 ====================
-
-    /** 表头样式 — 灰底加粗居中带边框；内容仅垂直居中无边框 */
-    private HorizontalCellStyleStrategy headerStyleStrategy() {
-        WriteCellStyle head = new WriteCellStyle();
-        head.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
-        head.setFillPatternType(FillPatternType.SOLID_FOREGROUND);
-        head.setHorizontalAlignment(HorizontalAlignment.CENTER);
-        head.setVerticalAlignment(VerticalAlignment.CENTER);
-        head.setBorderLeft(BorderStyle.THIN);
-        head.setBorderRight(BorderStyle.THIN);
-        head.setBorderTop(BorderStyle.THIN);
-        head.setBorderBottom(BorderStyle.THIN);
-        WriteFont headFont = new WriteFont();
-        headFont.setBold(true);
-        headFont.setFontHeightInPoints((short) 11);
-        head.setWriteFont(headFont);
-
-        WriteCellStyle content = new WriteCellStyle();
-        content.setVerticalAlignment(VerticalAlignment.CENTER);
-        WriteFont contentFont = new WriteFont();
-        contentFont.setFontHeightInPoints((short) 10);
-        content.setWriteFont(contentFont);
-
-        return new HorizontalCellStyleStrategy(head, content);
+    @Operation(summary = "下载导入模板 Excel")
+    @PostMapping("/template")
+    public void template(HttpServletResponse response) throws IOException {
+        String mdTemplate = """
+            |用户名|年龄|性别|电话号码|
+            |----|----|----|----|
+            |张三| 25 | 男 | 13800138000|
+            """;
+        ExcelUtils.exportImporterTemplate(response, "用户导入模板", mdTemplate);
     }
 
-    /** 仅对实际写入的数据单元格设置居中对齐（不触碰 setDefaultColumnStyle，避免全列 1048576 行空边框） */
-    private static class CellAlignHandler implements CellWriteHandler {
-        private final List<FilterParam.ColumnItem> cols;
-        private CellStyle centerStyle;
-
-        CellAlignHandler(List<FilterParam.ColumnItem> cols) { this.cols = cols; }
-
-        @Override
-        public void afterCellDispose(CellWriteHandlerContext ctx) {
-            if (ctx.getHead()) return;           // 跳过表头
-            int colIdx = ctx.getColumnIndex();
-            if (colIdx >= cols.size()) return;
-            if (!"center".equals(cols.get(colIdx).getAlign())) return;
-
-            Cell cell = ctx.getCell();
-            if (cell == null) return;
-
-            if (centerStyle == null) {
-                Workbook wb = ctx.getWriteWorkbookHolder().getCachedWorkbook();
-                centerStyle = wb.createCellStyle();
-                centerStyle.setAlignment(HorizontalAlignment.CENTER);
-                centerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
-                Font font = wb.createFont();
-                font.setFontHeightInPoints((short) 10);
-                centerStyle.setFont(font);
-            }
-            cell.setCellStyle(centerStyle);
+    @Operation(summary = "Excel 导入 — 根据 columns 匹配表头，remote-select 列自动 label→value 转换")
+    @PostMapping(value = "/import", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    public R importExcel(
+            @Parameter(description = "Excel 文件") @RequestPart("file") MultipartFile file,
+            @Parameter(description = "列定义（FilterParam JSON）") @RequestParam("filterParam") String filterParamJson) {
+        // 解析 Excel → 实体列表（columns 校验 + remote-select 映射加载内置 + filterParam JSON 解析）
+        List<User> users;
+        try {
+            users = ExcelUtils.importData(file, filterParamJson,
+                    (type, limit) -> optionService.listByType(type, limit), User.class);
+        } catch (IllegalArgumentException e) {
+            return R.fail(e.getMessage());
         }
-    }
 
-    /** 仅设置列宽，不使用 setDefaultColumnStyle */
-    private static class ColumnWidthHandler implements SheetWriteHandler {
-        private final List<FilterParam.ColumnItem> cols;
-        ColumnWidthHandler(List<FilterParam.ColumnItem> cols) { this.cols = cols; }
-
-        @Override
-        public void afterSheetCreate(SheetWriteHandlerContext ctx) {
-            Sheet sheet = ctx.getWriteSheetHolder().getSheet();
-            for (int i = 0; i < cols.size(); i++) {
-                FilterParam.ColumnItem col = cols.get(i);
-                int w = col.getWidth() != null ? Math.max(col.getWidth() / 256, 10)
-                        : col.getMinWidth() != null ? Math.max(col.getMinWidth() / 256, 10) : 20;
-                sheet.setColumnWidth(i, w * 256);
-            }
-            // 表头启用筛选/排序下拉箭头
-            if (!cols.isEmpty()) {
-                sheet.setAutoFilter(new CellRangeAddress(0, 0, 0, cols.size() - 1));
-            }
+        if (users.isEmpty()) {
+            return R.fail("未解析到任何有效数据");
         }
+
+        // 批量入库
+        ImportBatchResult result = userService.importBatch(users);
+
+        Map<String, Object> data = new LinkedHashMap<>();
+        data.put("total", result.total());
+        data.put("success", result.success());
+        data.put("fail", result.fail());
+        data.put("errors", result.errors());
+        String msg = String.format("导入完成：成功 %d 条，失败 %d 条", result.success(), result.fail());
+        return R.ok(msg, data);
     }
+
 }

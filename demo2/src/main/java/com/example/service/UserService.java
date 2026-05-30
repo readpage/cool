@@ -18,4 +18,7 @@ public interface UserService extends IService<User> {
     /** 动态筛选分页查询（FilterParam → 自定义模板 DAO） */
     PageResult<User> page(FilterParam param);
 
+    /** 批量导入用户，返回成功/失败统计（逐条 saveOrUpdate，后续优化为高性能批量 upsert） */
+    ImportBatchResult importBatch(List<User> users);
+
 }

@@ -254,7 +254,7 @@ const emit = defineEmits<{
   /** 恢复系统默认 */
   (e: 'reset'): void
   /** 查询参数变化（筛选/排序/分页），payload 对齐后端 FilterParam */
-  (e: 'query', payload: TableQuery): void
+  (e: 'query', param: TableQuery): void
 }>()
 
 /** 注入 crud 的 selection 同步函数（如果父级是 crud 组件） */
@@ -263,6 +263,9 @@ const updateSelection = inject<((rows: any[]) => void) | null>('crud:updateSelec
 /** 向 crud 注册 tableRef，供 crud 调用 clearSelection 等方法 */
 const registerTableRef = inject<((ref: any) => void) | null>('crud:registerTableRef', null)
 
+/** 向 crud 注册 Table 组件实例，供 crud 调用 reload 刷新列表 */
+const registerTableInstance = inject<((instance: any) => void) | null>('crud:registerTableInstance', null)
+
 /** 注入 crud 的编辑行函数（单击行时打开修改对话框） */
 const crudEditRow = inject<((row: any) => void) | null>('crud:editRow', null)
 
@@ -270,8 +273,14 @@ const tableRef = ref()
 const tableWrapperRef = ref<HTMLElement>()
 const reorderKey = ref(0) // 排序后 +1 强制重绘
 
+/** 刷新当前页数据（供 Crud 组件调用的统一入口） */
+function reload() {
+  emitQuery()
+}
+
 onMounted(() => {
   registerTableRef?.(tableRef)
+  registerTableInstance?.({ reload })
 })
 
 // ==================== 初始化（onMounted 逻辑）====================
@@ -315,11 +324,14 @@ const hoverSort = ref<string | null>(null)
 // 统一的查询事件构建
 function emitQuery() {
   const filter = props.config.search?.filterValues ?? []
+  // 过滤掉隐藏列，供导出等功能判断需要显示哪些列
+  const visibleColumns = props.config.columns.filter(c => !c.hidden)
   emit('query', {
     current: currentPage.value,
     size: pageSize.value,
     filter,
     sort: props.config.sort,
+    columns: visibleColumns,
   })
 }
 
@@ -432,7 +444,7 @@ const onSettingReset = (cols: TableItem[]) => {
   emit('reset')
 }
 
-defineExpose({ tableRef })
+defineExpose({ tableRef, reload })
 </script>
 
 <style lang="scss" scoped>

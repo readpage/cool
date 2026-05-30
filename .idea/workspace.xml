@@ -5,19 +5,31 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="18fbe13d-d477-4a78-a9bc-379cfd296fb0" name="Changes" comment="update: spring-boot3">
-      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/components.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/components.d.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/assets/styles/index.scss" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/assets/styles/index.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/pnpm-lock.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/pnpm-lock.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/api/config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/api/config.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/crud/FormDrawer.vue" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/crud/FormDrawer.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/crud/index.vue" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/crud/index.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/crud/types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/crud/types.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/table/hooks/useTableInit.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/table/hooks/useTableInit.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/table/index.vue" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/table/index.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/table/search/ExposedFilter.vue" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/table/search/ExposedFilter.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/table/search/FilterValue.vue" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/table/search/FilterValue.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/table/search/hooks/useSearchHelpers.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/table/search/hooks/useSearchHelpers.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/table/search/index.vue" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/table/search/index.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/table/search/query.vue" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/table/search/query.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/store/options.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/store/options.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/table/search/types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/table/search/types.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/main.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/main.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/store/table-config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/store/table-config.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/store/table.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/store/table.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/types/table.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/types/table.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/table/index.vue" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/table/index.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/crud/config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/crud/config.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/crud/index.vue" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/crud/index.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/user/index.vue" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/user/index.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/controller/ConfigController.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/src/main/java/com/example/controller/ConfigController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/controller/ExcelController.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/src/main/java/com/example/controller/ExcelController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/controller/OptionController.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/src/main/java/com/example/controller/OptionController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/controller/UserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/src/main/java/com/example/controller/UserController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/domain/entity/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/src/main/java/com/example/domain/entity/User.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/service/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/src/main/java/com/example/service/UserService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/service/impl/UserServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/src/main/java/com/example/service/impl/UserServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/template/util/FilterParam.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/src/main/java/com/example/template/util/FilterParam.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -375,25 +387,15 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="UserTest.testDynamicListNoFilter" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+    <configuration name="Demo2Application" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" temporary="true" nameIsGenerated="true">
       <module name="demo2" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.example.Demo2Application" />
       <extension name="coverage">
         <pattern>
           <option name="PATTERN" value="com.example.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
-      <option name="PACKAGE_NAME" value="com.example" />
-      <option name="MAIN_CLASS_NAME" value="com.example.UserTest" />
-      <option name="METHOD_NAME" value="testDynamicListNoFilter" />
-      <option name="TEST_OBJECT" value="method" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="Demo2Application" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
-      <module name="demo2" />
-      <option name="SPRING_BOOT_MAIN_CLASS" value="com.example.Demo2Application" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -410,17 +412,16 @@
       <item itemvalue="JUnit.UserTest.sqlInjection" />
       <item itemvalue="JUnit.UserTest.testDynamicListColumnInjection" />
       <item itemvalue="JUnit.UserTest.testDynamicListDirect" />
-      <item itemvalue="JUnit.UserTest.testDynamicListNoFilter" />
-      <item itemvalue="Spring Boot.Demo2Application" />
       <item itemvalue="Spring Boot.DemoApplication" />
+      <item itemvalue="Spring Boot.Demo2Application" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Spring Boot.Demo2Application" />
         <item itemvalue="JUnit.UserTest.dbTemplateQuery" />
         <item itemvalue="JUnit.UserTest.sqlInjection" />
         <item itemvalue="JUnit.UserTest.testDynamicListDirect" />
         <item itemvalue="JUnit.UserTest.testDynamicListColumnInjection" />
-        <item itemvalue="JUnit.UserTest.testDynamicListNoFilter" />
       </list>
     </recent_temporary>
   </component>
@@ -840,7 +841,7 @@
       <workItem from="1779926702422" duration="8437000" />
       <workItem from="1779944808285" duration="12318000" />
       <workItem from="1780010912971" duration="1335000" />
-      <workItem from="1780018863246" duration="3281000" />
+      <workItem from="1780018863246" duration="25920000" />
     </task>
     <task id="LOCAL-00001" summary="chore: 更新">
       <created>1710076178715</created>

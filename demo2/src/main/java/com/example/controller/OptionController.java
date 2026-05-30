@@ -40,14 +40,14 @@ public class OptionController {
     }
 
     @Operation(summary = "保存选项（id=null 新增，id≠null 修改）")
-    @PostMapping
+    @PostMapping("/save")
     public R<Boolean> save(@RequestBody Option option) {
         return R.ok(optionService.saveOrUpdate(option));
     }
 
     @Operation(summary = "根据ID删除选项")
-    @DeleteMapping("/{id}")
-    public R<Boolean> delete(@Parameter(description = "选项ID") @PathVariable Long id) {
-        return R.ok(optionService.removeById(id));
+    @DeleteMapping("/remove")
+    public R<Boolean> remove(@RequestBody List<Long> ids) {
+        return R.ok(optionService.removeBatchByIds(ids));
     }
 }

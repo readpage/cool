@@ -30,8 +30,8 @@ public class ConfigController {
     }
 
     @Operation(summary = "根据ID删除配置")
-    @DeleteMapping("/delete/{id}")
-    public R<Boolean> delete(@Parameter(description = "配置ID") @PathVariable Long id) {
+    @DeleteMapping("/remove/{id}")
+    public R<Boolean> remove(@Parameter(description = "配置ID") @PathVariable Long id) {
         return R.ok(sysConfigService.removeById(id));
     }
 

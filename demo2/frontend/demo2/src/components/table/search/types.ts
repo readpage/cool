@@ -6,6 +6,13 @@ export interface ColumnConfig {
   filterMode?: 'show' | 'exposed' | 'hide'
   fieldType?: FieldType
   options?: ({ label: string; value: string } | string)[]
+
+  /**
+   * 远程选项加载标识（fieldType='remote-select' 时有效）
+   * 存在则优先作为 loadOptions(type) 的 type 参数，解决不同表同名字段的选项冲突
+   * 不填则 fallback 到 prop
+   */
+  optionType?: string
 }
 
 /** 字段控件类型 */

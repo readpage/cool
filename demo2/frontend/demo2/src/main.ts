@@ -5,6 +5,7 @@ import pinia from './store'
 import router from './router'
 import plugins from './plugins'
 import { useAppStore } from './store/app'
+import { bindToken } from './api/src/token'
 
 const app = createApp(App)
 app.use(pinia)

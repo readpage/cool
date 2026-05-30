@@ -76,39 +76,40 @@ export function useTableInit(options: UseTableInitOptions) {
     }
 
     // ③ 来源3：loadOptions 异步加载（remote-select 字段，兜底）
-    //     收集需要 loadOptions 的 prop（columns 中的 remote-select + filter 中的 select/remote-select）
-    const remoteProps = new Set<string>()
+    //     收集需要 loadOptions 的 prop → optionType 映射
+    //     optionType 优先，fallback 到 prop（解决不同表同名字段选项冲突）
+    const propToOptionType = new Map<string, string>()
 
     // 从 columns 收集 remote-select
     for (const col of config.columns) {
       if (col.prop && col.fieldType === 'remote-select') {
-        remoteProps.add(col.prop)
+        propToOptionType.set(col.prop, (col as any).optionType || col.prop)
       }
     }
 
     // 从 search.filter 收集 select / remote-select
     for (const f of config.search?.filter ?? []) {
       if (f.fieldType === 'select' || f.fieldType === 'remote-select') {
-        remoteProps.add(f.prop)
+        propToOptionType.set(f.prop, (f as any).optionType || f.prop)
       }
     }
 
     // 异步加载（仅对 lookup 中缺失的 prop 发起请求）
-    if (loadOptions && remoteProps.size > 0) {
-      const toFetch = [...remoteProps].filter(p => !lookup[p])
+    if (loadOptions && propToOptionType.size > 0) {
+      const toFetch = [...propToOptionType.entries()].filter(([prop]) => !lookup[prop])
       if (toFetch.length > 0) {
         const results = await Promise.all(
-          toFetch.map(async (type) => {
+          toFetch.map(async ([prop, optionType]) => {
             try {
-              const items = await loadOptions(type)
-              return { type, items }
+              const items = await loadOptions(optionType)
+              return { prop, items }
             } catch {
-              return { type, items: [] as { label: string; value: string }[] }
+              return { prop, items: [] as { label: string; value: string }[] }
             }
           }),
         )
-        for (const { type, items } of results) {
-          ingestOptions(type, items as OptionItem[])
+        for (const { prop, items } of results) {
+          ingestOptions(prop, items as OptionItem[])
         }
       }
     }

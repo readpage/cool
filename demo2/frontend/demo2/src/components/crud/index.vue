@@ -68,7 +68,7 @@
       :form-items="formItems"
       :load-options="loadOptions"
       :width="formWidth"
-      @saved="$emit('saved')"
+      @saved="onSaved"
     />
   </div>
 </template>
@@ -123,6 +123,18 @@ provide('crud:registerTableRef', (ref: any) => {
   _tableRef = ref
 })
 
+/** Table 组件实例（含 reload 方法），用于操作完成后刷新列表 */
+let _tableInstance: any = null
+
+provide('crud:registerTableInstance', (instance: any) => {
+  _tableInstance = instance
+})
+
+/** 统一刷新方法：触发 Table 的 reload → emitQuery → 父组件 @query → fetchList */
+function refresh() {
+  _tableInstance?.reload?.()
+}
+
 /** table 注入此函数，单击行时触发 → crud 打开修改对话框 */
 provide('crud:editRow', (row: Record<string, any>) => {
   openForm(row)
@@ -163,6 +175,7 @@ async function handleBatchDelete() {
     if (success) {
       ElMessage.success('删除成功')
       clearTableSelection()
+      refresh()
     } else {
       ElMessage.error('删除失败')
     }
@@ -177,6 +190,12 @@ const formRow = ref<Record<string, any> | null>(null)
 function openForm(row?: Record<string, any>) {
   formRow.value = row ?? null
   formVisible.value = true
+}
+
+/** FormDrawer 保存成功后 → 刷新列表 + 通知父组件 */
+function onSaved() {
+  refresh()
+  emit('saved')
 }
 
 // ==================== DOM 插入 selection-bar ====================

@@ -14,7 +14,9 @@
     "vue-router": "4.2.4",
     "element-plus": "2.6.0",
     "@element-plus/icons-vue": "2.1.0",
-    "undraw-ui": "1.2.7"
+    "undraw-ui": "1.2.7",
+    "axios": "1.9.0",
+    "nprogress": "^0.2.0"
   },
   "devDependencies": {
     "unplugin-auto-import": "0.17.5",
@@ -33,6 +35,7 @@
     "@vue/tsconfig": "0.7.0",
     "typescript": "5.8.3",
     "vite": "7.0.4",
-    "vue-tsc": "2.2.12"
+    "vue-tsc": "2.2.12",
+    "@types/nprogress": "^0.2.0"
   }
 }

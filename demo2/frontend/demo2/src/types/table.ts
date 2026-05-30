@@ -23,6 +23,14 @@ export interface TableItem {
   /** 静态选项（fieldType='select' 时使用），支持 { label, value, style? } 或纯字符串 */
   options?: (OptionItem | string)[]
 
+  /**
+   * 远程选项加载标识（fieldType='remote-select' 时有效）
+   * 存在则优先作为 loadOptions(type) 的 type 参数，解决不同表同名字段的选项冲突
+   * 例如用户表 sex → optionType: 'user_sex'，宠物表 sex → optionType: 'pet_sex'
+   * 不填则 fallback 到 prop
+   */
+  optionType?: string
+
   /** 单元格显示格式：text=纯文本（默认），tag=标签，dot=圆点+文本 */
   format?: 'text' | 'tag' | 'dot'
 }
@@ -56,6 +64,13 @@ export interface ColumnConfig {
 
   /** 下拉选项（fieldType='select' 时使用）。支持 { label, value } 或纯字符串 */
   options?: ({ label: string; value: string } | string)[]
+
+  /**
+   * 远程选项加载标识（fieldType='remote-select' 时有效）
+   * 存在则优先作为 loadOptions(type) 的 type 参数，解决不同表同名字段的选项冲突
+   * 不填则 fallback 到 prop
+   */
+  optionType?: string
 }
 
 /**
@@ -101,6 +116,8 @@ export interface TableQuery {
   size: number
   filter: FilterItem[]
   sort?: { column: string; direction: string }
+  /** 可见列配置（导出用：已过滤 hidden=true 的列） */
+  columns?: TableItem[]
 }
 
 /**

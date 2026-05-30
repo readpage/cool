@@ -50,10 +50,6 @@ public class User implements Serializable {
     @Schema(title = "性别")
     private String sex;
 
-    private Double salary = 22.3578;
-
-    private List<Long> ridList;
-
     @Schema(title = "创建时间")
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private LocalDateTime createTime;

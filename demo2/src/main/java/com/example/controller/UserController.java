@@ -24,33 +24,27 @@ public class UserController {
     @Resource
     private UserService userService;
 
-    @Operation(summary = "动态筛选查询用户列表")
+    @Operation(summary = "查询用户列表")
     @PostMapping("/list")
     public R<List<User>> list(@RequestBody FilterParam param) {
         return R.ok(userService.list(param));
     }
 
-    @Operation(summary = "动态筛选分页查询用户列表")
+    @Operation(summary = "分页查询用户列表")
     @PostMapping("/page")
     public R<PageResult<User>> page(@RequestBody FilterParam param) {
         return R.ok(userService.page(param));
     }
 
     @Operation(summary = "保存用户（id=null 新增，id≠null 修改）")
-    @PostMapping
+    @PostMapping("/save")
     public R<Boolean> save(@RequestBody User user) {
         return R.ok(userService.saveOrUpdate(user));
     }
 
-    @Operation(summary = "根据ID删除用户")
-    @DeleteMapping("/{id}")
-    public R<Boolean> delete(@PathVariable Long id) {
-        return R.ok(userService.removeById(id));
-    }
-
     @Operation(summary = "批量删除用户")
-    @DeleteMapping("/batch")
-    public R<Boolean> deleteBatch(@RequestBody List<Long> ids) {
+    @DeleteMapping("/remove")
+    public R<Boolean> remove(@RequestBody List<Long> ids) {
         return R.ok(userService.removeByIds(ids));
     }
 

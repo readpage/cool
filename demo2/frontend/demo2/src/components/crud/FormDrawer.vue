@@ -82,7 +82,7 @@
             :disabled="item.disabled"
             filterable
             remote
-            :remote-method="(kw: string) => handleRemoteSearch(item.prop, kw)"
+            :remote-method="(kw: string) => handleRemoteSearch(item.prop, item.optionType || item.prop, kw)"
             :loading="remoteLoading[item.prop]"
             :clearable="item.clearable !== false"
             v-bind="item.componentProps"
@@ -219,11 +219,11 @@ const formRules = computed<FormRules>(() => {
 const remoteOptionMap = ref<Record<string, { label: string; value: string }[]>>({})
 const remoteLoading = ref<Record<string, boolean>>({})
 
-async function handleRemoteSearch(prop: string, keyword: string) {
+async function handleRemoteSearch(prop: string, optionType: string, keyword: string) {
   if (!props.loadOptions) return
   remoteLoading.value[prop] = true
   try {
-    const items = await props.loadOptions(prop, keyword)
+    const items = await props.loadOptions(optionType, keyword)
     remoteOptionMap.value[prop] = items
   } finally {
     remoteLoading.value[prop] = false
@@ -245,16 +245,16 @@ watch(() => props.visible, async (val) => {
     }
   }
 
-  // 3. 预加载 remote-select 选项
-  const remoteProps = (props.formItems ?? [])
+  // 3. 预加载 remote-select 选项（optionType 优先，fallback 到 prop）
+  const remoteFields = (props.formItems ?? [])
     .filter(f => f.fieldType === 'remote-select')
-    .map(f => f.prop)
+    .map(f => ({ prop: f.prop, optionType: f.optionType || f.prop }))
 
-  if (props.loadOptions && remoteProps.length > 0) {
-    for (const prop of remoteProps) {
+  if (props.loadOptions && remoteFields.length > 0) {
+    for (const { prop, optionType } of remoteFields) {
       remoteLoading.value[prop] = true
       try {
-        const items = await props.loadOptions(prop)
+        const items = await props.loadOptions(optionType)
         remoteOptionMap.value[prop] = items
       } catch { /* ignore */ }
       remoteLoading.value[prop] = false

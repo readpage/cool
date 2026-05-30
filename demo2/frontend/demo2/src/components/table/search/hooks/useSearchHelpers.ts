@@ -113,7 +113,10 @@ export function useSearchHelpers(
 
   function getRemoteMethod(prop: string): RemoteMethod | undefined {
     if (!loadOptions?.value) return undefined
-    return (keyword: string) => loadOptions.value!(prop, keyword)
+    // optionType 优先，fallback 到 prop（解决不同表同名字段选项冲突）
+    const col = getColByProp(prop)
+    const optionType = (col as any)?.optionType || prop
+    return (keyword: string) => loadOptions.value!(optionType, keyword)
   }
 
   function getAvailableOperators(prop: string) {

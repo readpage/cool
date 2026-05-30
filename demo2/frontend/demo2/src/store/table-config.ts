@@ -11,8 +11,33 @@
  */
 import { defineStore } from 'pinia'
 import type { TableConfig } from '@/types/table'
-import { list, save as apiSave, remove, toEntity, fromEntity } from '@/api/config'
+import type { SysConfigEntity } from '@/api/config'
+import { listConfig, saveConfig, removeConfig } from '@/api/config'
 import { readCache, writeCache, removeCache, SCHEMA_VERSION } from './storage'
+
+// ==================== 序列化工具（业务层） ====================
+
+export function toEntity(
+  group: string,
+  key: string,
+  userId: number,
+  config: TableConfig,
+  id?: number,
+): SysConfigEntity {
+  return {
+    ...(id ? { id } : {}),
+    configGroup: group,
+    configKey: key,
+    userId,
+    configValue: JSON.stringify(config),
+    version: 0,
+    deleted: 0,
+  } as SysConfigEntity
+}
+
+export function fromEntity(entity: SysConfigEntity): TableConfig {
+  return JSON.parse(entity.configValue) as TableConfig
+}
 
 // ==================== 常量 ====================
 
@@ -130,7 +155,7 @@ export const useTableConfigStore = defineStore('table-config', () => {
       try {
         const id = entityIds.get(tableId)
         const entity = toEntity(DEFAULT_GROUP, tableId, MOCK_USER_ID, config, id)
-        const saved = await apiSave(entity)
+        const { data: saved } = await saveConfig(entity)
         // 记录服务端返回的 ID
         if (saved.id) {
           entityIds.set(tableId, saved.id)
@@ -140,10 +165,8 @@ export const useTableConfigStore = defineStore('table-config', () => {
           serverVersions.set(tableId, saved.version)
           writeConfigCache(DEFAULT_GROUP, tableId, config, saved.version)
         }
-      } catch (err: any) {
-        if (err.name !== 'SilentError') {
-          console.warn(`[TableConfigStore] 远端保存失败: ${tableId}`)
-        }
+      } catch {
+        console.warn(`[TableConfigStore] 远端保存失败: ${tableId}`)
       }
     }, 800))
   }
@@ -152,21 +175,19 @@ export const useTableConfigStore = defineStore('table-config', () => {
   async function saveAsSystem(tableId: string, config: TableConfig) {
     try {
       // 查已有系统默认（后端同时返回 userId=0 和 userId=1，前端过滤）
-      const entities = await list({ configGroup: DEFAULT_GROUP, configKey: tableId })
+      const { data: entities } = await listConfig({ configGroup: DEFAULT_GROUP, configKey: tableId })
       const systemEntity = entities.find(e => e.userId === 0)
       const id = systemEntity?.id
       const entity = toEntity(DEFAULT_GROUP, tableId, 0, config, id)
-      const saved = await apiSave(entity)
+      const { data: saved } = await saveConfig(entity)
 
       // 更新内存（系统默认不缓存到 localStorage）
       configs.set(tableId, config)
       if (saved.version !== undefined) {
         serverVersions.set(tableId, saved.version)
       }
-    } catch (err: any) {
-      if (err.name !== 'SilentError') {
-        console.warn(`[TableConfigStore] 系统保存失败: ${tableId}`, err.message)
-      }
+    } catch {
+      console.warn(`[TableConfigStore] 系统保存失败: ${tableId}`)
     }
   }
 
@@ -175,14 +196,14 @@ export const useTableConfigStore = defineStore('table-config', () => {
     try {
       const id = entityIds.get(tableId)
       if (id) {
-        await remove(id)
+        await removeConfig(String(id))
         entityIds.delete(tableId)
       }
       removeConfigCache(DEFAULT_GROUP, tableId)
       serverVersions.delete(tableId)
 
       // 重新查系统默认（后端同时返回 userId=0 和 userId=1，前端过滤）
-      const entities = await list({ configGroup: DEFAULT_GROUP, configKey: tableId })
+      const { data: entities } = await listConfig({ configGroup: DEFAULT_GROUP, configKey: tableId })
       const systemEntity = entities.find(e => e.userId === 0)
       if (systemEntity) {
         configs.set(tableId, fromEntity(systemEntity))
@@ -190,10 +211,8 @@ export const useTableConfigStore = defineStore('table-config', () => {
       } else {
         configs.set(tableId, codeDefault)
       }
-    } catch (err: any) {
-      if (err.name !== 'SilentError') {
-        console.warn(`[TableConfigStore] 恢复默认失败: ${tableId}`, err.message)
-      }
+    } catch {
+      console.warn(`[TableConfigStore] 恢复默认失败: ${tableId}`)
       configs.set(tableId, codeDefault)
     }
   }
