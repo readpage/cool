@@ -3,6 +3,7 @@ package com.example.template.util;
 import com.example.template.util.FilterOperator.FilterCondition;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -26,6 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @Data
 @Accessors(chain = true)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class FilterParam implements SqlParamProvider {
 
     /** 筛选条件列表 */

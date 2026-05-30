@@ -2,7 +2,7 @@ import type { FormItemRule } from 'element-plus'
 import type { OptionItem } from '@/types/table'
 
 /** 异步操作完成回调 */
-export type DoneCallback = (success?: boolean) => void
+export type DoneCallback = (success?: boolean, data?: any) => void
 
 // ==================== 表单字段类型 ====================
 
@@ -62,10 +62,12 @@ export interface CrudApi {
   update?: (data: any, done: DoneCallback) => void
   /** 删除方法：定义了则显示"删除"按钮（顶部工具栏 + selection 栏） */
   remove?: (ids: any[], done: DoneCallback) => void
-  /** 导入方法：定义了则在"更多"中显示"导入"选项 */
-  import?: () => void
-  /** 导出方法：定义了则在"更多"中显示"导出"选项 */
-  export?: () => void
+  /** 下载导入模板：定义了则在导入对话框中显示"下载模板"按钮 */
+  downloadTemplate?: () => Promise<any> | void
+  /** 导入文件：定义即显示"导入"按钮，CRUD 内部构造 config 后回调，done(true) 后自动刷新表格 */
+  import?: (params: { file: File; config: any }, done: DoneCallback) => void
+  /** 导出数据：定义即显示"导出"按钮，CRUD 内部清洗空 filter 后回调 */
+  export?: (params: any) => void
 
   /** 新增前置钩子 */
   beforeSave?: (data: any) => void

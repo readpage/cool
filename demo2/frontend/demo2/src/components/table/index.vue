@@ -269,6 +269,9 @@ const registerTableInstance = inject<((instance: any) => void) | null>('crud:reg
 /** 注入 crud 的编辑行函数（单击行时打开修改对话框） */
 const crudEditRow = inject<((row: any) => void) | null>('crud:editRow', null)
 
+/** 向 crud 上报当前查询参数，供导出/导入使用 */
+const reportQuery = inject<((q: TableQuery) => void) | null>('crud:reportQuery', null)
+
 const tableRef = ref()
 const tableWrapperRef = ref<HTMLElement>()
 const reorderKey = ref(0) // 排序后 +1 强制重绘
@@ -326,13 +329,15 @@ function emitQuery() {
   const filter = props.config.search?.filterValues ?? []
   // 过滤掉隐藏列，供导出等功能判断需要显示哪些列
   const visibleColumns = props.config.columns.filter(c => !c.hidden)
-  emit('query', {
+  const query: TableQuery = {
     current: currentPage.value,
     size: pageSize.value,
     filter,
     sort: props.config.sort,
     columns: visibleColumns,
-  })
+  }
+  emit('query', query)
+  reportQuery?.(query)
 }
 
 // 搜索配置变更 → 持久化

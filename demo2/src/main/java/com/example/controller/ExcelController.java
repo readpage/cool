@@ -2,7 +2,6 @@ package com.example.controller;
 
 import cn.undraw.util.result.R;
 import com.example.domain.entity.User;
-import com.example.service.ImportBatchResult;
 import com.example.service.OptionService;
 import com.example.service.UserService;
 import com.example.template.util.FilterParam;
@@ -17,9 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Excel 导入导出
@@ -72,15 +69,7 @@ public class ExcelController {
         }
 
         // 批量入库
-        ImportBatchResult result = userService.importBatch(users);
-
-        Map<String, Object> data = new LinkedHashMap<>();
-        data.put("total", result.total());
-        data.put("success", result.success());
-        data.put("fail", result.fail());
-        data.put("errors", result.errors());
-        String msg = String.format("导入完成：成功 %d 条，失败 %d 条", result.success(), result.fail());
-        return R.ok(msg, data);
+        return userService.importBatch(users).toR();
     }
 
 }

@@ -19,11 +19,11 @@ export interface SysConfigEntity {
 
 // ==================== CRUD API ====================
 
-/** 查询配置列表（按 configGroup / configKey 筛选） */
-export const listConfig = apiAxios<SysConfigEntity[]>('/config/list')
-
-/** 保存配置（id=null 新增，id≠null 修改），返回实体含自增ID */
-export const saveConfig = apiAxios<SysConfigEntity>('/config/save', 'post')
-
-/** 删除配置 */
-export const removeConfig = apiAxios<boolean>('/config/remove', 'delete')
+export const AConfig = {
+  /** 查询配置列表（按 configGroup / configKey 筛选） */
+  list: apiAxios<SysConfigEntity[]>('/config/list'),
+  /** 保存配置（id=null 新增，id≠null 修改），返回实体含自增ID */
+  save: apiAxios<SysConfigEntity>('/config/save', 'post'),
+  /** 删除配置 */
+  remove: apiAxios<boolean>('/config/remove', 'delete'),
+}

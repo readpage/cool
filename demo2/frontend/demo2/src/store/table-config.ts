@@ -12,7 +12,7 @@
 import { defineStore } from 'pinia'
 import type { TableConfig } from '@/types/table'
 import type { SysConfigEntity } from '@/api/config'
-import { listConfig, saveConfig, removeConfig } from '@/api/config'
+import { AConfig } from '@/api/config'
 import { readCache, writeCache, removeCache, SCHEMA_VERSION } from './storage'
 
 // ==================== 序列化工具（业务层） ====================
@@ -155,7 +155,7 @@ export const useTableConfigStore = defineStore('table-config', () => {
       try {
         const id = entityIds.get(tableId)
         const entity = toEntity(DEFAULT_GROUP, tableId, MOCK_USER_ID, config, id)
-        const { data: saved } = await saveConfig(entity)
+        const { data: saved } = await AConfig.save(entity)
         // 记录服务端返回的 ID
         if (saved.id) {
           entityIds.set(tableId, saved.id)
@@ -175,11 +175,11 @@ export const useTableConfigStore = defineStore('table-config', () => {
   async function saveAsSystem(tableId: string, config: TableConfig) {
     try {
       // 查已有系统默认（后端同时返回 userId=0 和 userId=1，前端过滤）
-      const { data: entities } = await listConfig({ configGroup: DEFAULT_GROUP, configKey: tableId })
+      const { data: entities } = await AConfig.list({ configGroup: DEFAULT_GROUP, configKey: tableId })
       const systemEntity = entities.find(e => e.userId === 0)
       const id = systemEntity?.id
       const entity = toEntity(DEFAULT_GROUP, tableId, 0, config, id)
-      const { data: saved } = await saveConfig(entity)
+      const { data: saved } = await AConfig.save(entity)
 
       // 更新内存（系统默认不缓存到 localStorage）
       configs.set(tableId, config)
@@ -196,14 +196,14 @@ export const useTableConfigStore = defineStore('table-config', () => {
     try {
       const id = entityIds.get(tableId)
       if (id) {
-        await removeConfig(String(id))
+        await AConfig.remove(String(id))
         entityIds.delete(tableId)
       }
       removeConfigCache(DEFAULT_GROUP, tableId)
       serverVersions.delete(tableId)
 
       // 重新查系统默认（后端同时返回 userId=0 和 userId=1，前端过滤）
-      const { data: entities } = await listConfig({ configGroup: DEFAULT_GROUP, configKey: tableId })
+      const { data: entities } = await AConfig.list({ configGroup: DEFAULT_GROUP, configKey: tableId })
       const systemEntity = entities.find(e => e.userId === 0)
       if (systemEntity) {
         configs.set(tableId, fromEntity(systemEntity))

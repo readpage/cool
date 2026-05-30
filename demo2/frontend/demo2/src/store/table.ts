@@ -10,7 +10,7 @@
  */
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { listConfig } from '@/api/config'
+import { AConfig } from '@/api/config'
 import { useTableConfigStore, fromEntity } from './table-config'
 import { useOptionsStore } from './options'
 
@@ -26,7 +26,7 @@ export const useTableStore = defineStore('table', () => {
     const configStore = useTableConfigStore()
 
     try {
-      const { data: entities } = await listConfig({ configGroup: DEFAULT_GROUP })
+      const { data: entities } = await AConfig.list({ configGroup: DEFAULT_GROUP })
 
       const merged: Record<string, ReturnType<typeof fromEntity>> = {}
       const mergedIds: Record<string, number> = {}

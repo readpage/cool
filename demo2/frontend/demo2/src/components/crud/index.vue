@@ -34,7 +34,7 @@
             <div
               v-if="crud.import"
               class="u-crud-popover-menu__item"
-              @click="crud.import"
+              @click="openImport"
             >
               <el-icon><Upload /></el-icon>
               <span>导入</span>
@@ -42,7 +42,7 @@
             <div
               v-if="crud.export"
               class="u-crud-popover-menu__item"
-              @click="crud.export"
+              @click="handleExport"
             >
               <el-icon><Download /></el-icon>
               <span>导出</span>
@@ -70,6 +70,13 @@
       :width="formWidth"
       @saved="onSaved"
     />
+
+    <!-- 导入对话框 -->
+    <ImportDialog
+      v-model:visible="importVisible"
+      :template-api="handleDownloadTemplate"
+      :upload-api="handleImportUpload"
+    />
   </div>
 </template>
 
@@ -78,7 +85,9 @@ import { ref, onMounted, onUnmounted, provide, nextTick } from 'vue'
 import { Plus, MoreFilled, Upload, Download } from '@element-plus/icons-vue'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import type { CrudApi, FormItemConfig } from './types'
+import type { TableQuery } from '@/types/table'
 import FormDrawer from './FormDrawer.vue'
+import ImportDialog from './ImportDialog.vue'
 
 const props = defineProps<{
   /** CRUD API 配置 - reactive 对象，方法定义即显示对应按钮 */
@@ -196,6 +205,80 @@ function openForm(row?: Record<string, any>) {
 function onSaved() {
   refresh()
   emit('saved')
+}
+
+// ==================== Query 缓存（Table 通过 inject 上报） ====================
+
+const currentQuery = ref<TableQuery | null>(null)
+
+provide('crud:reportQuery', (q: TableQuery) => {
+  currentQuery.value = q
+})
+
+// ==================== Import ====================
+
+const importVisible = ref(false)
+
+function openImport() {
+  importVisible.value = true
+}
+
+async function handleDownloadTemplate() {
+  if (!props.crud.downloadTemplate) return
+  await props.crud.downloadTemplate()
+}
+
+async function handleImportUpload(formData: FormData) {
+  const { crud } = props
+  if (!crud.import) throw new Error('import not defined')
+
+  const file = formData.get('file') as File
+  // 只传后端 ColumnItem 需要的字段，过滤掉 format / hidden 等纯前端渲染属性
+  const columns = (currentQuery.value?.columns ?? []).map(
+    ({ prop, label, width, minWidth, align, fieldType, optionType }) =>
+      ({ prop, label, width, minWidth, align, fieldType, optionType }),
+  )
+  const config = {
+    columns,
+    filter: currentQuery.value?.filter ?? [],
+  }
+
+  return new Promise<any>((resolve, reject) => {
+    crud.import!({ file, config }, (success, data) => {
+      if (success) {
+        resolve(data ?? { code: 0 })
+        refresh()
+      } else {
+        reject(new Error('导入失败'))
+      }
+    })
+  })
+}
+
+// ==================== Export ====================
+
+/** 清洗空值 filter */
+function cleanFilter(filter: any[]) {
+  return filter.filter(f => {
+    const v = f.value
+    if (Array.isArray(v)) return v.length > 0 && v.some((e: any) => e !== '')
+    return v !== '' && v != null
+  })
+}
+
+function handleExport() {
+  const { crud } = props
+  if (!crud.export) return
+  if (!currentQuery.value) {
+    ElMessage.warning('暂无数据可导出')
+    return
+  }
+  const filter = cleanFilter(currentQuery.value.filter ?? [])
+  crud.export({
+    columns: currentQuery.value.columns,
+    filter,
+    sort: currentQuery.value.sort ?? {},
+  })
 }
 
 // ==================== DOM 插入 selection-bar ====================
