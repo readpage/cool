@@ -1,32 +1,9 @@
 /**
- * 报告相关类型定义
+ * 报告相关类型定义 — 与后端 ReportSaveRequest / ReportDisplayConfig 对齐
  */
+import type { TableConfig } from '@/types/table'
 
-/** 下拉选项 */
-export interface OptionDef {
-  label: string
-  value: string
-}
-
-/** 报告查询参数定义 */
-export interface ParamDef {
-  /** 参数名（模板中使用 #{name}） */
-  name: string
-  /** 显示标签 */
-  label: string
-  /** 参数类型 */
-  type: 'text' | 'number' | 'date' | 'daterange' | 'select' | 'remote-select'
-  /** 默认值 */
-  defaultValue?: string
-  /** 是否必填 */
-  required?: boolean
-  /** type=select 时的静态选项 */
-  options?: OptionDef[]
-  /** type=remote-select 时的远程选项类型标识 */
-  optionType?: string
-  /** 内置参数类型（filter / sort / column），普通参数不设置 */
-  builtin?: 'filter' | 'sort' | 'column'
-}
+// ==================== 筛选 & 排序 ====================
 
 /** 过滤条件 */
 export interface FilterCondition {
@@ -46,16 +23,45 @@ export interface SortCondition {
   direction: 'asc' | 'desc'
 }
 
-/** 报告定义 — 与后端 ReportDefinition.java 对齐 */
-export interface ReportDefinition {
-  id: string
-  name: string
-  description?: string
-  /** SQL 模板（支持 {{key}} / #{key} / [[...]] 语法） */
-  sqlTemplate: string
-  /** 参数定义列表 */
-  parameters: ParamDef[]
+// ==================== 报告模型（读写复用同一个结构） ====================
+
+/** 报告读写模型 — 与后端 ReportSaveRequest.java 对齐 */
+export interface ReportSaveRequest {
+  /** 报告实体（直接映射 report 表） */
+  report: {
+    /** 主键（自增），新增时为 undefined */
+    id?: number
+    /** 报表业务唯一标识 */
+    tableKey: string
+    name: string
+    description?: string
+    category?: string
+    /** SQL 模板（支持 {{filter}} / {{sort}} / #{key} 语法） */
+    sqlTemplate: string
+    /** 展示类型：table | bar | line | pie | number */
+    displayType?: string
+    /** 权限配置 JSON */
+    permissionConfig?: string
+    /** 创建者 ID */
+    creatorId?: number
+  }
+  /** 展示配置（filter + sort + tableConfig），来自 sys_config / user_config */
+  displayConfig?: ReportDisplayConfig
 }
+
+// ==================== 展示配置 ====================
+
+/** 报表展示配置 — 与后端 ReportDisplayConfig.java 对齐 */
+export interface ReportDisplayConfig {
+  /** 筛选条件列表 */
+  filter?: FilterCondition[]
+  /** 排序 */
+  sort?: SortCondition
+  /** 表格配置 */
+  tableConfig?: TableConfig
+}
+
+// ==================== 列元数据 & 查询结果 ====================
 
 /** 列元数据 — 与后端 ReportQueryResult.ColumnMeta 对齐 */
 export interface ColumnMeta {

@@ -5,13 +5,6 @@
       <span v-if="resultData" class="result-count">共 {{ resultData.total }} 条</span>
     </div>
 
-    <ParamBar
-      :parameters="parameters"
-      :values="paramValues"
-      @execute="$emit('execute')"
-      @reset="$emit('reset')"
-    />
-
     <div class="panel-body">
       <Table
         v-if="resultData"
@@ -28,16 +21,13 @@
 
 <script setup lang="ts">
 import Table from '@/components/table/index.vue'
-import ParamBar from './ParamBar.vue'
-import type { ParamDef, ReportQueryResult } from '@/types/report'
+import type { ReportQueryResult } from '@/types/report'
 import type { TableConfig, TableQuery, PageResult } from '@/types/table'
 
 defineProps<{
   resultData: ReportQueryResult | null
   tableConfig: TableConfig
   tableData: PageResult
-  parameters: ParamDef[]
-  paramValues: Record<string, any>
 }>()
 
 type DoneFn = () => void
@@ -45,7 +35,6 @@ type DoneFn = () => void
 defineEmits<{
   query: [payload: TableQuery, done: DoneFn]
   execute: []
-  reset: []
 }>()
 </script>
 

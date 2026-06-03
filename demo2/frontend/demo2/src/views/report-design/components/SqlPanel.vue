@@ -3,7 +3,7 @@
     <div class="panel-header">
       <span class="panel-title">SQL 环境</span>
       <span class="panel-hint">
-        <code>#{key}</code> 参数 &nbsp;|&nbsp; <code>[[...]]</code> 可选块
+        <code>{{filter}}</code> 筛选 &nbsp;|&nbsp; <code>{{sort}}</code> 排序 &nbsp;|&nbsp; <code>[[...]]</code> 可选块
       </span>
     </div>
     <div class="panel-body">
@@ -27,11 +27,6 @@
             <span v-if="!loading" class="run-icon">▶</span>
           </el-button>
         </el-tooltip>
-        <el-tooltip content="检测参数" placement="left">
-          <el-button circle size="small" class="action-detect" @click="$emit('detect')">
-            检
-          </el-button>
-        </el-tooltip>
       </div>
     </div>
   </div>
@@ -47,13 +42,12 @@ withDefaults(defineProps<{
   placeholder?: string
 }>(), {
   loading: false,
-  placeholder: "SELECT prod_num '编码', prod_name '名称' FROM itm WHERE 1=1",
+  placeholder: "SELECT prod_num '编码', prod_name '名称' FROM itm WHERE 1=1 {{filter}} {{sort}}",
 })
 
 defineEmits<{
   'update:modelValue': [value: string]
   run: []
-  detect: []
 }>()
 </script>
 
@@ -141,12 +135,5 @@ defineEmits<{
     font-size: 18px;
     margin-left: 2px;
   }
-}
-
-.action-detect {
-  width: 36px;
-  height: 36px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  font-size: 12px;
 }
 </style>

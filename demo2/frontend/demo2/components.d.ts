@@ -7,14 +7,11 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
-    CodeMirror: typeof import('./src/components/code-mirror/CodeMirror.vue')['default']
     Crud: typeof import('./src/components/crud/index.vue')['default']
     ElButton: typeof import('element-plus/es')['ElButton']
-    ElCard: typeof import('element-plus/es')['ElCard']
     ElCheckbox: typeof import('element-plus/es')['ElCheckbox']
     ElDatePicker: typeof import('element-plus/es')['ElDatePicker']
     ElDivider: typeof import('element-plus/es')['ElDivider']
-    ElDrawer: typeof import('element-plus/es')['ElDrawer']
     ElDropdown: typeof import('element-plus/es')['ElDropdown']
     ElDropdownItem: typeof import('element-plus/es')['ElDropdownItem']
     ElDropdownMenu: typeof import('element-plus/es')['ElDropdownMenu']
@@ -30,14 +27,11 @@ declare module 'vue' {
     ElRadioButton: typeof import('element-plus/es')['ElRadioButton']
     ElRadioGroup: typeof import('element-plus/es')['ElRadioGroup']
     ElSelect: typeof import('element-plus/es')['ElSelect']
-    ElStep: typeof import('element-plus/es')['ElStep']
-    ElSteps: typeof import('element-plus/es')['ElSteps']
     ElSwitch: typeof import('element-plus/es')['ElSwitch']
     ElTable: typeof import('element-plus/es')['ElTable']
     ElTableColumn: typeof import('element-plus/es')['ElTableColumn']
     ElTag: typeof import('element-plus/es')['ElTag']
     ElTooltip: typeof import('element-plus/es')['ElTooltip']
-    ElUpload: typeof import('element-plus/es')['ElUpload']
     ExposedFilter: typeof import('./src/components/table/search/ExposedFilter.vue')['default']
     FilterValue: typeof import('./src/components/table/search/FilterValue.vue')['default']
     FormDrawer: typeof import('./src/components/crud/FormDrawer.vue')['default']
@@ -53,7 +47,6 @@ declare module 'vue' {
     Table: typeof import('./src/components/table/index.vue')['default']
     TableOverlay: typeof import('./src/components/table/TableOverlay.vue')['default']
     TableSettings: typeof import('./src/components/table/TableSettings.vue')['default']
-    UDialog: typeof import('undraw-ui')['UDialog']
   }
   export interface ComponentCustomProperties {
     vLoading: typeof import('element-plus/es')['ElLoadingDirective']

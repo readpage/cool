@@ -1,8 +1,8 @@
 /**
- * 表格配置 Pinia Store — sys_config 持久化
+ * 表格配置 Pinia Store — 拆分为 sys_config（系统默认） + user_config（用户偏好）
  *
  * 配置来源优先级：用户配置 > 系统默认 > 代码兜底 initConfig()
- * 后端按业务键 (configGroup, configKey, userId) UPSERT，deleted 作为状态字段，前端无需追踪 id
+ * 系统配置走 /config/system/*，用户配置走 /config/user/*
  *
  * 数据流：
  *   localStorage ──restoreFromLocalStorage──→ reactive Map ←──computed── 组件
@@ -13,30 +13,45 @@
 import { computed, reactive } from 'vue'
 import { defineStore, storeToRefs } from 'pinia'
 import type { TableConfig } from '@/components/table/index.vue'
-import type { SysConfigEntity } from '@/api/config'
+import type { SysConfigEntity, UserConfigEntity } from '@/api/config'
 import { AConfig } from '@/api/config'
 import { readCache, writeCache, removeCache, SCHEMA_VERSION, DEFAULT_MAX_AGE_MS } from './storage'
 import { useUserStore } from '@/store/user'
 
 // ==================== 序列化工具 ====================
 
-function toEntity(
+/** 构建用户偏好配置实体 */
+function toUserEntity(
   group: string,
   key: string,
   userId: number,
   config: TableConfig,
-): SysConfigEntity {
+): UserConfigEntity {
   return {
     configGroup: group,
     configKey: key,
     userId,
     configValue: JSON.stringify(config),
-    version: 0,
     deleted: 0,
+  } as UserConfigEntity
+}
+
+/** 构建系统默认配置实体 */
+function toSystemEntity(
+  group: string,
+  key: string,
+  config: TableConfig,
+): SysConfigEntity {
+  return {
+    configGroup: group,
+    configKey: key,
+    configValue: JSON.stringify(config),
+    version: 0,
   } as SysConfigEntity
 }
 
-export function fromEntity(entity: SysConfigEntity): TableConfig {
+/** 通用解析：从配置实体的 configValue JSON 中还原 TableConfig */
+export function fromEntity(entity: SysConfigEntity | UserConfigEntity): TableConfig {
   return JSON.parse(entity.configValue) as TableConfig
 }
 
@@ -104,7 +119,7 @@ export const useTableConfigStore = defineStore('table-config', () => {
     if (pending.has(tableId)) return pending.get(tableId)!
 
     const promise = (async () => {
-      // 第1层：用户个人配置
+      // 第1层：用户个人配置（user_config 表）
       try {
         const { data: userEntity } = await AConfig.my({ configGroup: DEFAULT_GROUP, configKey: tableId })
         if (userEntity) {
@@ -112,20 +127,20 @@ export const useTableConfigStore = defineStore('table-config', () => {
           if (!configs.has(tableId)) {
             const config = fromEntity(userEntity)
             configs.set(tableId, config)
-            if (userEntity.version !== undefined) serverVersions.set(tableId, userEntity.version)
-            writeConfigCache(DEFAULT_GROUP, tableId, config, userEntity.version ?? 0)
+            serverVersions.set(tableId, 0)
+            writeConfigCache(DEFAULT_GROUP, tableId, config, 0)
           }
           return
         }
       } catch { /* 继续尝试系统配置 */ }
 
-      // 第2层：系统默认配置
+      // 第2层：系统默认配置（sys_config 表）
       try {
         const { data: sysEntity } = await AConfig.system({ configGroup: DEFAULT_GROUP, configKey: tableId })
         if (sysEntity && !configs.has(tableId)) {
           const config = fromEntity(sysEntity)
           configs.set(tableId, config)
-          if (sysEntity.version !== undefined) serverVersions.set(tableId, sysEntity.version)
+          serverVersions.set(tableId, sysEntity.version ?? 0)
           writeConfigCache(DEFAULT_GROUP, tableId, config, sysEntity.version ?? 0)
         }
       } catch { /* 两端都失败，组件走 ?? initTableConfig() */ }
@@ -181,6 +196,7 @@ export const useTableConfigStore = defineStore('table-config', () => {
 
   const saveTimers = new Map<string, ReturnType<typeof setTimeout>>()
 
+  /** 保存当前用户的表格配置（写入 user_config 表） */
   async function save(tableId: string, config: TableConfig) {
     configs.set(tableId, config)
     writeConfigCache(DEFAULT_GROUP, tableId, config, serverVersions.get(tableId) ?? 0)
@@ -191,12 +207,10 @@ export const useTableConfigStore = defineStore('table-config', () => {
     saveTimers.set(tableId, setTimeout(async () => {
       saveTimers.delete(tableId)
       try {
-        const entity = toEntity(DEFAULT_GROUP, tableId, MOCK_USER_ID, config)
-        const { data: saved } = await AConfig.save(entity)
-        if (saved.version !== undefined) {
-          serverVersions.set(tableId, saved.version)
-          writeConfigCache(DEFAULT_GROUP, tableId, config, saved.version)
-        }
+        const entity = toUserEntity(DEFAULT_GROUP, tableId, MOCK_USER_ID, config)
+        await AConfig.save(entity)
+        serverVersions.set(tableId, 0)
+        writeConfigCache(DEFAULT_GROUP, tableId, config, 0)
       } catch {
         console.warn(`[TableConfigStore] 远端保存失败: ${tableId}`)
       }
@@ -205,15 +219,13 @@ export const useTableConfigStore = defineStore('table-config', () => {
 
   // ==================== 管理员操作 ====================
 
-  /** 管理员保存为系统默认 */
+  /** 管理员保存为系统默认（写入 sys_config 表） */
   async function saveAsSystem(tableId: string, config: TableConfig) {
     try {
-      const entity = toEntity(DEFAULT_GROUP, tableId, 0, config)
-      const { data: saved } = await AConfig.save(entity)
+      const entity = toSystemEntity(DEFAULT_GROUP, tableId, config)
+      const { data: saved } = await AConfig.systemSave(entity)
       configs.set(tableId, config)
-      if (saved.version !== undefined) {
-        serverVersions.set(tableId, saved.version)
-      }
+      serverVersions.set(tableId, saved.version ?? 0)
     } catch {
       console.warn(`[TableConfigStore] 系统保存失败: ${tableId}`)
     }
@@ -233,17 +245,15 @@ export const useTableConfigStore = defineStore('table-config', () => {
         configs.set(tableId, cfg)
         serverVersions.set(tableId, systemEntity.version ?? 0)
         console.log('[Store] 使用服务端系统默认配置 →', { columns: cfg.columns.length, search: !!cfg.search })
-        // 用系统配置覆盖用户服务端槽位，确保后续 my() 读到的是重置后的值
-        const entity = toEntity(DEFAULT_GROUP, tableId, MOCK_USER_ID, cfg)
-        entity.deleted = 0
+        // 用系统配置覆盖用户服务端槽位
+        const entity = toUserEntity(DEFAULT_GROUP, tableId, MOCK_USER_ID, cfg)
         await AConfig.save(entity)
         console.log('[Store] 已覆盖用户服务端配置')
       } else {
         configs.set(tableId, codeDefault)
         console.log('[Store] 服务端无配置，使用代码默认 initTableConfig →', { columns: codeDefault.columns.length, search: !!codeDefault.search })
-        // 同样将代码默认写入用户槽位
-        const entity = toEntity(DEFAULT_GROUP, tableId, MOCK_USER_ID, codeDefault)
-        entity.deleted = 0
+        // 将代码默认写入用户槽位
+        const entity = toUserEntity(DEFAULT_GROUP, tableId, MOCK_USER_ID, codeDefault)
         await AConfig.save(entity)
         console.log('[Store] 已用代码默认覆盖用户服务端配置')
       }
@@ -260,7 +270,6 @@ export const useTableConfigStore = defineStore('table-config', () => {
   function batchApply(
     group: string,
     merged: Record<string, TableConfig>,
-    _ids: Record<string, number>,
     versions: Record<string, number>,
   ) {
     for (const [key, config] of Object.entries(merged)) {

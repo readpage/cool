@@ -9,9 +9,11 @@ import com.example.template.util.SqlTemplate;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 /**
  * <p>
- *  服务实现类
+ *  系统默认配置服务实现类
  * </p>
  */
 @Service
@@ -22,14 +24,12 @@ public class SysConfigServiceImpl extends ServiceImpl<SysConfigMapper, SysConfig
 
     @Override
     public void upsert(SysConfig config) {
-        sqlTemplate.saveOrUpdate(config, "configGroup", "configKey", "userId", "deleted");
+        sqlTemplate.saveOrUpdate(config, "configGroup", "configKey");
     }
 
     @Override
     public SysConfig getSystemConfig(String configGroup, String configKey) {
         LambdaQueryWrapper<SysConfig> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(SysConfig::getUserId, 0L)
-               .eq(SysConfig::getDeleted, 0);
         if (configGroup != null) wrapper.eq(SysConfig::getConfigGroup, configGroup);
         if (configKey != null) wrapper.eq(SysConfig::getConfigKey, configKey);
         wrapper.last("LIMIT 1");
@@ -37,13 +37,10 @@ public class SysConfigServiceImpl extends ServiceImpl<SysConfigMapper, SysConfig
     }
 
     @Override
-    public SysConfig getUserConfig(Long userId, String configGroup, String configKey) {
+    public List<SysConfig> listByGroup(String configGroup) {
         LambdaQueryWrapper<SysConfig> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(SysConfig::getUserId, userId)
-               .eq(SysConfig::getDeleted, 0);
         if (configGroup != null) wrapper.eq(SysConfig::getConfigGroup, configGroup);
-        if (configKey != null) wrapper.eq(SysConfig::getConfigKey, configKey);
-        wrapper.last("LIMIT 1");
-        return this.getOne(wrapper);
+        wrapper.orderByDesc(SysConfig::getUpdateTime);
+        return this.list(wrapper);
     }
 }

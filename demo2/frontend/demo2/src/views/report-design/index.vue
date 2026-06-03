@@ -6,7 +6,6 @@
         :top-height="topHeight"
         :loading="execLoading"
         @run="execute"
-        @detect="detectParams"
       />
 
       <SplitDivider @mousedown="onDividerMouseDown" />
@@ -15,25 +14,18 @@
         :result-data="resultData"
         :table-config="tableConfig"
         :table-data="tableData"
-        :parameters="parameters"
-        :param-values="paramValues"
         @query="onPageChange"
-        @execute="execute"
-        @reset="resetParams"
       />
     </div>
 
     <template #aside>
       <div class="aside-wrap">
-        <ParamConfig
-          :parameters="parameters"
-          @update:parameters="updateParams"
-        />
         <FilterSortPanel
           :available-columns="availableColumns"
           :filter-conditions="filterConditions"
           :sort-conditions="sortConditions"
-          :sql-template="sqlTemplate"
+          :show-filter="showFilter"
+          :show-sort="showSort"
           @add-filter="addFilter"
           @remove-filter="removeFilter"
           @add-sort="addSort"
@@ -46,25 +38,77 @@
 
 <script setup lang="ts">
 import { onMounted, onUnmounted } from 'vue'
+import { ElMessage } from 'element-plus'
 import Sider from '@/components/sider/index.vue'
 import SqlPanel from './components/SqlPanel.vue'
 import SplitDivider from './components/SplitDivider.vue'
 import ResultPanel from './components/ResultPanel.vue'
-import ParamConfig from './components/ParamConfig.vue'
 import FilterSortPanel from './components/FilterSortPanel.vue'
-import { useReportWorkspace } from './composables/useReportWorkspace'
-import { useDragSplit } from './composables/useDragSplit'
+import { useReportWorkspace } from './hooks/useReportWorkspace'
+import { useDragSplit } from './hooks/useDragSplit'
+import { AReport } from '@/api/report'
+import type { TableQuery } from '@/types/table'
 
+// ==================== hooks（纯状态，不含 API） ====================
 const {
-  sqlTemplate, parameters, paramValues,
-  execLoading, resultData,
-  tableData, tableConfig, availableColumns,
-  filterConditions, sortConditions,
-  addFilter, removeFilter, addSort, removeSort,
-  detectParams, resetParams, updateParams, execute, onPageChange,
+  queryParam,
+  sqlTemplate,
+  currentTableKey,
+  execLoading,
+  resultData,
+  lastPage,
+  availableColumns,
+  showFilter,
+  showSort,
+  tableData,
+  tableConfig,
+  filterConditions,
+  sortConditions,
+  addFilter,
+  removeFilter,
+  addSort,
+  removeSort,
+  loadReport,
 } = useReportWorkspace()
 
 const { topHeight, onDividerMouseDown } = useDragSplit()
+
+// ==================== API 调用（统一在 index.vue 管理） ====================
+
+/** 执行查询 */
+async function execute() {
+  if (!sqlTemplate.value.trim()) {
+    ElMessage.warning('请输入 SQL')
+    return
+  }
+
+  execLoading.value = true
+  lastPage.current = 1
+  lastPage.size = 20
+  try {
+    const { data } = await AReport.execute(queryParam.value)
+    resultData.value = data ?? null
+  } catch (err) {
+    console.error('查询失败', err)
+    ElMessage.error('查询失败')
+  } finally {
+    execLoading.value = false
+  }
+}
+
+/** 翻页 */
+async function onPageChange(v: TableQuery, done: () => void) {
+  lastPage.current = v.current
+  lastPage.size = v.size
+  try {
+    const { data } = await AReport.execute(queryParam.value)
+    resultData.value = data ?? null
+  } catch (err) {
+    console.error('翻页查询失败', err)
+  } finally {
+    done()
+  }
+}
 
 // ==================== 快捷键 Ctrl+Enter ====================
 function onKeydown(e: KeyboardEvent) {
@@ -96,16 +140,9 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown))
   flex-direction: column;
   height: 100%;
 
-  :deep(.param-config) {
-    flex: 1;
-    min-height: 0;
-  }
-
   :deep(.filter-sort-panel) {
-    flex-shrink: 0;
-    max-height: 45%;
+    flex: 1;
     overflow-y: auto;
-    border-top: 2px solid #e8e8e8;
   }
 }
 </style>

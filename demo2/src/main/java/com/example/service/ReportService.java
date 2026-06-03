@@ -1,42 +1,34 @@
 package com.example.service;
 
 import com.example.domain.dto.ReportQueryResult;
-import com.example.domain.model.ReportDefinition;
+import com.example.domain.dto.ReportSaveRequest;
+import com.example.template.util.FilterParam;
+
 import java.util.List;
-import java.util.Map;
 
 /**
- * 报告服务 — 定义 + 查询执行
+ * 报告服务接口
  */
 public interface ReportService {
 
-    /** 报告列表 */
-    List<ReportDefinition> list();
+    /** 报告列表（不含用户个性化展示配置） */
+    List<ReportSaveRequest> list();
 
-    /** 获取报告定义 */
-    ReportDefinition getById(String reportId);
+    /** 获取报告定义（含系统默认展示配置） */
+    ReportSaveRequest getByTableKey(String tableKey);
 
-    /** 保存报告定义（UPSERT 到 sys_config 表） */
-    void save(ReportDefinition def);
+    /** 获取报告定义（copy-on-read：无 user_config 时从 sys_config 复制一份） */
+    ReportSaveRequest getByTableKey(String tableKey, Long userId);
 
-    /** 删除报告（软删除） */
-    void delete(String reportId);
+    /** 保存报告定义（含展示配置） */
+    void save(ReportSaveRequest req);
 
-    /**
-     * 执行报告查询
-     * @param reportId 报告ID
-     * @param params   用户填写的参数（key → value）
-     * @param current  页码
-     * @param size     每页大小
-     */
-    ReportQueryResult query(String reportId, Map<String, Object> params, int current, int size);
+    /** 删除报告（含关联的展示配置） */
+    void deleteByTableKey(String tableKey);
 
-    /**
-     * 即时执行 SQL（不保存报告定义）
-     * @param def     临时报告定义（含 SQL 模板 + 参数定义）
-     * @param params  用户填写的参数值
-     * @param current 页码
-     * @param size    每页大小
-     */
-    ReportQueryResult execute(ReportDefinition def, Map<String, Object> params, int current, int size);
+    /** 执行已保存报告的查询 */
+    ReportQueryResult queryByTableKey(String tableKey, FilterParam param);
+
+    /** 即时执行 SQL 查询（不依赖已保存的报告） */
+    ReportQueryResult execute(String sqlTemplate, FilterParam param);
 }

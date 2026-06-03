@@ -72,7 +72,7 @@
       </div>
     </div>
 
-    <!-- 错误提示：需要先执行一次查询才能选择列 -->
+    <!-- 提示 -->
     <div v-if="(showFilter || showSort) && availableColumns.length === 0" class="hint-tip">
       请先执行一次查询以获取可用列
     </div>
@@ -80,15 +80,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch } from 'vue'
 import { Plus, Delete } from '@element-plus/icons-vue'
 import type { FilterCondition, SortCondition } from '@/types/report'
 
-const props = defineProps<{
+defineProps<{
   availableColumns: { prop: string; label: string }[]
   filterConditions: FilterCondition[]
   sortConditions: SortCondition[]
-  sqlTemplate: string
+  showFilter?: boolean
+  showSort?: boolean
 }>()
 
 defineEmits<{
@@ -97,30 +97,6 @@ defineEmits<{
   addSort: []
   removeSort: [idx: number]
 }>()
-
-function hasBuiltin(sql: string, type: string): boolean {
-  const result = new RegExp(`\\{\\{${type}\\}\\}`, 'i').test(sql)
-  return result
-}
-
-const showFilter = computed(() => {
-  const r = hasBuiltin(props.sqlTemplate, 'filter')
-  console.log('[ReportDebug] FilterSortPanel showFilter:', r, 'sqlTemplate:', props.sqlTemplate)
-  return r
-})
-const showSort = computed(() => {
-  const r = hasBuiltin(props.sqlTemplate, 'sort')
-  console.log('[ReportDebug] FilterSortPanel showSort:', r, 'sqlTemplate:', props.sqlTemplate)
-  return r
-})
-
-watch(() => props.filterConditions, (v) => {
-  console.log('[ReportDebug] FilterSortPanel filterConditions 变化:', JSON.parse(JSON.stringify(v)))
-}, { deep: true })
-
-watch(() => props.availableColumns, (v) => {
-  console.log('[ReportDebug] FilterSortPanel availableColumns:', JSON.parse(JSON.stringify(v)))
-})
 </script>
 
 <style lang="scss" scoped>
@@ -195,11 +171,11 @@ watch(() => props.availableColumns, (v) => {
   font-weight: 400;
 }
 
-:deep(.el-empty) {
+::deep(.el-empty) {
   padding: 12px 0;
 }
 
-:deep(.el-empty__description p) {
+::deep(.el-empty__description p) {
   font-size: 12px;
   color: #c0c4cc;
 }

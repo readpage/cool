@@ -3,47 +3,53 @@
  */
 import { apiAxios } from './src/requests'
 import type { ResApi } from './src/requests'
-import type { ReportDefinition, ReportQueryResult, ParamDef } from '@/types/report'
+import type { ReportSaveRequest, ReportQueryResult, FilterCondition, SortCondition } from '@/types/report'
+import type { TableItem } from '@/types/table'
+
+// ==================== 参数接口（对齐后端 FilterParam / ReportParam） ====================
+
+/** 筛选 + 排序 + 分页参数，对齐后端 {@code FilterParam} */
+export interface ReportQueryBody {
+  filter?: FilterCondition[]
+  sort?: SortCondition
+  current?: number
+  size?: number
+  columns?: TableItem[]
+}
+
+/** 即时执行参数，对齐后端 {@code ReportParam}，继承筛选参数 + SQL模板 */
+export interface ReportExecuteBody extends ReportQueryBody {
+  sqlTemplate: string
+}
 
 // ==================== API ====================
 
 export const AReport = {
   /** 报告列表 — GET /report/list */
-  list: apiAxios<ReportDefinition[]>('/report/list', 'get'),
+  list: apiAxios<ReportSaveRequest[]>('/report/list', 'get'),
 
-  /** 获取报告定义 — GET /report/{reportId} */
-  get: (reportId: string) =>
-    apiAxios<ReportDefinition>(`/report/${reportId}`, 'get')(),
+  /** 获取报告定义 — GET /report/{tableKey} */
+  get: (tableKey: string) =>
+    apiAxios<ReportSaveRequest>(`/report/${tableKey}`, 'get')(),
 
-  /** 保存报告定义 — POST /report/save */
-  save: apiAxios<string>('/report/save', 'post'),
+  /** 保存报告定义 — POST /report/save（body: ReportSaveRequest） */
+  save: apiAxios<string, ReportSaveRequest>('/report/save', 'post'),
 
-  /** 删除报告 — DELETE /report/remove/{reportId} */
-  remove: (reportId: string) =>
-    apiAxios<string>(`/report/remove/${reportId}`, 'delete')(),
+  /** 删除报告 — DELETE /report/remove/{tableKey} */
+  remove: (tableKey: string) =>
+    apiAxios<string>(`/report/remove/${tableKey}`, 'delete')(),
 
-  /** 执行报告查询 — POST /report/{reportId}/query，所有参数在 body 中 */
-  query: (
-    reportId: string,
-    params: Record<string, any>,
-    current: number = 1,
-    size: number = 20,
-  ) =>
+  /** 执行报告查询 — POST /report/{tableKey}/query */
+  query: (tableKey: string, body?: ReportQueryBody) =>
     apiAxios<ReportQueryResult>(
-      `/report/${reportId}/query`,
+      `/report/${tableKey}/query`,
       'post',
-    )({ params, current, size }),
+    )(body ?? {}),
 
-  /** 即时执行 SQL（不保存报告）— POST /report/execute，所有参数在 body 中 */
-  execute: (
-    sqlTemplate: string,
-    parameters: ParamDef[],
-    params: Record<string, any>,
-    current: number = 1,
-    size: number = 20,
-  ) =>
+  /** 即时执行 SQL — POST /report/execute */
+  execute: (body: ReportExecuteBody) =>
     apiAxios<ReportQueryResult>(
       `/report/execute`,
       'post',
-    )({ sqlTemplate, parameters, params, current, size }),
+    )(body),
 }

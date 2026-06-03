@@ -5,45 +5,38 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="18fbe13d-d477-4a78-a9bc-379cfd296fb0" name="Changes" comment="update: spring-boot3">
-      <change afterPath="$PROJECT_DIR$/demo2/src/main/java/com/example/util/excel/ExportContext.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo2/src/main/java/com/example/util/excel/Option.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/components.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/components.d.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/pnpm-lock.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/pnpm-lock.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/api/config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/api/config.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/api/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/api/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/crud/index.vue" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/crud/index.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/crud/types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/crud/types.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/table/hooks/useColumnReorder.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/table/hooks/useColumnReorder.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/table/index.vue" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/table/index.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/table/search/ExposedFilter.vue" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/table/search/ExposedFilter.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/table/search/FilterValue.vue" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/table/search/FilterValue.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/table/search/index.vue" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/table/search/index.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/table/search/query.vue" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/table/search/query.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/table/search/types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/table/search/types.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/router/tmp.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/router/tmp.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/store/storage.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/store/storage.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/api/report.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/api/report.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/report/ReportParameterForm.vue" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/store/report-config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/store/report-config.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/store/table-config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/store/table-config.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/crud/index.vue" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/crud/index.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/table/index.vue" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/table/index.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/user/index.vue" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/user/index.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/store/table.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/store/table.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/types/report.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/types/report.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/report-design/components/FilterSortPanel.vue" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/report-design/components/FilterSortPanel.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/report-design/components/ParamBar.vue" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/report-design/components/ParamConfig.vue" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/report-design/components/ResultPanel.vue" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/report-design/components/ResultPanel.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/report-design/components/SqlPanel.vue" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/report-design/components/SqlPanel.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/report-design/composables/useDragSplit.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/report-design/composables/useFilterSort.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/report-design/composables/useReportWorkspace.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/report-design/index.vue" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/report-design/index.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/controller/ConfigController.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/src/main/java/com/example/controller/ConfigController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/controller/UserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/src/main/java/com/example/controller/UserController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/controller/ReportController.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/src/main/java/com/example/controller/ReportController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/dao/SysConfigDao.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/src/main/java/com/example/dao/SysConfigDao.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/domain/dto/ReportExecuteRequest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/domain/dto/ReportQueryRequest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/domain/entity/SysConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/src/main/java/com/example/domain/entity/SysConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/domain/model/OptionDef.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/domain/model/ParamDef.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/domain/model/ReportDefinition.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/service/ReportService.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/src/main/java/com/example/service/ReportService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/service/SysConfigService.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/src/main/java/com/example/service/SysConfigService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/service/impl/ReportServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/src/main/java/com/example/service/impl/ReportServiceImpl.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/service/impl/SysConfigServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/src/main/java/com/example/service/impl/SysConfigServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/template/core/SqlTemplateEngine.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/src/main/java/com/example/template/core/SqlTemplateEngine.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/template/proxy/QueryProxyFactory.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/src/main/java/com/example/template/proxy/QueryProxyFactory.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/template/proxy/SqlScannerRegistrar.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/src/main/java/com/example/template/proxy/SqlScannerRegistrar.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/template/util/ColumnExtractor.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/src/main/java/com/example/template/util/ColumnExtractor.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/template/util/FilterOperator.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/src/main/java/com/example/template/util/FilterOperator.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/template/util/FilterParam.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/src/main/java/com/example/template/util/FilterParam.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/template/util/SqlTemplate.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/src/main/java/com/example/template/util/SqlTemplate.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/util/excel/ExcelUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/src/main/java/com/example/util/excel/ExcelUtils.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/util/excel/ImportContext.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/src/main/java/com/example/util/excel/ImportContext.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/util/excel/MdTemplateParser.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/src/main/java/com/example/util/excel/MdTemplateParser.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/util/excel/handler/DynamicCellAlignHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/src/main/java/com/example/util/excel/handler/DynamicCellAlignHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/util/excel/handler/DynamicColumnWidthHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/src/main/java/com/example/util/excel/handler/DynamicColumnWidthHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/util/excel/handler/HeaderStyleHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/src/main/java/com/example/util/excel/handler/HeaderStyleHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/src/main/resources/sql/sys_config.sql" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/src/main/resources/sql/sys_config.sql" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -289,7 +282,7 @@
     "run.configurations.included.in.services": "true",
     "settings.editor.selected.configurable": "preferences.pluginManager",
     "spring.configuration.checksum": "adc14bc5942187ae9b51210c3694fa90",
-    "ts.external.directory.path": "D:\\code\\Java\\cool\\demo2\\frontend\\demo2\\node_modules\\typescript\\lib",
+    "ts.external.directory.path": "D:\\Code\\Java\\cool\\demo2\\frontend\\demo2\\node_modules\\typescript\\lib",
     "vue.rearranger.settings.migration": "true",
     "应用程序.CodeGenerator.executor": "Run",
     "应用程序.EasyExcelExample.executor": "Debug",
