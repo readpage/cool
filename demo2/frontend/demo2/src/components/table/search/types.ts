@@ -41,6 +41,13 @@ export interface FilterResult {
 export interface OptionItem {
   label: string
   value: string
+  style?: OptionStyle
+}
+
+/** 选项样式（用于 tag/dot 渲染） */
+export interface OptionStyle {
+  tagType?: 'primary' | 'success' | 'warning' | 'danger' | 'info'
+  dotColor?: string
 }
 
 /** 操作符选项 */

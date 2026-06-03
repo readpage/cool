@@ -14,8 +14,23 @@ import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
+import javax.sql.DataSource;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.lang.reflect.*;
-import java.util.*;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * JDK 动态代理工厂 —— 拦截 @Query / @Modify 注解的方法，编译模板并执行 SQL。
@@ -27,6 +42,9 @@ public class QueryProxyFactory {
     private final SqlTemplateEngine engine;
     private final NamedParameterJdbcTemplate jdbc;
     private final QueryProperties properties;
+
+    /** 数据库类型缓存：DataSource → mysql|sqlserver|oracle|postgresql */
+    private static final Map<DataSource, String> DB_TYPE_CACHE = new ConcurrentHashMap<>();
 
     public QueryProxyFactory(NamedParameterJdbcTemplate jdbc, QueryProperties properties) {
         this.engine = new SqlTemplateEngine();
@@ -109,8 +127,8 @@ public class QueryProxyFactory {
             Long total = jdbc.queryForObject(countSql, params, Long.class);
             fp.setTotal(total != null ? total : 0);
 
-            // 2. LIMIT 分页
-            String limitSql = renderedSql + " LIMIT " + size + " OFFSET " + (current - 1) * size;
+            // 2. 分页
+            String limitSql = buildPageSql(renderedSql, size, current);
             Class<?> elementType = resolveElementType(method.getGenericReturnType());
             @SuppressWarnings("unchecked")
             List<T> records = (List<T>) jdbc.query(limitSql, params,
@@ -132,8 +150,8 @@ public class QueryProxyFactory {
             log(countSql, params);
             Long total = jdbc.queryForObject(countSql, params, Long.class);
 
-            // 2. LIMIT 分页
-            String limitSql = renderedSql + " LIMIT " + size + " OFFSET " + (current - 1) * size;
+            // 2. 分页
+            String limitSql = buildPageSql(renderedSql, size, current);
             Class<?> elementType = resolveElementType(method.getGenericReturnType());
             @SuppressWarnings("unchecked")
             List<T> records = (List<T>) jdbc.query(limitSql, params,
@@ -142,10 +160,65 @@ public class QueryProxyFactory {
             return new PageResult<>(total != null ? total : 0, current, size, records);
         }
 
-        /** 从 SQL 截取 COUNT：移除 ORDER BY，SELECT ... FROM → SELECT COUNT(*) FROM */
+        /** 从 SQL 截取 COUNT：移除 ORDER BY，CTE 查询保留 WITH 在外层、仅包裹最终 SELECT */
         private String buildCountSql(String renderedSql) {
             String sql = renderedSql.replaceAll("(?i)\\s+ORDER\\s+BY\\s+.*$", "");
+            if (sql.trim().toUpperCase().startsWith("WITH ")) {
+                // 找到最后一个 ) ... SELECT 的分界点 —— ) 结束 CTE，SELECT 开始最终查询
+                Pattern p = Pattern.compile("\\)\\s*SELECT\\s", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+                Matcher m = p.matcher(sql);
+                int splitPos = -1;
+                while (m.find()) {
+                    splitPos = m.start() + 1; // 指向 ) 之后
+                }
+                if (splitPos > 0) {
+                    String ctePart = sql.substring(0, splitPos);
+                    String finalSelect = sql.substring(splitPos);
+                    return ctePart + "SELECT COUNT(*) FROM (" + finalSelect + ") _count_sub";
+                }
+                // 兜底：直接包裹（不应走到这里）
+                return "SELECT COUNT(*) FROM (" + sql + ") _count_sub";
+            }
             return sql.replaceAll("(?i)^\\s*SELECT\\s+.+?\\s+FROM\\s+", "SELECT COUNT(*) FROM ");
+        }
+
+        /** 检测当前数据源的数据库类型（从 JDBC URL 自动识别，结果缓存） */
+        private String detectDbType() {
+            DataSource ds = jdbc.getJdbcTemplate().getDataSource();
+            if (ds == null) return "mysql";
+            return DB_TYPE_CACHE.computeIfAbsent(ds, key -> {
+                try (Connection conn = key.getConnection()) {
+                    String url = conn.getMetaData().getURL();
+                    if (url != null) {
+                        String lowerUrl = url.toLowerCase();
+                        if (lowerUrl.contains(":sqlserver:") || lowerUrl.contains(":jtds:")) return "sqlserver";
+                        if (lowerUrl.contains(":oracle:")) return "oracle";
+                        if (lowerUrl.contains(":postgresql:")) return "postgresql";
+                    }
+                } catch (SQLException e) {
+                    log.warn("无法检测数据库类型，默认使用 MySQL 语法", e);
+                }
+                return "mysql";
+            });
+        }
+
+        /** 根据数据库类型生成分页 SQL */
+        private String buildPageSql(String renderedSql, int size, int currentPage) {
+            String dbType = detectDbType();
+            int offset = (currentPage - 1) * size;
+            if ("sqlserver".equals(dbType)) {
+                // SQL Server: OFFSET/FETCH 要求 ORDER BY；若无则兜底
+                if (!renderedSql.toUpperCase().contains("ORDER BY")) {
+                    renderedSql += " ORDER BY (SELECT 0)";
+                }
+                return renderedSql + " OFFSET " + offset + " ROWS FETCH NEXT " + size + " ROWS ONLY";
+            }
+            if ("oracle".equals(dbType)) {
+                return "SELECT * FROM (SELECT _ora_.*, ROWNUM _rn_ FROM (" + renderedSql
+                        + ") _ora_ WHERE ROWNUM <= " + (offset + size) + ") WHERE _rn_ > " + offset;
+            }
+            // MySQL / PostgreSQL 等
+            return renderedSql + " LIMIT " + size + " OFFSET " + offset;
         }
 
         /** 从参数中提取 FilterParam */
@@ -181,8 +254,11 @@ public class QueryProxyFactory {
                     map.putAll(((SqlParamProvider) args[i]).toParamMap(template));
                 } else if (args[i] instanceof Map) {
                     map.putAll((Map) args[i]);
-                } else {
+                } else if (isSimpleValue(args[i])) {
                     map.put(parameters[i].getName(), args[i]);
+                } else {
+                    // POJO → 反射 getter 展开为 Map，key = 属性名，value = 属性值
+                    flattenPojo(args[i], map);
                 }
             }
             return map;
@@ -200,6 +276,38 @@ public class QueryProxyFactory {
             if (properties.isLogging()) {
                 log.info("==> SQL : {}", sql);
                 log.info("==> PARAMS: {}", params);
+            }
+        }
+
+        /** 判断是否为简单值类型（不需展平的） */
+        private boolean isSimpleValue(Object obj) {
+            if (obj == null) return true;
+            Class<?> c = obj.getClass();
+            return c == String.class
+                    || c == Integer.class || c == Long.class || c == Double.class
+                    || c == Float.class || c == Short.class || c == Byte.class
+                    || c == Boolean.class || c == Character.class
+                    || c == BigDecimal.class || c == BigInteger.class
+                    || c == LocalDateTime.class || c == LocalDate.class
+                    || c == LocalTime.class
+                    || c.isEnum()
+                    || c.isArray()
+                    || obj instanceof Iterable;
+        }
+
+        /** 将 POJO 对象的属性展平到 Map（key = 属性名） */
+        private void flattenPojo(Object obj, Map<String, Object> target) {
+            try {
+                for (PropertyDescriptor pd : Introspector.getBeanInfo(obj.getClass()).getPropertyDescriptors()) {
+                    String name = pd.getName();
+                    if ("class".equals(name)) continue;
+                    Method getter = pd.getReadMethod();
+                    if (getter != null) {
+                        target.put(name, getter.invoke(obj));
+                    }
+                }
+            } catch (Exception e) {
+                throw new RuntimeException("无法展平 POJO 参数: " + obj.getClass().getName(), e);
             }
         }
     }

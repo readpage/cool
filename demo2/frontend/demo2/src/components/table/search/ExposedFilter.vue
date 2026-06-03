@@ -85,8 +85,8 @@
 import { computed, toRef } from 'vue'
 import { ArrowDown } from '@element-plus/icons-vue'
 import FilterValue from './FilterValue.vue'
-import { useSearchHelpers, clearConditionValue } from './hooks/useSearchHelpers'
-import type { ColumnConfig, FilterCondition, OperatorOption } from './types'
+import { useSearchHelpers, clearConditionValue } from './hooks/useSearchHelpers.js'
+import type { ColumnConfig, FilterCondition, OperatorOption } from './types.js'
 
 /* ============ Props & Emits ============ */
 

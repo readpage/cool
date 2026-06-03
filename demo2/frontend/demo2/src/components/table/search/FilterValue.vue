@@ -8,7 +8,7 @@
     :format="dateFormat"
     :value-format="dateFormat"
     :placeholder="placeholder"
-    class="cond-value"
+    :class="[attrs.class, 'cond-value']"
     :teleported="false"
   />
 
@@ -19,7 +19,8 @@
     @update:model-value="emit('update:modelValue', $event)"
     :multiple="operator === 'in'"
     :placeholder="placeholder"
-    class="cond-value"
+    :class="[attrs.class, 'cond-value']"
+    style="min-width: 150px"
     :teleported="false"
     clearable
     value-key="value"
@@ -38,7 +39,8 @@
     v-model="remoteModelValue"
     :multiple="operator === 'in'"
     :placeholder="placeholder"
-    class="cond-value"
+    :class="[attrs.class, 'cond-value']"
+    style="min-width: 150px"
     :teleported="false"
     clearable
     filterable
@@ -61,16 +63,19 @@
     :model-value="modelValue"
     @update:model-value="emit('update:modelValue', $event)"
     :placeholder="placeholder"
-    class="cond-value"
+    :class="[attrs.class, 'cond-value']"
   />
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, useAttrs } from 'vue'
 import { plainOptionsCache, cacheVersion, type OptionItem } from './filterCache'
 
-/* ============ 模块级共享缓存（同一列的远程选项在所有 FilterValue 实例间共享） ============ */
-/* 缓存数据定义在 filterCache.ts 中，确保跨 SFC 模块共享 */
+/* ============ 多根节点 class 透传 ============ */
+
+defineOptions({ inheritAttrs: false })
+
+const attrs = useAttrs()
 
 /* ============ Props & Emits ============ */
 

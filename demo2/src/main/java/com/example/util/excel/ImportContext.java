@@ -1,14 +1,10 @@
 package com.example.util.excel;
 
-import com.example.domain.entity.Option;
 import com.example.template.util.FilterParam.ColumnItem;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanWrapperImpl;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
@@ -18,7 +14,8 @@ import java.util.stream.Collectors;
  * <p>核心流程：
  * <ol>
  *   <li>收集 columns 中 fieldType=remote-select 的 optionType</li>
- *   <li>对每个 optionType 调 optionService.listByType(type, 2000) 全量加载</li>
+ *   <li>对每个 optionType 调 optionLoader(type, 2000) 全量加载</li>
+ *   <li>通过反射从加载结果中提取 label/value（兼容任意 POJO）</li>
  *   <li>构建 label→value 映射 + allValues 集合（用于判断单元格值是否已是有效 value）</li>
  * </ol>
  */
@@ -41,7 +38,7 @@ public class ImportContext {
      */
     private final Map<String, Set<String>> allValues;
 
-    private ImportContext(List<ColumnItem> columns, BiFunction<String, Integer, List<Option>> optionLoader) {
+    private ImportContext(List<ColumnItem> columns, BiFunction<String, Integer, List<?>> optionLoader) {
         this.colByLabel = columns.stream()
                 .collect(Collectors.toMap(ColumnItem::getLabel, c -> c, (a, b) -> a));
 
@@ -55,12 +52,15 @@ public class ImportContext {
             if (optType == null || optType.isEmpty()) continue;
             if (labelToValue.containsKey(optType)) continue; // 相同 optionType 只加载一次
 
-            List<Option> options = optionLoader.apply(optType, 2000);
+            List<?> options = optionLoader.apply(optType, 2000);
             Map<String, String> l2v = new HashMap<>();
             Set<String> values = new HashSet<>();
-            for (Option opt : options) {
-                l2v.put(opt.getLabel(), opt.getValue());
-                values.add(opt.getValue());
+            for (Object opt : options) {
+                BeanWrapperImpl bw = new BeanWrapperImpl(opt);
+                String label = (String) bw.getPropertyValue("label");
+                String value = (String) bw.getPropertyValue("value");
+                if (label != null) l2v.put(label, value);
+                if (value != null) values.add(value);
             }
             labelToValue.put(optType, l2v);
             allValues.put(optType, values);
@@ -73,7 +73,7 @@ public class ImportContext {
      *
      * @throws IllegalArgumentException 如果 columns 为 null 或空
      */
-    public static ImportContext build(List<ColumnItem> columns, BiFunction<String, Integer, List<Option>> optionLoader) {
+    public static ImportContext build(List<ColumnItem> columns, BiFunction<String, Integer, List<?>> optionLoader) {
         if (columns == null || columns.isEmpty()) {
             throw new IllegalArgumentException("columns 参数不能为空");
         }

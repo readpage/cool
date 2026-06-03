@@ -32,7 +32,7 @@
         :max-height="config.maxHeight"
         :row-key="config.rowKey"
         :header-cell-style="headerCellStyle"
-        @selection-change="(val: any[]) => { console.log('[table] selection-change 触发, 行数:', val.length, val); emit('selection-change', val); console.log('[table] updateSelection 函数存在?', !!updateSelection); updateSelection?.(val) }"
+        @selection-change="(val: any[]) => { emit('selection-change', val); updateSelection?.(val) }"
         @row-dblclick="(row: any, column: any, event: Event) => { crudEditRow?.(row); emit('row-dblclick', row, column, event) }"
       >
         <el-table-column v-if="selection" type="selection" width="50" />
@@ -64,25 +64,25 @@
             </div>
           </template>
           <template #default="scope" v-if="item.type !== 'index'">
-            <slot :name="item.prop" :row="scope.row" :index="scope.$index" :value="scope.row[item.prop]">
-              <template v-if="item.fieldType && item.format === 'tag'">
+            <slot :name="item.prop" :row="scope.row" :index="scope.$index" :value="scope.row[item.prop!]">
+              <template v-if="item.format === 'tag'">
                 <el-tag
-                  :type="getTagType(item.prop!, scope.row[item.prop])"
+                  :type="getTagType(item.prop!, scope.row[item.prop!])"
                   size="small"
                 >
-                  {{ translateValue(item.prop, scope.row[item.prop]) }}
+                  {{ translateValue(item.prop, scope.row[item.prop!]) }}
                 </el-tag>
               </template>
-              <template v-else-if="item.fieldType && item.format === 'dot'">
+              <template v-else-if="item.format === 'dot'">
                 <span class="u-dot-cell">
                   <span
                     class="u-dot"
-                    :style="{ background: getDotColor(item.prop!, scope.row[item.prop]) }"
-                  />{{ translateValue(item.prop, scope.row[item.prop]) }}
+                    :style="{ background: getDotColor(item.prop!, scope.row[item.prop!]) }"
+                  />{{ translateValue(item.prop, scope.row[item.prop!]) }}
                 </span>
               </template>
               <template v-else>
-                {{ translateValue(item.prop, scope.row[item.prop]) }}
+                {{ translateValue(item.prop, scope.row[item.prop!]) }}
               </template>
             </slot>
           </template>
@@ -152,6 +152,9 @@ export interface TableItem {
   /** 列数据类型：声明后自动启用选项翻译。select=静态，remote-select=动态 */
   fieldType?: 'text' | 'select' | 'remote-select'
 
+  /** 远程选项加载标识（fieldType='remote-select' 时有效），作为 loadOptions(type) 的 type 参数 */
+  optionType?: string
+
   /** 静态选项（fieldType='select' 时使用） */
   options?: ({ label: string; value: string; style?: any } | string)[]
 
@@ -171,6 +174,8 @@ export interface TableConfig {
   sort?: { column: string; direction: 'asc' | 'desc' }
   /** 搜索配置 */
   search?: SearchConfig
+  /** 全局选项映射 { prop → OptionItem[] }，跨 columns/search 共享翻译 */
+  optionsMap?: Record<string, OptionItem[]>
 }
 
 const props = defineProps<{
@@ -184,8 +189,6 @@ const props = defineProps<{
   id?: string
   /** 选项加载器：type=选项类别，keyword=搜索关键词(可选)。用于表格翻译预加载和搜索下拉 */
   loadOptions?: (type: string, keyword?: string) => Promise<{ label: string; value: string }[]>
-  /** 加载状态 */
-  loading?: boolean
 }>()
 
 // ==================== 智能 data 派生 ====================
@@ -210,23 +213,19 @@ const totalCount = computed(() =>
 const loadingDebounceTimer = ref<ReturnType<typeof setTimeout>>()
 const debouncedLoading = ref(false)
 
-watch(
-  () => props.loading,
-  (val) => {
-    if (val) {
-      // loading → true：等 200ms 再真正显示
-      clearTimeout(loadingDebounceTimer.value)
-      loadingDebounceTimer.value = setTimeout(() => {
-        debouncedLoading.value = true
-      }, 200)
-    } else {
-      // loading → false：立即隐藏 + 取消等待中的定时器
-      clearTimeout(loadingDebounceTimer.value)
-      debouncedLoading.value = false
-    }
-  },
-  { immediate: true },
-)
+// ==================== 内部 loading 管理（done 回调模式） ====================
+
+/** 启动内部 loading（200ms 防抖），返回 finish 函数。父组件在数据就绪后调用 done() 关闭 loading。 */
+function startInternalLoading(): () => void {
+  clearTimeout(loadingDebounceTimer.value)
+  loadingDebounceTimer.value = setTimeout(() => {
+    debouncedLoading.value = true
+  }, 200)
+  return () => {
+    clearTimeout(loadingDebounceTimer.value)
+    debouncedLoading.value = false
+  }
+}
 
 // ==================== Table 自管分页状态 ====================
 
@@ -247,14 +246,12 @@ watch(totalCount, (t) => {
 const emit = defineEmits<{
   (e: 'selection-change', value: any[]): void
   (e: 'row-dblclick', row: any, column: any, event: Event): void
-  /** 配置变更（列宽、筛选、排序配置等），返回完整 config */
-  (e: 'change', config: TableConfig): void
-  /** 管理员确认默认配置 */
-  (e: 'admin-confirm', columns: TableItem[]): void
+  /** 配置变更（列宽、筛选、排序配置等），返回完整 config；isAdmin=true 时表示管理员保存系统默认 */
+  (e: 'change', config: TableConfig, isAdmin?: boolean): void
   /** 恢复系统默认 */
   (e: 'reset'): void
-  /** 查询参数变化（筛选/排序/分页），payload 对齐后端 FilterParam */
-  (e: 'query', param: TableQuery): void
+  /** 查询参数变化（筛选/排序/分页），payload 对齐后端 FilterParam。done() 必调以关闭 loading */
+  (e: 'query', param: TableQuery, done: () => void): void
 }>()
 
 /** 注入 crud 的 selection 同步函数（如果父级是 crud 组件） */
@@ -320,8 +317,12 @@ const { dropLineVisible, dropLineStyle, colHighlightVisible, colHighlightStyle, 
   },
 })
 
-// 单列数据排序
+// 单列数据排序 — sync() 闭包捕获 init 时 config，对象被替换后失效，故 watch 直读 props
 const { sortProp, sortOrder, sort } = useColumnSort(props.config)
+watch(() => props.config.sort, (s) => {
+  sortProp.value = s?.column ?? null
+  sortOrder.value = s?.direction ?? null
+})
 const hoverSort = ref<string | null>(null)
 
 // 统一的查询事件构建
@@ -336,7 +337,9 @@ function emitQuery() {
     sort: props.config.sort,
     columns: visibleColumns,
   }
-  emit('query', query)
+  // 始终由 Table 内部管理 loading，通过 done 回调通知父组件结束
+  const done = startInternalLoading()
+  emit('query', query, done)
   reportQuery?.(query)
 }
 
@@ -432,20 +435,20 @@ const onAdminConfirm = (cols: TableItem[]) => {
   props.config.columns.splice(0, props.config.columns.length)
   cols.forEach(c => props.config.columns.push(c))
   reorderKey.value++
-  emit('admin-confirm', cols.map(c => ({ ...c })))
-  emit('change', props.config)
+  emit('change', props.config, true)
 }
 
-/** 搜索面板"保存为系统默认" → 触发 admin-confirm 到父组件 */
+/** 搜索面板"保存为系统默认" → 触发 change(isAdmin=true) 到父组件 */
 function onSearchAdminConfirm() {
-  emit('admin-confirm', props.config.columns.map(c => ({ ...c })))
-  emit('change', props.config)
+  emit('change', props.config, true)
 }
 
 const onSettingReset = (cols: TableItem[]) => {
+  console.log('[Table] onSettingReset 触发', { colCount: cols.length, cols: cols.map(c => c.prop) })
   props.config.columns.splice(0, props.config.columns.length)
   cols.forEach(c => props.config.columns.push(c))
   reorderKey.value++
+  console.log('[Table] reorderKey++ →', reorderKey.value, 'emit reset')
   emit('reset')
 }
 

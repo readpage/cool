@@ -52,9 +52,6 @@ public class DynamicColumnWidthHandler extends AbstractColumnWidthStyleStrategy 
         int w = col.getWidth() != null ? Math.max(col.getWidth() * PX_TO_EXCEL, 10 * 256)
                 : col.getMinWidth() != null ? Math.max(col.getMinWidth() * PX_TO_EXCEL, 10 * 256) : 20 * 256;
 
-        log.info("DynamicColumnWidthHandler: col[{}] width={}, minWidth={} => setColumnWidth={}",
-                colIdx, col.getWidth(), col.getMinWidth(), w);
-
         Sheet sheet = writeSheetHolder.getSheet();
         sheet.setColumnWidth(colIdx, w);
 

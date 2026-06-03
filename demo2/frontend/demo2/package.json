@@ -16,7 +16,13 @@
     "@element-plus/icons-vue": "2.1.0",
     "undraw-ui": "1.2.7",
     "axios": "1.9.0",
-    "nprogress": "^0.2.0"
+    "nprogress": "^0.2.0",
+    "@codemirror/commands": "^6.7.0",
+    "@codemirror/lang-sql": "^6.8.0",
+    "@codemirror/language": "^6.10.0",
+    "@codemirror/state": "^6.5.0",
+    "@codemirror/theme-one-dark": "^6.1.0",
+    "@codemirror/view": "^6.35.0"
   },
   "devDependencies": {
     "unplugin-auto-import": "0.17.5",

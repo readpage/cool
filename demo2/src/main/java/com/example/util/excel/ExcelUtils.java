@@ -2,12 +2,10 @@ package com.example.util.excel;
 
 import cn.idev.excel.EasyExcel;
 import cn.idev.excel.FastExcel;
-import cn.idev.excel.context.AnalysisContext;
-import cn.idev.excel.event.AnalysisEventListener;
 import cn.idev.excel.read.listener.PageReadListener;
-import com.example.domain.entity.Option;
 import com.example.template.util.FilterParam;
 import com.example.template.util.FilterParam.ColumnItem;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.example.util.excel.handler.DynamicCellAlignHandler;
 import com.example.util.excel.handler.DynamicColumnWidthHandler;
 import com.example.util.excel.handler.HeaderStyleHandler;
@@ -16,8 +14,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.web.multipart.MultipartFile;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -110,8 +106,8 @@ public class ExcelUtils {
      *   <li>反射设值，SKIP_MARKER 的字段跳过（保留实体默认值）</li>
      * </ol>
      */
-    public static <T> List<T> importData(MultipartFile file, List<FilterParam.ColumnItem> columns,
-                                         BiFunction<String, Integer, List<Option>> optionLoader, Class<T> clazz) {
+    public static <T> List<T> importData(MultipartFile file, List<ColumnItem> columns,
+                                         BiFunction<String, Integer, List<?>> optionLoader, Class<T> clazz) {
         ImportContext ctx = ImportContext.build(columns, optionLoader);
         return importData(file, ctx, clazz);
     }
@@ -122,7 +118,7 @@ public class ExcelUtils {
      * @throws IllegalArgumentException 如果 filterParamJson 解析失败
      */
     public static <T> List<T> importData(MultipartFile file, String filterParamJson,
-                                         BiFunction<String, Integer, List<Option>> optionLoader, Class<T> clazz) {
+                                         BiFunction<String, Integer, List<?>> optionLoader, Class<T> clazz) {
         FilterParam param;
         try {
             param = objectMapper.readValue(filterParamJson, FilterParam.class);
@@ -237,7 +233,7 @@ public class ExcelUtils {
     // ==================== 导出 ====================
 
     /**
-     * FilterParam 动态列导出
+     * FilterParam 动态列导出（无 label 转换）
      */
     public static <T> void export(HttpServletResponse response, String fileName,
                                    FilterParam param, List<T> dataList) throws IOException {
@@ -245,6 +241,28 @@ public class ExcelUtils {
         List<List<Object>> rows = extractRows(param, dataList);
         List<ColumnExportConfig> columnConfigs = toColumnConfigs(param);
 
+        writeExport(response, fileName, headers, rows, columnConfigs);
+    }
+
+    /**
+     * FilterParam 动态列导出（带 remote-select value→label 转换）
+     *
+     * @param optionLoader 选项加载器：type → limit → List，用于预加载 value→label 映射
+     */
+    public static <T> void export(HttpServletResponse response, String fileName,
+                                   FilterParam param, List<T> dataList,
+                                   BiFunction<String, Integer, List<?>> optionLoader) throws IOException {
+        ExportContext ctx = ExportContext.build(param.getColumns(), optionLoader);
+        List<List<String>> headers = extractHeaders(param);
+        List<List<Object>> rows = extractRows(param, dataList, ctx);
+        List<ColumnExportConfig> columnConfigs = toColumnConfigs(param);
+
+        writeExport(response, fileName, headers, rows, columnConfigs);
+    }
+
+    private static void writeExport(HttpServletResponse response, String fileName,
+                                     List<List<String>> headers, List<List<Object>> rows,
+                                     List<ColumnExportConfig> columnConfigs) throws IOException {
         setResponseHeader(response, fileName);
 
         FastExcel.write(response.getOutputStream())
@@ -306,7 +324,7 @@ public class ExcelUtils {
      * <p>remote-select 列的示例值从 optionExamples（optionType → 示例 label）中取，
      * 调用方负责提前查询好示例数据传入，保持工具类与 Spring 解耦。
      */
-    public static String buildMdTemplate(List<FilterParam.ColumnItem> columns,
+    public static String buildMdTemplate(List<ColumnItem> columns,
                                           Map<String, String> optionExamples) {
         StringBuilder sb = new StringBuilder();
 
@@ -349,7 +367,7 @@ public class ExcelUtils {
     // ==================== FilterParam 辅助 ====================
 
     private static List<List<String>> extractHeaders(FilterParam param) {
-        List<FilterParam.ColumnItem> columns = param.getColumns();
+        List<ColumnItem> columns = param.getColumns();
         if (columns == null || columns.isEmpty()) return Collections.emptyList();
         return columns.stream()
                 .map(c -> Collections.singletonList(c.getLabel()))
@@ -357,7 +375,7 @@ public class ExcelUtils {
     }
 
     private static <T> List<List<Object>> extractRows(FilterParam param, List<T> dataList) {
-        List<FilterParam.ColumnItem> columns = param.getColumns();
+        List<ColumnItem> columns = param.getColumns();
         if (columns == null || columns.isEmpty()) return Collections.emptyList();
         return dataList.stream().map(item -> {
             BeanWrapperImpl bw = new BeanWrapperImpl(item);
@@ -367,8 +385,28 @@ public class ExcelUtils {
         }).collect(Collectors.toList());
     }
 
+    /**
+     * 带 value→label 转换的 extractRows（供导出时 remote-select 列使用）
+     */
+    private static <T> List<List<Object>> extractRows(FilterParam param, List<T> dataList, ExportContext ctx) {
+        List<ColumnItem> columns = param.getColumns();
+        if (columns == null || columns.isEmpty()) return Collections.emptyList();
+        return dataList.stream().map(item -> {
+            BeanWrapperImpl bw = new BeanWrapperImpl(item);
+            return columns.stream()
+                    .map(c -> {
+                        Object raw = bw.getPropertyValue(c.getProp());
+                        if (!"remote-select".equals(c.getFieldType()) || raw == null) {
+                            return raw;
+                        }
+                        return ctx.convertValueToLabel(c, raw.toString());
+                    })
+                    .collect(Collectors.toList());
+        }).collect(Collectors.toList());
+    }
+
     private static List<ColumnExportConfig> toColumnConfigs(FilterParam param) {
-        List<FilterParam.ColumnItem> columns = param.getColumns();
+        List<ColumnItem> columns = param.getColumns();
         if (columns == null) {
             log.warn("FilterParam.columns is null");
             return Collections.emptyList();

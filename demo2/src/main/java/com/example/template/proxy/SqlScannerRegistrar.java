@@ -12,7 +12,6 @@ import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 
 import java.util.Map;
-import java.util.Set;
 
 /** 扫描 @SqlDao 接口，注册 SqlFactoryBean。由 @SqlScan 触发。 */
 public class SqlScannerRegistrar implements ImportBeanDefinitionRegistrar {

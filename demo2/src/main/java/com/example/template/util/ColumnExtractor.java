@@ -1,7 +1,10 @@
 package com.example.template.util;
 
-import java.util.*;
-import java.util.regex.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * 从 SQL 模板中提取 SELECT 列名，用于动态列白名单校验防注入。

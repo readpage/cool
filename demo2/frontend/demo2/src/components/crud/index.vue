@@ -42,10 +42,12 @@
             <div
               v-if="crud.export"
               class="u-crud-popover-menu__item"
+              :class="{ 'is-disabled': exporting }"
               @click="handleExport"
             >
-              <el-icon><Download /></el-icon>
-              <span>导出</span>
+              <el-icon v-if="!exporting"><Download /></el-icon>
+              <el-icon v-else class="is-loading"><Loading /></el-icon>
+              <span>{{ exporting ? '导出中...' : '导出' }}</span>
             </div>
           </div>
         </el-popover>
@@ -82,7 +84,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, provide, nextTick } from 'vue'
-import { Plus, MoreFilled, Upload, Download } from '@element-plus/icons-vue'
+import { Plus, MoreFilled, Upload, Download, Loading } from '@element-plus/icons-vue'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import type { CrudApi, FormItemConfig } from './types'
 import type { TableQuery } from '@/types/table'
@@ -144,10 +146,12 @@ function refresh() {
   _tableInstance?.reload?.()
 }
 
-/** table 注入此函数，单击行时触发 → crud 打开修改对话框 */
-provide('crud:editRow', (row: Record<string, any>) => {
-  openForm(row)
-})
+/** table 注入此函数，双击行时触发 → crud 打开修改对话框（仅当 crud.update 定义时注入） */
+if (props.crud.update) {
+  provide('crud:editRow', (row: Record<string, any>) => {
+    openForm(row)
+  })
+}
 
 function getTableElRef() {
   return _tableRef
@@ -233,13 +237,8 @@ async function handleImportUpload(formData: FormData) {
   if (!crud.import) throw new Error('import not defined')
 
   const file = formData.get('file') as File
-  // 只传后端 ColumnItem 需要的字段，过滤掉 format / hidden 等纯前端渲染属性
-  const columns = (currentQuery.value?.columns ?? []).map(
-    ({ prop, label, width, minWidth, align, fieldType, optionType }) =>
-      ({ prop, label, width, minWidth, align, fieldType, optionType }),
-  )
   const config = {
-    columns,
+    columns: cleanColumns(currentQuery.value?.columns ?? []),
     filter: currentQuery.value?.filter ?? [],
   }
 
@@ -257,6 +256,15 @@ async function handleImportUpload(formData: FormData) {
 
 // ==================== Export ====================
 
+const exporting = ref(false)
+
+/** 清洗 columns：仅保留后端需要的字段，去除 format/hidden/type 等纯前端属性 */
+function cleanColumns(columns: any[]) {
+  return columns.map(({ prop, label, width, minWidth, align, fieldType, optionType }) =>
+    ({ prop, label, width, minWidth, align, fieldType, optionType }),
+  )
+}
+
 /** 清洗空值 filter */
 function cleanFilter(filter: any[]) {
   return filter.filter(f => {
@@ -266,19 +274,28 @@ function cleanFilter(filter: any[]) {
   })
 }
 
-function handleExport() {
+async function handleExport() {
   const { crud } = props
-  if (!crud.export) return
+  if (!crud.export || exporting.value) return
   if (!currentQuery.value) {
     ElMessage.warning('暂无数据可导出')
     return
   }
-  const filter = cleanFilter(currentQuery.value.filter ?? [])
-  crud.export({
-    columns: currentQuery.value.columns,
-    filter,
-    sort: currentQuery.value.sort ?? {},
-  })
+
+  exporting.value = true
+  try {
+    const filter = cleanFilter(currentQuery.value.filter ?? [])
+    await crud.export({
+      columns: cleanColumns(currentQuery.value.columns),
+      filter,
+      sort: currentQuery.value.sort ?? {},
+    })
+    ElMessage.success('导出成功')
+  } catch {
+    ElMessage.error('导出失败')
+  } finally {
+    exporting.value = false
+  }
 }
 
 // ==================== DOM 插入 selection-bar ====================
@@ -389,11 +406,29 @@ defineExpose({ setSelection: updateBar })
       background: #f0f2f5;
     }
 
+    &.is-disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+
+      &:hover {
+        background: transparent;
+      }
+    }
+
     .el-icon {
       font-size: 16px;
       color: #606266;
+
+      &.is-loading {
+        animation: u-crud-rotate 1s linear infinite;
+      }
     }
   }
+}
+
+@keyframes u-crud-rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 </style>
 

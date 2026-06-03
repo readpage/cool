@@ -2,6 +2,7 @@ package com.example.controller;
 
 import cn.undraw.util.result.R;
 import com.example.domain.entity.User;
+import com.example.service.OptionService;
 import com.example.service.UserService;
 import com.example.template.util.FilterParam;
 import com.example.template.util.PageResult;
@@ -30,6 +31,9 @@ public class UserController {
     @Resource
     private UserService userService;
 
+    @Resource
+    private OptionService optionService;
+
     @Operation(summary = "查询用户列表")
     @PostMapping("/list")
     public R<List<User>> list(@RequestBody FilterParam param) {
@@ -54,11 +58,12 @@ public class UserController {
         return R.ok(userService.removeByIds(ids));
     }
 
-    @Operation(summary = "动态表头导出 Excel")
+    @Operation(summary = "动态表头导出 Excel（remote-select 列自动 value→label 转换）")
     @PostMapping("/export")
     public void export(@RequestBody FilterParam param, HttpServletResponse response) throws IOException {
         List<User> users = userService.list(param);
-        ExcelUtils.export(response, "导出数据", param, users);
+        ExcelUtils.export(response, "导出数据", param, users,
+                (type, limit) -> optionService.listByType(type, limit));
     }
 
     @Operation(summary = "下载导入模板 Excel")

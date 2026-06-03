@@ -14,7 +14,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import Table from '@/components/table/index.vue'
-import type { TableConfig, TableQuery } from '@/types/table'
+import type { TableConfig, TableQuery, PageResult } from '@/types/table'
 import { useTableConfigStore } from '@/store/table-config'
 import { useOptionsStore } from '@/store/options'
 
@@ -22,7 +22,7 @@ import { useOptionsStore } from '@/store/options'
 const API = '/api/user/page'
 
 const $store = useTableConfigStore()
-const tableData = ref<Record<string, any>[]>([])
+const tableData = ref<PageResult>({ list: [], total: 0 })
 
 // ==================== 配置 ====================
 
@@ -86,12 +86,16 @@ async function fetchList(payload: TableQuery) {
   }
 }
 
-function onQuery(payload: TableQuery) {
-  fetchList(payload)
+function onQuery(payload: TableQuery, done: () => void) {
+  fetchList(payload).finally(done)
 }
 
-function onConfigChange(_config: TableConfig) {
-  $store.save('user', _config)
+function onConfigChange(config: TableConfig, isAdmin?: boolean) {
+  if (isAdmin) {
+    $store.saveAsSystem('user', config)
+  } else {
+    $store.save('user', config)
+  }
 }
 </script>
 

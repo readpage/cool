@@ -33,7 +33,6 @@
 // 模块级导出（<script setup> 不支持 export 语法）
 export type { ColumnConfig, FilterResult } from './types'
 export { buildFilter } from './hooks/useSearchHelpers'
-export type { SearchConfig } from './types'
 // SearchConfig 是此文件特有，在此定义并导出
 export interface SearchConfig {
   filter: import('./types').ColumnConfig[]

@@ -9,6 +9,7 @@
       :showAdminBtn="false"
       @query="onQuery"
       @change="onConfigChange"
+      @reset="onResetSystem"
     />
 
   </Crud>
@@ -16,7 +17,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import Crud from '@/components/crud/index.vue'
 import Table from '@/components/table/index.vue'
 import type { TableConfig, TableQuery, PageResult } from '@/types/table'
@@ -36,17 +37,28 @@ const loadOptions = (type: string, keyword?: string) => useOptionsStore().getOpt
 
 // ==================== 配置 & 查询 ====================
 
-async function onQuery(v: TableQuery) {
+async function onQuery(v: TableQuery, done: () => void) {
   try {
     const res = await AUser.page(v)
     tableData.value = res.data
   } catch (err) {
     console.error('获取用户列表失败', err)
+  } finally {
+    done()
   }
 }
 
-function onConfigChange(_config: TableConfig) {
-  $store.save('crud-demo', _config)
+function onConfigChange(config: TableConfig, isAdmin?: boolean) {
+  if (isAdmin) {
+    $store.saveAsSystem('crud-demo', config)
+  } else {
+    $store.save('crud-demo', config)
+  }
+}
+
+/** 恢复系统默认 → 清除用户缓存，拉取后台默认配置 */
+async function onResetSystem() {
+  await $store.resetToSystem('crud-demo', initTableConfig())
 }
 
 // ==================== CRUD API ====================
@@ -72,10 +84,10 @@ const crud: CrudApi = {
   },
   remove: async (ids, done) => {
     try {
-      await ElMessageBox.confirm(`确定删除选中的 ${ids.length} 条数据？`, '批量删除', { type: 'warning' })
       await AUser.remove(ids)
       done(true)
-    } catch {
+    } catch (err) {
+      console.error('删除失败', err)
       done(false)
     }
   },
@@ -89,8 +101,7 @@ const crud: CrudApi = {
       .catch(() => done(false))
   },
   export: (data) => {
-    console.log(data)
-    AUser.export(data)
+    return AUser.export(data)
       .then(ok => { if (!ok) ElMessage.warning('导出文件为空') })
       .catch(() => ElMessage.error('导出失败'))
   },

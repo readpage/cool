@@ -6,3 +6,4 @@ export interface PageApi<T = any> {
 export * from './src/requests'
 export * from './user'
 export * from './config'
+export * from './report'

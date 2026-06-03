@@ -141,8 +141,8 @@
 import { ref, computed, toRef } from 'vue'
 import { Filter, Plus, Remove, Close } from '@element-plus/icons-vue'
 import FilterValue from './FilterValue.vue'
-import { useSearchHelpers, OPERATOR_MAP, defaultOperator, buildFilter, clearConditionValue } from './hooks/useSearchHelpers'
-import type { ColumnConfig, FilterCondition, FilterResult } from './types'
+import { useSearchHelpers, OPERATOR_MAP, defaultOperator, buildFilter, clearConditionValue } from './hooks/useSearchHelpers.js'
+import type { ColumnConfig, FilterCondition, FilterResult } from './types.js'
 
 /* ============ Props & Emits ============ */
 

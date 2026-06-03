@@ -30,7 +30,7 @@ public enum FilterOperator {
             }
             case IN -> {
                 List<?> l = (List<?>) value;
-                java.util.List<String> ks = new java.util.ArrayList<>();
+                List<String> ks = new java.util.ArrayList<>();
                 for (Object v : l) {
                     String k = prefix + idx.getAndIncrement(); out.put(k, v);
                     ks.add(":" + k);

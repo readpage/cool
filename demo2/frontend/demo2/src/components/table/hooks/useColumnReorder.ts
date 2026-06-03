@@ -197,7 +197,7 @@ export function useColumnReorder(options: UseColumnReorderOptions) {
     }
     // 超出末尾 → 定位到最后列的右边缘
     if (!refTh && columns.value.length > 0) {
-      const lastNonHidden = [...columns].reverse().find(c => !c.hidden)
+      const lastNonHidden = [...columns.value].reverse().find(c => !c.hidden)
       if (lastNonHidden) {
         const lastIdx = columns.value.indexOf(lastNonHidden)
         refTh = findThByColIdx(lastIdx)

@@ -7,11 +7,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -199,6 +195,10 @@ public class FilterParam implements SqlParamProvider {
         if (sort != null && sort.getColumn() != null && !sort.getColumn().isBlank()) {
             String dir = "desc".equalsIgnoreCase(sort.getDirection()) ? "DESC" : "ASC";
             sortSql = "ORDER BY " + sort.getColumn() + " " + dir;
+            // 分页时追加首列作为 tie-breaker，避免非唯一列排序导致分页重复/遗漏
+            if (paginate && !sqlColumns.isEmpty() && !sort.getColumn().equalsIgnoreCase(sqlColumns.get(0))) {
+                sortSql += ", " + sqlColumns.get(0) + " ASC";
+            }
         }
 
         return new DaoResult(filterSql, sortSql, namedParams);

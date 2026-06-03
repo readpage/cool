@@ -1,7 +1,7 @@
 package com.example.controller;
 
 import cn.undraw.util.result.R;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import cn.undraw.util.result.ResultEnum;
 import com.example.domain.entity.SysConfig;
 import com.example.service.SysConfigService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -10,48 +10,45 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @Tag(name = "配置管理", description = "通用配置 CRUD 接口")
 @RestController
 @RequestMapping("/config")
 public class ConfigController {
 
+    /** 固定用户ID（后续接入认证后改为动态获取） */
+    private static final Long FIXED_USER_ID = 1L;
+
     @Resource
     private SysConfigService sysConfigService;
 
-    // ==================== 基础 CRUD ====================
-
-    @Operation(summary = "保存配置（id=null 新增，id≠null 修改，userId=0 为系统默认），返回实体含自增ID")
-    @PostMapping("/save")
+    @Operation(summary = "保存配置 - 按业务键 (configGroup, configKey, userId, deleted) UPSERT")
+    @PostMapping("/user/save")
     public R<SysConfig> save(@RequestBody SysConfig config) {
-        sysConfigService.saveOrUpdate(config);
+        boolean isAdmin = true;
+        if (!isAdmin && config.getUserId() != null && config.getUserId() == 0) {
+            return R.fail(ResultEnum.NO_PERMISSION);
+        }
+        if (!isAdmin) {
+            config.setUserId(FIXED_USER_ID);
+        }
+        sysConfigService.upsert(config);
         return R.ok(config);
     }
 
-    @Operation(summary = "根据ID删除配置")
-    @DeleteMapping("/remove/{id}")
-    public R<Boolean> remove(@Parameter(description = "配置ID") @PathVariable Long id) {
-        return R.ok(sysConfigService.removeById(id));
-    }
 
-    @Operation(summary = "根据ID查询配置")
-    @GetMapping("/get/{id}")
-    public R<SysConfig> getById(@Parameter(description = "配置ID") @PathVariable Long id) {
-        return R.ok(sysConfigService.getById(id));
-    }
-
-    @Operation(summary = "查询配置列表（按 configGroup / configKey 筛选，同时返回系统默认 userId=0 + 当前用户配置）")
-    @GetMapping("/list")
-    public R<List<SysConfig>> list(
+    @Operation(summary = "查询系统默认配置（userId=0），按 configGroup / configKey 筛选")
+    @GetMapping("/user/system")
+    public R<SysConfig> system(
             @Parameter(description = "配置分组") @RequestParam(required = false) String configGroup,
             @Parameter(description = "配置标识") @RequestParam(required = false) String configKey) {
-        // TODO: 后续从 token 获取
-        Long currentUserId = 1L;
-        LambdaQueryWrapper<SysConfig> wrapper = new LambdaQueryWrapper<>();
-        if (configGroup != null) wrapper.eq(SysConfig::getConfigGroup, configGroup);
-        if (configKey != null) wrapper.eq(SysConfig::getConfigKey, configKey);
-        wrapper.in(SysConfig::getUserId, 0L, currentUserId);
-        return R.ok(sysConfigService.list(wrapper));
+        return R.ok(sysConfigService.getSystemConfig(configGroup, configKey));
+    }
+
+    @Operation(summary = "查询我的配置，按 configGroup / configKey 筛选")
+    @GetMapping("/user/my")
+    public R<SysConfig> my(
+            @Parameter(description = "配置分组") @RequestParam(required = false) String configGroup,
+            @Parameter(description = "配置标识") @RequestParam(required = false) String configKey) {
+        return R.ok(sysConfigService.getUserConfig(FIXED_USER_ID, configGroup, configKey));
     }
 }

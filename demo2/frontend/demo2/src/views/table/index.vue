@@ -80,8 +80,9 @@ function onAdminConfirm(_columns: TableItem[]) {
 }
 
 // 查询参数变化
-function onQuery(query: Record<string, any>) {
+function onQuery(query: Record<string, any>, done: () => void) {
   console.log('query', query)
+  done()
 }
 </script>
 

@@ -66,8 +66,8 @@ export interface CrudApi {
   downloadTemplate?: () => Promise<any> | void
   /** 导入文件：定义即显示"导入"按钮，CRUD 内部构造 config 后回调，done(true) 后自动刷新表格 */
   import?: (params: { file: File; config: any }, done: DoneCallback) => void
-  /** 导出数据：定义即显示"导出"按钮，CRUD 内部清洗空 filter 后回调 */
-  export?: (params: any) => void
+  /** 导出数据：定义即显示"导出"按钮，CRUD 内部清洗空 filter 后回调，返回 Promise 供防重复点击 */
+  export?: (params: any) => Promise<any>
 
   /** 新增前置钩子 */
   beforeSave?: (data: any) => void

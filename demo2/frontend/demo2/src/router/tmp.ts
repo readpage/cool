@@ -10,7 +10,7 @@ Object.entries(modules).forEach(([key, value]) => {
 })
 arr.push({
   path: '/',
-  redirect: '/crud'
+  redirect: '/report-design'
 })
 
 export default arr

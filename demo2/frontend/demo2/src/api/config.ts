@@ -1,6 +1,7 @@
 /**
- * 配置管理 API — 基于实体 CRUD（仅接口层）
+ * 配置管理 API — 对应 ConfigController 接口
  */
+
 import { apiAxios } from './src/requests'
 
 // ==================== 后端实体类型 ====================
@@ -17,13 +18,23 @@ export interface SysConfigEntity {
   updateTime?: string
 }
 
-// ==================== CRUD API ====================
+// ==================== 查询参数 ====================
+
+export interface ConfigQuery {
+  configGroup?: string
+  configKey?: string
+}
+
+// ==================== API — 对齐 ConfigController ====================
 
 export const AConfig = {
-  /** 查询配置列表（按 configGroup / configKey 筛选） */
-  list: apiAxios<SysConfigEntity[]>('/config/list'),
-  /** 保存配置（id=null 新增，id≠null 修改），返回实体含自增ID */
-  save: apiAxios<SysConfigEntity>('/config/save', 'post'),
-  /** 删除配置 */
-  remove: apiAxios<boolean>('/config/remove', 'delete'),
+  /** 保存配置 — POST /config/user/save，按业务键 (configGroup, configKey, userId, deleted) UPSERT */
+  save: apiAxios<SysConfigEntity>('/config/user/save', 'post'),
+
+  /** 查询系统默认配置（userId=0）— GET /config/user/system */
+  system: apiAxios<SysConfigEntity>('/config/user/system', 'get'),
+
+  /** 查询当前用户配置 — GET /config/user/my */
+  my: apiAxios<SysConfigEntity>('/config/user/my', 'get'),
 }
+
