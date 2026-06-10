@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { reactive } from 'vue'
-import type { OptionItem } from '@/types/table'
+import type { OptionItem } from '@/components/table/types'
 
 export interface Option {
   label: string

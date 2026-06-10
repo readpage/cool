@@ -1,4 +1,4 @@
-import { ref, reactive, onMounted, onBeforeUnmount, type Ref } from 'vue'
+import { ref, reactive, onMounted, onBeforeUnmount, nextTick, type Ref } from 'vue'
 import type { TableItem } from '../index.vue'
 
 interface UseColumnReorderOptions {
@@ -259,16 +259,18 @@ export function useColumnReorder(options: UseColumnReorderOptions) {
   }
 
   const bind = () => {
-    document.addEventListener('mousedown', onMouseDown, true)
+    // 仅在表格容器上监听 mousedown，避免全局 document 监听造成多余事件触发
+    wrapperRef.value?.addEventListener('mousedown', onMouseDown, true)
     document.addEventListener('mouseup', unlock)
   }
 
-  onMounted(() => {
+  onMounted(async () => {
+    await nextTick()
     bind()
   })
 
   onBeforeUnmount(() => {
-    document.removeEventListener('mousedown', onMouseDown, true)
+    wrapperRef.value?.removeEventListener('mousedown', onMouseDown, true)
     document.removeEventListener('mousemove', onMouseMove)
     document.removeEventListener('mouseup', onMouseUp)
     document.removeEventListener('mouseup', unlock)

@@ -1,6 +1,6 @@
 import { ref, onMounted, nextTick, type ComputedRef, type Ref } from 'vue'
 import type { TableConfig, TableItem } from '../index.vue'
-import type { OptionItem, OptionStyle } from '@/types/table'
+import type { OptionItem, OptionStyle } from '../types'
 
 interface UseTableInitOptions {
   config: TableConfig
@@ -34,6 +34,7 @@ export function useTableInit(options: UseTableInitOptions) {
 
   onMounted(async () => {
     await nextTick()
+    console.log('[useTableInit] onMounted → 准备 emitQuery()')
 
     // 1. 初始查询
     emitQuery()
@@ -131,21 +132,24 @@ export function useTableInit(options: UseTableInitOptions) {
     })
 
     // 4. 弹性填充：未撑满时，最后一列 width → minWidth
+    // ★ 延迟到下一帧，避免 forced reflow 阻塞 Table 首次渲染
     const wrapper = tableWrapperRef.value
     if (!wrapper) return
     if (config.stripe == null) config.stripe = true
-    const total = columns.reduce((s, c) => s + (typeof c.width === 'number' ? c.width : 0), 0)
-    if (total < (wrapper.clientWidth || 0)) {
-      // 倒序找最后一个可拖拽列（已有 minWidth 的不参与弹性填充）
-      for (let i = columns.length - 1; i >= 0; i--) {
-        const c = columns[i]
-        if (c.resizable === false || isFixedCol(c) || c.minWidth != null) continue
-        const w = typeof c.width === 'number' ? c.width : 0
-        c.minWidth = Math.max(w, 80)
-        c.width = undefined
-        break
+    requestAnimationFrame(() => {
+      const columns = config.columns
+      const total = columns.reduce((s, c) => s + (typeof c.width === 'number' ? c.width : 0), 0)
+      if (total < (wrapper.clientWidth || 0)) {
+        for (let i = columns.length - 1; i >= 0; i--) {
+          const c = columns[i]
+          if (c.resizable === false || isFixedCol(c) || c.minWidth != null) continue
+          const w = typeof c.width === 'number' ? c.width : 0
+          c.minWidth = Math.max(w, 80)
+          c.width = undefined
+          break
+        }
       }
-    }
+    })
   })
 
   return { internalLookup, internalStyles }

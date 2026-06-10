@@ -1,5 +1,10 @@
 import type { FormItemRule } from 'element-plus'
-import type { OptionItem } from '@/types/table'
+
+/** 选项条目（crud 组件自包含） */
+export interface OptionItem { label: string; value: string; style?: OptionStyle }
+
+/** 选项样式 */
+export interface OptionStyle { tagType?: 'primary' | 'success' | 'warning' | 'danger' | 'info'; dotColor?: string }
 
 /** 异步操作完成回调 */
 export type DoneCallback = (success?: boolean, data?: any) => void
@@ -9,6 +14,7 @@ export type DoneCallback = (success?: boolean, data?: any) => void
 /** 表单字段控件类型 */
 export type FormFieldType =
   | 'input'         // el-input
+  | 'password'      // el-input (type=password, show-password)
   | 'number'        // el-input-number
   | 'select'        // el-select（静态选项）
   | 'remote-select' // el-select（远程搜索，走 loadOptions）

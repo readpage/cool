@@ -11,6 +11,8 @@ export const OPERATOR_MAP: Record<string, string[]> = {
   text:           ['contains', 'eq', 'ne', 'gt', 'lt', 'gte', 'lte', 'between', 'in'],
   date:           ['eq', 'ne', 'gt', 'lt', 'gte', 'lte'],
   datetime:       ['eq', 'ne', 'gt', 'lt', 'gte', 'lte'],
+  year:           ['eq', 'ne', 'gt', 'lt', 'gte', 'lte'],
+  month:          ['eq', 'ne', 'gt', 'lt', 'gte', 'lte'],
   daterange:      ['between'],
   datetimerange:  ['between'],
   select:         ['eq', 'ne', 'in'],
@@ -87,6 +89,10 @@ export function useSearchHelpers(
     return getColByProp(prop)?.fieldType
   }
 
+  function getPickerType(prop: string): string | undefined {
+    return (getColByProp(prop) as any)?.pickerType
+  }
+
   function isDateRangeField(prop: string): boolean {
     const ft = getFieldType(prop)
     return ft === 'daterange' || ft === 'datetimerange'
@@ -98,7 +104,12 @@ export function useSearchHelpers(
   }
 
   function getDateFormat(prop: string): string {
-    const ft = getFieldType(prop)
+    const col = getColByProp(prop)
+    const ft = col?.fieldType
+    const pt = (col as any)?.pickerType
+    if (pt === 'year' || ft === 'year') return 'YYYY'
+    if (pt === 'month' || ft === 'month') return 'YYYY-MM'
+    if (pt === 'week') return 'YYYY ww'
     return ft === 'datetime' || ft === 'datetimerange' ? 'YYYY-MM-DD HH:mm:ss' : 'YYYY-MM-DD'
   }
 
@@ -130,6 +141,7 @@ export function useSearchHelpers(
   return {
     getColByProp,
     getFieldType,
+    getPickerType,
     isDateRangeField,
     getDateRangeType,
     getDateFormat,

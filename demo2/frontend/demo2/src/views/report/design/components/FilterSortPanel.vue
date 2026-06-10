@@ -81,7 +81,7 @@
 
 <script setup lang="ts">
 import { Plus, Delete } from '@element-plus/icons-vue'
-import type { FilterCondition, SortCondition } from '@/types/report'
+import type { FilterCondition, SortCondition } from '../../types/report'
 
 defineProps<{
   availableColumns: { prop: string; label: string }[]

@@ -1,6 +1,12 @@
-/** 选项样式 */ export interface OptionStyle { tagType?: 'primary' | 'success' | 'warning' | 'danger' | 'info'; dotColor?: string }
+/**
+ * 通用表格组件类型定义（自包含，不依赖 @/types/）
+ */
 
-/** 选项条目 */ export interface OptionItem { label: string; value: string; style?: OptionStyle }
+/** 选项样式 */
+export interface OptionStyle { tagType?: 'primary' | 'success' | 'warning' | 'danger' | 'info'; dotColor?: string }
+
+/** 选项条目 */
+export interface OptionItem { label: string; value: string; style?: OptionStyle }
 
 /**
  * 表格列配置
@@ -50,17 +56,29 @@ export interface FilterItem {
   value: string | [string, string] | string[]
 }
 
+/** 字段控件类型 */
+export type FieldType = 'text' | 'date' | 'datetime' | 'year' | 'month' | 'daterange' | 'datetimerange' | 'select' | 'remote-select'
+
+/** 筛选操作符（搜索组件使用，与 OperatorType 同值） */
+export type FilterOperator = 'contains' | 'eq' | 'ne' | 'gt' | 'lt' | 'gte' | 'lte' | 'between' | 'in'
+
 /**
  * 搜索列配置
  */
 export interface ColumnConfig {
   prop: string
   label: string
-  operator?: OperatorType
+  operator?: FilterOperator
   filterMode?: 'show' | 'exposed' | 'hide'
 
   /** 控件类型，缺省为 text（el-input） */
-  fieldType?: 'text' | 'date' | 'datetime' | 'daterange' | 'datetimerange' | 'select' | 'remote-select'
+  fieldType?: FieldType
+
+  /**
+   * 日期选择器子类型（仅在 fieldType 为 date/datetime 时生效）。
+   * 未指定时默认：date→'date'，datetime→'datetime'
+   */
+  pickerType?: 'date' | 'datetime' | 'year' | 'month' | 'week'
 
   /** 下拉选项（fieldType='select' 时使用）。支持 { label, value } 或纯字符串 */
   options?: ({ label: string; value: string } | string)[]
@@ -71,6 +89,12 @@ export interface ColumnConfig {
    * 不填则 fallback 到 prop
    */
   optionType?: string
+
+  /** 标记为 SQL 模板变量（#{key}），查询时作为 JDBC 参数绑定而非 WHERE 条件 */
+  variable?: boolean
+
+  /** 默认筛选值（初始加载时自动填充到输入框） */
+  value?: string | [string, string] | string[]
 }
 
 /**
@@ -79,7 +103,6 @@ export interface ColumnConfig {
 export interface SearchConfig {
   filter: ColumnConfig[]
   currentField?: string
-  filterValues?: FilterItem[]
 }
 
 /**
@@ -101,8 +124,10 @@ export interface TableConfig {
   height?: number | string
   maxHeight?: number | string
   rowKey?: string
-  sort?: { column: string; direction: 'asc' | 'desc' }
   search?: SearchConfig
+
+  /** 默认排序 */
+  sort?: { column: string; direction: 'asc' | 'desc' }
 
   /** 全局选项映射表：{ prop: OptionItem[] }，select / remote-select 共用。
    * 表格翻译和筛选面板都从此读取。静态 select 选项可直接写死在此；

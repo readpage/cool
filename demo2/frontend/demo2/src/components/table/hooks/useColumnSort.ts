@@ -1,5 +1,10 @@
 import { ref } from 'vue'
-import type { TableConfig } from '../index.vue'
+
+/** 排序值 */
+export interface SortState {
+  column: string
+  direction: 'asc' | 'desc'
+}
 
 /**
  * 单列排序 hook
@@ -7,15 +12,15 @@ import type { TableConfig } from '../index.vue'
  * sort(prop,'asc')  → 升序/已升序取消
  * sort(prop,'desc') → 降序/已降序取消
  */
-export function useColumnSort(config: TableConfig) {
-  const sortProp = ref<string | null>(null)
-  const sortOrder = ref<'asc' | 'desc' | null>(null)
+export function useColumnSort(initialSort?: SortState) {
+  const sortProp = ref<string | null>(initialSort?.column ?? null)
+  const sortOrder = ref<'asc' | 'desc' | null>(initialSort?.direction ?? null)
 
-  const sync = () => {
-    sortProp.value = config.sort?.column ?? null
-    sortOrder.value = config.sort?.direction ?? null
+  /** 从外部同步排序状态（如 localStorage 或搜索配置变更时） */
+  const sync = (s?: SortState) => {
+    sortProp.value = s?.column ?? null
+    sortOrder.value = s?.direction ?? null
   }
-  sync()
 
   const sort = (prop: string, target?: 'asc' | 'desc') => {
     if (!target) {

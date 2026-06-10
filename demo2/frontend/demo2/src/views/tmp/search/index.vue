@@ -91,19 +91,6 @@ const queryRef = ref<InstanceType<typeof Query>>()
 
 /* ============ 辅助 ============ */
 
-function syncFilterMode() {
-  const conds = queryRef.value?.conditions ?? []
-  props.config.filter.forEach((col) => {
-    const cond = conds.find((c) => c.column === col.prop)
-    if (!cond || !cond.column) {
-      col.filterMode = 'hide'
-    } else {
-      col.operator = cond.operator
-      col.filterMode = cond.display ? 'exposed' : 'show'
-    }
-  })
-}
-
 function buildFilter(values: { column: string; operator: string; value: any; valueStr: string }[]): FilterItem[] {
   return values
     .filter((c) => c.column)
@@ -124,7 +111,6 @@ function buildFilter(values: { column: string; operator: string; value: any; val
 
 function onFilter(params: FilterItem[]) {
   props.config.filterValues = params
-  syncFilterMode()
   emit('save-filter', props.config)
   emit('search', params)
 }

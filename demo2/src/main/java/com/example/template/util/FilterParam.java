@@ -1,5 +1,6 @@
 package com.example.template.util;
 
+import cn.undraw.handler.exception.customer.CustomerException;
 import com.example.template.util.FilterOperator.FilterCondition;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -9,6 +10,7 @@ import lombok.experimental.Accessors;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * 动态筛选 + 排序请求参数 — 对应前端 JSON，实现 {@link SqlParamProvider} 直接传给 DAO。
@@ -69,6 +71,10 @@ public class FilterParam implements SqlParamProvider {
         private String column;
         private String operator;
         private Object value;
+
+        /** 标记为 SQL 模板变量（如 #{year}→2025），不生成 WHERE，只做文本插值（自动防注入） */
+        @JsonAlias("variable")
+        private Boolean variable;
     }
 
     @Data
@@ -107,7 +113,7 @@ public class FilterParam implements SqlParamProvider {
     }
 
     /**
-     * DAO 结果 — 包含 filter/sort 片段 + :column_N 命名参数。
+     * DAO 结果 — 包含 filter/sort 片段 + :column_N 命名参数（含变量值，通过 JDBC 天然防注入）。
      */
     public record DaoResult(String filter, String sort, Map<String, Object> params) {
         public Map<String, Object> toFlatMap() {
@@ -142,7 +148,7 @@ public class FilterParam implements SqlParamProvider {
             sort.setColumn(ColumnExtractor.toUnderScoreCase(sort.getColumn()));
         }
 
-        // SQL 模板提取列（用于校验） + 兜底
+        // SQL 模板提取列（用于校验）：统一取原名（prop），与前端 filter.column 原生列名一致
         List<String> sqlColumns = ColumnExtractor.lastExtract(sqlTemplate);
         validateColumns(sqlColumns);
 
@@ -152,14 +158,39 @@ public class FilterParam implements SqlParamProvider {
             allSearchColumns = this.columns.stream()
                     .map(ColumnItem::getProp)
                     .filter(Objects::nonNull)
-                    .map(ColumnExtractor::toUnderScoreCase)   // camelCase → snake_case
-                    .filter(sqlColumns::contains)
-                    .toList();
+                .map(ColumnExtractor::toUnderScoreCase)   // camelCase → snake_case
+                .filter(col -> sqlColumns.contains(col)
+                        || sqlColumns.stream().anyMatch(c -> ColumnExtractor.stripTablePrefix(c).equalsIgnoreCase(ColumnExtractor.stripTablePrefix(col))))
+                .toList();
         } else {
             allSearchColumns = sqlColumns;
         }
 
+        // 变量项（variable=true）：值放入 namedParams 作为 JDBC 参数，不生成 WHERE
         Map<String, Object> namedParams = new LinkedHashMap<>();
+        if (filter != null) {
+            for (FilterItem f : filter) {
+                if (Boolean.TRUE.equals(f.getVariable()) && f.getColumn() != null && f.getValue() != null) {
+                    namedParams.put(f.getColumn(), f.getValue());
+                }
+            }
+        }
+
+        // 校验：SQL 模板中的必填 #{key} 变量（不在 [[...]] 内的）是否都提供了值
+        List<String> requiredKeys = ColumnExtractor.extractRequiredTemplateKeys(sqlTemplate);
+        List<String> missing = new ArrayList<>();
+        for (String key : requiredKeys) {
+            Object val = namedParams.get(key);
+            if (val == null || (val instanceof String s && s.isEmpty())) {
+                missing.add(key);
+            }
+        }
+        if (!missing.isEmpty()) {
+            throw new CustomerException(
+                "模板变量 " + missing.stream().map(k -> "#{" + k + "}").collect(Collectors.joining("、"))
+                + " 未提供值，请在筛选栏填写");
+        }
+
         AtomicInteger idx = new AtomicInteger(0);
         StringBuilder where = new StringBuilder();
         boolean first = true;
@@ -187,16 +218,20 @@ public class FilterParam implements SqlParamProvider {
             }
         }
 
-        // 筛选 SQL 片段：有值时携带 WHERE 关键字，无值时为空字符串
-        String filterSql = hasAnyCondition() ? ("WHERE " + where.toString()) : "";
+        // 筛选 SQL 片段：模板必须自行携带 WHERE 前缀，此处只生成条件
+        String filterSql = hasAnyCondition() ? where.toString() : "";
 
         // 排序 SQL 片段：有值时携带 ORDER BY 关键字，无值时为空字符串
+        // 约定：SQL 模板 SELECT 的第一列必须是主键/唯一列（如 id / t.id），用于分页 tie-breaker
         String sortSql = "";
         if (sort != null && sort.getColumn() != null && !sort.getColumn().isBlank()) {
             String dir = "desc".equalsIgnoreCase(sort.getDirection()) ? "DESC" : "ASC";
             sortSql = "ORDER BY " + sort.getColumn() + " " + dir;
             // 分页时追加首列作为 tie-breaker，避免非唯一列排序导致分页重复/遗漏
-            if (paginate && !sqlColumns.isEmpty() && !sort.getColumn().equalsIgnoreCase(sqlColumns.get(0))) {
+            // 比较时去掉表前缀（如 t.id ↔ id），兼容多表场景
+            if (paginate && !sqlColumns.isEmpty()
+                    && !ColumnExtractor.stripTablePrefix(sort.getColumn())
+                        .equalsIgnoreCase(ColumnExtractor.stripTablePrefix(sqlColumns.get(0)))) {
                 sortSql += ", " + sqlColumns.get(0) + " ASC";
             }
         }
@@ -204,11 +239,34 @@ public class FilterParam implements SqlParamProvider {
         return new DaoResult(filterSql, sortSql, namedParams);
     }
 
+    // ==================== 公共工具 ====================
+
+    /**
+     * 渲染后 SQL 归一化 — filter 片段不再携带 WHERE 前缀（由模板自行编写），
+     * 仅需处理空 filter/sort 时留下的悬空关键字。
+     *
+     * <p>支持模板写法：
+     * <ul>
+     *   <li>{@code WHERE {{filter}}} — 无筛选时尾部 WHERE 会被清理</li>
+     *   <li>{@code WHERE 1=1 AND {{filter}}} — 无筛选时尾部 AND 会被清理</li>
+     *   <li>空 sort 悬空子句：模板 {@code {{sort}}} 中 sort 为空 → 清理尾部 ORDER BY</li>
+     * </ul>
+     */
+    public static String cleanRenderedSql(String renderedSql) {
+        if (renderedSql == null) return null;
+        // 1. 去掉空 filter 导致 WHERE 后面直接跟 ORDER BY 的情况
+        renderedSql = renderedSql.replaceAll("(?i)\\bWHERE\\s+(ORDER\\s+BY\\b)", "$1");
+        // 2. 去掉空 filter/sort 留下的悬空 WHERE / AND / OR / ORDER BY（尾部）
+        renderedSql = renderedSql.replaceAll("(?i)\\s+(WHERE|AND|OR|ORDER\\s+BY)\\s*$", "").trim();
+        return renderedSql;
+    }
+
     // ==================== 内部方法 ====================
 
     private List<FilterCondition> toConditions() {
         if (filter == null || filter.isEmpty()) return List.of();
         return filter.stream()
+                .filter(f -> !Boolean.TRUE.equals(f.getVariable()))  // 变量项走 JDBC 参数化，不生成 WHERE
                 .map(f -> new FilterCondition(f.getColumn(),
                         FilterOperator.fromString(f.getOperator()), f.getValue()))
                 .toList();
@@ -216,7 +274,10 @@ public class FilterParam implements SqlParamProvider {
 
     private void validateColumns(List<String> allowed) {
         if (filter != null)
-            filter.forEach(f -> ColumnExtractor.checkColumn(allowed, f.getColumn()));
+            filter.forEach(f -> {
+                if (!Boolean.TRUE.equals(f.getVariable()))  // 变量项不参与列校验
+                    ColumnExtractor.checkColumn(allowed, f.getColumn());
+            });
         if (sort != null && sort.getColumn() != null)
             ColumnExtractor.checkColumn(allowed, sort.getColumn());
     }

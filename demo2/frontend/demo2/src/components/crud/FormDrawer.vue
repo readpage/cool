@@ -33,6 +33,18 @@
             v-on="item.event || {}"
           />
 
+          <!-- password -->
+          <el-input
+            v-else-if="item.fieldType === 'password'"
+            v-model="formData[item.prop]"
+            type="password"
+            show-password
+            :placeholder="item.placeholder || `请输入${item.label}`"
+            :disabled="item.disabled"
+            v-bind="item.componentProps"
+            v-on="item.event || {}"
+          />
+
           <!-- number -->
           <el-input-number
             v-else-if="item.fieldType === 'number'"
@@ -146,6 +158,9 @@
 
     <template #footer>
       <div class="u-form-drawer-footer">
+        <div class="u-form-drawer-footer__extra">
+          <slot name="footer-actions" :data="formData" :saving="saving" />
+        </div>
         <el-button @click="handleCancel">取消</el-button>
         <el-button type="primary" :loading="saving" @click="handleSave">确认</el-button>
       </div>
@@ -156,8 +171,7 @@
 <script setup lang="ts">
 import { ref, watch, computed, nextTick } from 'vue'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
-import type { CrudApi, FormItemConfig } from './types'
-import type { OptionItem } from '@/types/table'
+import type { CrudApi, FormItemConfig, OptionItem } from './types'
 
 const props = withDefaults(defineProps<{
   visible: boolean
@@ -325,5 +339,12 @@ async function handleSave() {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
+
+  &__extra {
+    margin-right: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
 }
 </style>

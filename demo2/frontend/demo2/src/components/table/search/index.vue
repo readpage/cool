@@ -4,7 +4,7 @@
       <Query
         ref="queryRef"
         :columns="config.filter"
-        :exposed="exposedProps"
+        :initial-values="initialFilterValues"
         :operator-options="operatorOptions"
         :load-options="loadOptions"
         :show-admin-btn="showAdminBtn"
@@ -37,7 +37,6 @@ export { buildFilter } from './hooks/useSearchHelpers'
 export interface SearchConfig {
   filter: import('./types').ColumnConfig[]
   currentField?: string
-  filterValues?: import('./types').FilterResult[]
 }
 </script>
 
@@ -47,7 +46,7 @@ import Input from './input.vue'
 import Query from './query.vue'
 import ExposedFilter from './ExposedFilter.vue'
 import { buildFilter } from './hooks/useSearchHelpers'
-import type { ColumnConfig, FilterResult } from './types'
+import type { ColumnConfig, FilterResult, FilterOperator } from './types'
 
 /* ============ Props & Emits ============ */
 
@@ -84,34 +83,56 @@ const searchOptions = computed(() =>
   props.config.filter.map((c) => ({ label: c.label, value: c.prop })),
 )
 
-const exposedProps = computed(() =>
-  props.config.filter
-    .filter((c) => c.filterMode === 'show' || c.filterMode === 'exposed')
-    .map((c) => c.prop),
-)
+/** 从蓝图提取默认筛选值，供 query.vue JSON 深拷贝初始化 */
+const initialFilterValues = computed<FilterResult[]>(() => {
+  const result = props.config.filter
+    .map(c => {
+      const v = c.value
+      if (v === undefined || v === null) return null
+      if (typeof v === 'string' && v === '') return null
+      if (Array.isArray(v) && v.length === 0) return null
+      return {
+        column: c.prop,
+        operator: (c.operator || 'contains') as FilterOperator,
+        value: v as FilterResult['value'],
+      }
+    })
+    .filter(Boolean) as FilterResult[]
+  console.log('[search/index] initialFilterValues computed →', result.map(r => `${r.column}=${Array.isArray(r.value) ? `[${r.value}]` : r.value}`))
+  return result
+})
 
 const queryRef = ref<InstanceType<typeof Query>>()
-
-/* ============ 辅助 ============ */
-
-function syncFilterMode() {
-  const conds = queryRef.value?.conditions ?? []
-  props.config.filter.forEach((col) => {
-    const cond = conds.find((c) => c.column === col.prop)
-    if (!cond || !cond.column) {
-      col.filterMode = 'hide'
-    } else {
-      col.operator = cond.operator
-      col.filterMode = cond.display ? 'exposed' : 'show'
-    }
-  })
-}
 
 /* ============ 事件处理 ============ */
 
 function onFilter(params: FilterResult[]) {
-  props.config.filterValues = params
-  syncFilterMode()
+  // 🔑 根据 FilterResult[] + 原有列元数据，重建 filter 数组（响应式整体替换）
+  const paramMap = new Map(params.filter(p => p.column).map(p => [p.column, p]))
+
+  // 🔑 从 conditions 读取 filterMode（统一口径，FilterResult 不含 filterMode）
+  const filterModeMap = new Map<string, string>()
+  queryRef.value?.conditions.forEach(cond => {
+    if (cond.column) filterModeMap.set(cond.column, cond.filterMode)
+  })
+
+  props.config.filter = props.config.filter.map(col => {
+    const pv = paramMap.get(col.prop)
+    const fm = filterModeMap.get(col.prop)
+    const next: typeof col = { ...col }
+    if (pv) {
+      next.value = pv.value
+      next.operator = pv.operator
+    } else {
+      next.value = ''
+    }
+    // 直接从 conditions.filterMode 写回 config.filter.filterMode
+    if (fm !== undefined) {
+      next.filterMode = fm as typeof col['filterMode']
+    }
+    return next
+  })
+  console.log('[search/index] onFilter →', params.map(p => `${p.column}=${p.value}`))
   emit('save-filter', props.config)
   emit('search', params)
 }

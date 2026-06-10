@@ -3,19 +3,40 @@
 
  Source Server         : localhost
  Source Server Type    : MySQL
- Source Server Version : 80022 (8.0.22)
+ Source Server Version : 80030 (8.0.30)
  Source Host           : localhost:3306
  Source Schema         : cool
 
  Target Server Type    : MySQL
- Target Server Version : 80022 (8.0.22)
+ Target Server Version : 80030 (8.0.30)
  File Encoding         : 65001
 
- Date: 28/05/2026 23:53:48
+ Date: 10/06/2026 17:52:40
 */
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
+
+-- ----------------------------
+-- Table structure for datasource
+-- ----------------------------
+DROP TABLE IF EXISTS `datasource`;
+CREATE TABLE `datasource`  (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '数据源名称',
+  `db_type` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'MYSQL' COMMENT '数据库类型',
+  `host` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '主机地址',
+  `port` int NOT NULL DEFAULT 3306 COMMENT '端口',
+  `db_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '库名',
+  `username` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '用户名',
+  `password` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '密码',
+  `params` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '额外连接参数',
+  `status` int NULL DEFAULT 1 COMMENT '1启用 0停用',
+  `deleted` int NULL DEFAULT 0 COMMENT '软删除',
+  `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '数据源配置表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for model
@@ -31,23 +52,7 @@ CREATE TABLE `model`  (
   `update_time` datetime NULL DEFAULT NULL COMMENT '修改时间',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `username`(`username` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 54 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '模型' ROW_FORMAT = DYNAMIC;
-
--- ----------------------------
--- Records of model
--- ----------------------------
-INSERT INTO `model` VALUES (40, 'test3', '0', 3, NULL, '2025-08-29 15:19:58', '2025-09-01 09:11:01');
-INSERT INTO `model` VALUES (41, 'test4', '1', 4, NULL, '2025-08-29 15:19:58', '2025-09-01 09:11:01');
-INSERT INTO `model` VALUES (42, 'test1', '0', 1, '2025-01-02', '2025-08-29 16:55:28', '2025-09-01 09:11:01');
-INSERT INTO `model` VALUES (43, 'test2', '0', 2, '2025-07-26', '2025-08-29 16:55:28', '2025-09-01 09:11:01');
-INSERT INTO `model` VALUES (44, 'test5', '0', 5, NULL, '2025-08-29 16:55:28', '2025-09-01 09:11:01');
-INSERT INTO `model` VALUES (45, 'test6', '1', 6, NULL, '2025-08-29 16:55:28', '2025-09-01 09:11:01');
-INSERT INTO `model` VALUES (46, 'test7', '0', 7, NULL, '2025-08-29 16:55:28', '2025-09-01 09:11:01');
-INSERT INTO `model` VALUES (47, 'test8', '1', 8, NULL, '2025-08-29 16:55:28', '2025-09-01 09:11:01');
-INSERT INTO `model` VALUES (48, 'test9', '0', 9, NULL, '2025-08-29 16:55:28', '2025-09-01 09:11:01');
-INSERT INTO `model` VALUES (49, 'test10', '0', 10, NULL, '2025-08-29 16:55:28', '2025-08-29 16:59:05');
-INSERT INTO `model` VALUES (52, 'test22', '37', 11, NULL, '2025-08-29 16:57:06', '2025-08-29 16:57:06');
-INSERT INTO `model` VALUES (53, 'test11', '0', 10, NULL, '2025-08-29 17:01:29', '2025-09-01 09:11:01');
+) ENGINE = InnoDB AUTO_INCREMENT = 54 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '模型' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for options
@@ -63,13 +68,34 @@ CREATE TABLE `options`  (
   `update_time` datetime NULL DEFAULT NULL COMMENT '修改时间',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `module`(`type` ASC, `label` ASC, `value` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '选项' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '选项' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
--- Records of options
+-- Table structure for report
 -- ----------------------------
-INSERT INTO `options` VALUES (1, 'sex', '男', '0', 0, NULL, NULL);
-INSERT INTO `options` VALUES (2, 'sex', '女', '1', 0, NULL, NULL);
+DROP TABLE IF EXISTS `report`;
+CREATE TABLE `report`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `table_key` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '报表业务唯一标识（对应 sys_config / user_config 的 config_key）',
+  `name` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '报告名称',
+  `description` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '描述',
+  `category` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '分类',
+  `sql_template` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT 'SQL 模板',
+  `display_type` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT 'table' COMMENT '展示类型：table|bar|line|pie|number',
+  `permission_config` json NULL COMMENT '权限配置 JSON',
+  `datasource_id` bigint NULL DEFAULT NULL COMMENT '关联数据源 ID，NULL=默认主数据源',
+  `creator_id` bigint NULL DEFAULT NULL COMMENT '创建者 ID',
+  `deleted` tinyint NULL DEFAULT 0 COMMENT '软删除',
+  `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `uk_table_key`(`table_key` ASC) USING BTREE,
+  UNIQUE INDEX `idx_name`(`name` ASC) USING BTREE,
+  INDEX `idx_category`(`category` ASC) USING BTREE,
+  INDEX `idx_creator`(`creator_id` ASC) USING BTREE,
+  INDEX `idx_deleted`(`deleted` ASC) USING BTREE,
+  INDEX `idx_datasource_id`(`datasource_id` ASC) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 12 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = 'BI 报表（问题）' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for role
@@ -87,35 +113,20 @@ CREATE TABLE `role`  (
 ) ENGINE = InnoDB AUTO_INCREMENT = 205 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
--- Records of role
--- ----------------------------
-INSERT INTO `role` VALUES (1, 'root', '超级管理员', NULL, '2022-08-28 16:58:01', '2023-08-26 20:31:41');
-INSERT INTO `role` VALUES (2, 'admin', '系统管理员', NULL, '2022-08-28 16:58:20', '2025-01-06 15:31:34');
-INSERT INTO `role` VALUES (3, 'user', '用户', NULL, '2022-08-28 17:12:32', '2022-08-28 17:12:34');
-
--- ----------------------------
 -- Table structure for sys_config
 -- ----------------------------
 DROP TABLE IF EXISTS `sys_config`;
 CREATE TABLE `sys_config`  (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `config_group` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '配置分组：table / bi / system',
+  `config_group` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '配置分组：table / bi / system / report',
   `config_key` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '配置标识：user / report_001 / theme',
-  `user_id` bigint NOT NULL DEFAULT 0 COMMENT '0=系统默认, >0=用户偏好',
   `config_value` json NOT NULL COMMENT '配置 JSON 内容',
-  `version` int NOT NULL DEFAULT 0 COMMENT '系统默认版本号（用户记录始终=0）',
-  `deleted` tinyint(1) NOT NULL DEFAULT 0 COMMENT '0=正常, 1=回收站（软删除）',
+  `version` int NOT NULL DEFAULT 0 COMMENT '版本号（单调递增）',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
   PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE INDEX `uk_config`(`config_group` ASC, `config_key` ASC, `user_id` ASC, `deleted` ASC) USING BTREE,
-  INDEX `idx_deleted`(`deleted` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '通用配置表' ROW_FORMAT = DYNAMIC;
-
--- ----------------------------
--- Records of sys_config
--- ----------------------------
-INSERT INTO `sys_config` VALUES (1, 'table', 'user', 1, '{\"search\": {\"filter\": [{\"prop\": \"username\", \"label\": \"用户名\", \"operator\": \"contains\", \"filterMode\": \"exposed\"}, {\"prop\": \"sex\", \"label\": \"性别\", \"operator\": \"eq\", \"fieldType\": \"remote-select\", \"filterMode\": \"exposed\"}, {\"prop\": \"phone\", \"label\": \"电话\", \"operator\": \"contains\", \"filterMode\": \"hide\"}, {\"prop\": \"createTime\", \"label\": \"创建时间\", \"operator\": \"between\", \"fieldType\": \"daterange\", \"filterMode\": \"exposed\"}, {\"prop\": \"updateTime\", \"label\": \"修改时间\", \"operator\": \"between\", \"fieldType\": \"daterange\", \"filterMode\": \"hide\"}], \"currentField\": \"all\", \"filterValues\": [{\"value\": \"0\", \"column\": \"sex\", \"operator\": \"eq\"}]}, \"stripe\": true, \"columns\": [{\"prop\": \"id\", \"align\": \"center\", \"label\": \"ID\", \"hidden\": true, \"minWidth\": 80}, {\"prop\": \"username\", \"align\": \"left\", \"label\": \"用户名\", \"minWidth\": 140}, {\"prop\": \"age\", \"align\": \"left\", \"label\": \"年龄\", \"minWidth\": 80}, {\"prop\": \"sex\", \"align\": \"center\", \"label\": \"性别\", \"minWidth\": 80}, {\"prop\": \"phone\", \"align\": \"left\", \"label\": \"电话\", \"minWidth\": 160}, {\"prop\": \"createTime\", \"align\": \"center\", \"label\": \"创建时间\", \"minWidth\": 180}, {\"prop\": \"updateTime\", \"align\": \"center\", \"label\": \"修改时间\", \"minWidth\": 180}]}', 0, 0, '2026-05-28 15:36:02', '2026-05-28 23:52:41');
+  UNIQUE INDEX `uk_config`(`config_group` ASC, `config_key` ASC) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 30 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '系统默认配置表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for sys_config_history
@@ -134,11 +145,7 @@ CREATE TABLE `sys_config_history`  (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_history`(`config_group` ASC, `config_key` ASC, `version` ASC) USING BTREE,
   INDEX `idx_timeline`(`config_group` ASC, `config_key` ASC, `create_time` ASC) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '系统默认配置变更历史表' ROW_FORMAT = DYNAMIC;
-
--- ----------------------------
--- Records of sys_config_history
--- ----------------------------
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '系统默认配置变更历史表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for system_log
@@ -166,10 +173,6 @@ CREATE TABLE `system_log`  (
 ) ENGINE = InnoDB AUTO_INCREMENT = 2370 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
--- Records of system_log
--- ----------------------------
-
--- ----------------------------
 -- Table structure for user
 -- ----------------------------
 DROP TABLE IF EXISTS `user`;
@@ -184,28 +187,25 @@ CREATE TABLE `user`  (
   `update_time` datetime NULL DEFAULT NULL COMMENT '修改时间',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `username`(`username` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1027 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '用户' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 1032 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '用户' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
--- Records of user
+-- Table structure for user_config
 -- ----------------------------
-INSERT INTO `user` VALUES (23, '答义轩', 'gZZR1M4QqiHUqq_', 48, 0, '15885326305', '2025-08-15 11:22:25', '2025-08-15 11:22:25');
-INSERT INTO `user` VALUES (86, '马敏', 'ea', 77, 1, '18114196861', '2024-03-01 15:47:30', '2024-03-01 15:47:30');
-INSERT INTO `user` VALUES (87, '文洋', 'sunt nisi magna labore et', 61, 0, '18633239620', NULL, NULL);
-INSERT INTO `user` VALUES (88, '林刚', 'qui quis officia', 79, 0, '18162537882', NULL, NULL);
-INSERT INTO `user` VALUES (89, '宋强', 'incididunt', 85, 0, '18125132862', NULL, NULL);
-INSERT INTO `user` VALUES (90, '方磊', 'non do ipsum', 87, 0, '18161178419', NULL, NULL);
-INSERT INTO `user` VALUES (91, '马娜', 'cillum incididunt est', 80, 0, '18106335359', NULL, NULL);
-INSERT INTO `user` VALUES (92, '邱平', 'fugiat ex incididunt mollit', 45, 0, '18165019238', NULL, NULL);
-INSERT INTO `user` VALUES (93, '薛艳', 'reprehenderit commodo do sint', 28, 0, '19871782512', NULL, NULL);
-INSERT INTO `user` VALUES (94, '龚勇', 'irure', 32, 0, '18693835845', NULL, NULL);
-INSERT INTO `user` VALUES (96, '丁强', 'ullamco incididunt sint voluptate', 50, 0, '18659352321', NULL, NULL);
-INSERT INTO `user` VALUES (98, '蒋超', 'voluptate ullamco', 99, 0, '18679758446', NULL, NULL);
-INSERT INTO `user` VALUES (99, '袁敏', 'fugiat do', 8, 1, '13611543587', NULL, NULL);
-INSERT INTO `user` VALUES (101, '赖涛', 'Ut dolor commodo laborum sint', 22, 0, '18162217139', NULL, NULL);
-INSERT INTO `user` VALUES (102, '刘磊', 'dolore pariatur', 28, 0, '18611862729', '2023-12-19 15:18:31', '2023-12-19 15:18:31');
-INSERT INTO `user` VALUES (1000, '马敏2', 'abc2', 33, 1, '18114196861', '2024-03-01 15:47:30', '2025-04-14 08:39:46');
-INSERT INTO `user` VALUES (1003, '枚蒙', 'r0wtQcPpCGU7YQS', 42, 0, '15885326303', '2025-04-10 14:58:39', '2025-04-10 15:21:12');
-INSERT INTO `user` VALUES (1004, '马敏3', 'test', 22, 1, '18114196861', '2024-03-01 15:47:30', '2025-04-14 08:39:46');
+DROP TABLE IF EXISTS `user_config`;
+CREATE TABLE `user_config`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `config_group` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '配置分组',
+  `config_key` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '配置标识',
+  `user_id` bigint NOT NULL COMMENT '用户ID',
+  `config_value` json NOT NULL COMMENT '配置 JSON 内容',
+  `deleted` tinyint(1) NOT NULL DEFAULT 0 COMMENT '0=正常, 1=回收站（软删除）',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `uk_user_config`(`config_group` ASC, `config_key` ASC, `user_id` ASC) USING BTREE,
+  INDEX `idx_user_id`(`user_id` ASC) USING BTREE,
+  INDEX `idx_deleted`(`deleted` ASC) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 347 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '用户偏好配置表' ROW_FORMAT = Dynamic;
 
 SET FOREIGN_KEY_CHECKS = 1;

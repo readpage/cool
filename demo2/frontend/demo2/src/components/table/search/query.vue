@@ -84,6 +84,7 @@
                       v-model="cond.value"
                       :column="cond.column"
                       :field-type="getFieldType(cond.column)"
+                      :picker-type="getPickerType(cond.column)"
                       operator="in"
                       :options="getOptions(cond.column)"
                       :remote-method="getRemoteMethod(cond.column)"
@@ -97,6 +98,7 @@
                       v-model="cond.value"
                       :column="cond.column"
                       :field-type="getFieldType(cond.column)"
+                      :picker-type="getPickerType(cond.column)"
                       :operator="cond.operator"
                       :options="getOptions(cond.column)"
                       :remote-method="getRemoteMethod(cond.column)"
@@ -105,7 +107,7 @@
                   </template>
 
                   <el-icon class="cond-delete" @click="removeCondition(index)"><Remove /></el-icon>
-                  <el-checkbox v-model="cond.display" class="cond-display" :disabled="!cond.column">外露</el-checkbox>
+                  <el-checkbox :model-value="cond.filterMode === 'exposed'" @change="(val: any) => cond.filterMode = val ? 'exposed' : 'hide'" class="cond-display" :disabled="!cond.column">外露</el-checkbox>
                 </div>
               </div>
 
@@ -149,7 +151,8 @@ import type { ColumnConfig, FilterCondition, FilterResult } from './types.js'
 const props = defineProps<{
   columns: ColumnConfig[]
   operatorOptions: { label: string; value: string }[]
-  exposed?: string[]
+  /** 初始默认筛选值（系统默认参数 / localStorage 恢复），JSON 深拷贝后解绑，仅用于组件初始化 */
+  initialValues?: FilterResult[]
   loadOptions?: (type: string, keyword?: string) => Promise<{ label: string; value: string }[]>
   showAdminBtn?: boolean
 }>()
@@ -163,6 +166,7 @@ const emit = defineEmits<{
 
 const {
   getFieldType,
+  getPickerType,
   isDateRangeField,
   getDateRangeType,
   getDateFormat,
@@ -191,22 +195,94 @@ function createCondition(initialColumn = ''): FilterCondition {
     operator: (col?.operator ?? defaultOp) as FilterCondition['operator'],
     value: '',
     valueStr: '',
-    display: col?.filterMode === 'exposed',
+    filterMode: col?.filterMode ?? 'hide',
   }
 }
 
-/* ============ 初始化 ============ */
+/* ============ 深拷贝初始化（蓝图 → 独立实例） ============ */
 
-if (props.exposed?.length) {
-  props.exposed.forEach((prop) => {
-    if (props.columns.some((c) => c.prop === prop)) {
-      conditions.value.push(createCondition(prop))
-    }
+/** FilterResult → FilterCondition 转换（JSON 深拷贝后 columns 已解绑，col 来自副本） */
+function conditionFromFilterResult(fv: FilterResult, cols: ColumnConfig[]): FilterCondition | null {
+  if (fv.column === 'all') return null
+  const col = cols.find(c => c.prop === fv.column)
+  if (!col) return null
+  const v = fv.value
+  const valueStr = fv.operator === 'in' && Array.isArray(v) ? v.join(',') : ''
+  return {
+    column: fv.column,
+    operator: fv.operator as FilterCondition['operator'],
+    value:
+      fv.operator === 'between' && Array.isArray(v)
+        ? (v as [string, string])
+        : fv.operator === 'in'
+          ? ''
+          : (v as string),
+    valueStr,
+    filterMode: col.filterMode ?? 'hide',
+  }
+}
+
+/**
+ * JSON 深拷贝蓝图 → 构建独立的初始 conditions
+ * 通过 JSON 序列化/反序列化彻底断开与 props.columns 的引用关联
+ */
+function cloneFromBlueprint(
+  cols: ColumnConfig[],
+  initialValues?: FilterResult[],
+): FilterCondition[] {
+  // 🔑 JSON 深拷贝解绑（Blueprint 与 Instance 一刀两断）
+  const blueprint: ColumnConfig[] = JSON.parse(JSON.stringify(cols))
+
+  // ① 有显式初始值：系统默认参数 / localStorage 恢复
+  if (initialValues?.length) {
+    const result = initialValues
+      .map(fv => conditionFromFilterResult(fv, blueprint))
+      .filter(Boolean) as FilterCondition[]
+    console.log('[query.vue] cloneFromBlueprint 路径① initialValues →', result.map(c => `${c.column}=${c.value}`))
+    return result
+  }
+
+  // ② 从蓝图默认值构建（ColumnConfig.value 有值的列）
+  const defaults = blueprint.filter(c => {
+    const v = c.value
+    if (v === undefined || v === null) return false
+    if (typeof v === 'string' && v === '') return false
+    if (Array.isArray(v) && v.length === 0) return false
+    return true
   })
+
+  if (defaults.length) {
+    const result = defaults.map(col => ({
+      column: col.prop,
+      operator: (col.operator ?? defaultOperator(col)) as FilterCondition['operator'],
+      value: col.value! as any,
+      valueStr: '',
+      filterMode: col.filterMode ?? 'hide',
+    }))
+    console.log('[query.vue] cloneFromBlueprint 路径② blueprint默认值 →', result.map(c => `${c.column}=${c.value}`))
+    return result
+  }
+
+  // ③ 没有默认值 → 用 filterMode !== 'hide' 的列创建空条件
+  const visible = blueprint.filter(c => c.filterMode !== 'hide')
+  if (visible.length) {
+    console.log('[query.vue] cloneFromBlueprint 路径③ 空条件 → visible:', visible.map(c => c.prop))
+    return visible.map(col => createCondition(col.prop))
+  }
+
+  // ④ 兜底：一个空条件
+  console.log('[query.vue] cloneFromBlueprint 路径④ 兜底空条件')
+  return [createCondition()]
 }
-if (conditions.value.length === 0) {
-  conditions.value.push(createCondition())
+
+/** 外部调用：重新初始化（如系统默认恢复 / 切换报表） */
+function reinit(values?: FilterResult[]) {
+  conditions.value = cloneFromBlueprint(props.columns, values)
 }
+
+/* ============ 初始化 ============ */
+conditions.value = cloneFromBlueprint(props.columns, props.initialValues)
+
 
 /* ============ 条件操作 ============ */
 
@@ -237,8 +313,8 @@ function onColumnChange(index: number) {
   conditions.value[index].operator = nextOp
   conditions.value[index].value = ''
   conditions.value[index].valueStr = ''
-  if (props.exposed?.includes(col.prop)) {
-    conditions.value[index].display = true
+  if (col.filterMode === 'exposed') {
+    conditions.value[index].filterMode = 'exposed'
   }
 }
 
@@ -256,7 +332,7 @@ function handleClear() {
 
 /* ============ 暴露 ============ */
 
-defineExpose({ conditions })
+defineExpose({ conditions, reinit })
 </script>
 
 <style lang="scss" scoped>

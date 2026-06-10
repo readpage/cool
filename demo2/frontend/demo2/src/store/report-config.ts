@@ -4,7 +4,7 @@
  * 简化版：报告定义由设计器通过 ReportController 保存，此 Store 仅管理报告元数据缓存
  */
 import { defineStore } from 'pinia'
-import type { ReportSaveRequest } from '@/types/report'
+import type { ReportSaveRequest } from '@/views/report/types/report'
 
 export const useReportStore = defineStore('report', () => {
   /** 当前编辑/查看的报告定义 */

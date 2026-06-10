@@ -17,7 +17,7 @@
 
         <!-- 更多操作（三点按钮 → Popover） -->
         <el-popover
-          v-if="crud.import || crud.export"
+          v-if="crud.import"
           trigger="click"
           placement="bottom-end"
           :width="140"
@@ -38,16 +38,6 @@
             >
               <el-icon><Upload /></el-icon>
               <span>导入</span>
-            </div>
-            <div
-              v-if="crud.export"
-              class="u-crud-popover-menu__item"
-              :class="{ 'is-disabled': exporting }"
-              @click="handleExport"
-            >
-              <el-icon v-if="!exporting"><Download /></el-icon>
-              <el-icon v-else class="is-loading"><Loading /></el-icon>
-              <span>{{ exporting ? '导出中...' : '导出' }}</span>
             </div>
           </div>
         </el-popover>
@@ -71,7 +61,11 @@
       :load-options="loadOptions"
       :width="formWidth"
       @saved="onSaved"
-    />
+    >
+      <template v-if="$slots['footer-actions']" #footer-actions="scope">
+        <slot name="footer-actions" v-bind="scope" />
+      </template>
+    </FormDrawer>
 
     <!-- 导入对话框 -->
     <ImportDialog
@@ -84,10 +78,10 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, provide, nextTick } from 'vue'
-import { Plus, MoreFilled, Upload, Download, Loading } from '@element-plus/icons-vue'
+import { Plus, MoreFilled, Upload } from '@element-plus/icons-vue'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import type { CrudApi, FormItemConfig } from './types'
-import type { TableQuery } from '@/types/table'
+import type { TableQuery } from '../table/types'
 import FormDrawer from './FormDrawer.vue'
 import ImportDialog from './ImportDialog.vue'
 
@@ -105,6 +99,7 @@ const props = defineProps<{
 defineSlots<{
   default(): any
   'toolbar-actions'?(): any
+  'footer-actions'?(scope: { data: Record<string, any>; saving: boolean }): any
 }>()
 
 const emit = defineEmits<{
@@ -254,48 +249,11 @@ async function handleImportUpload(formData: FormData) {
   })
 }
 
-// ==================== Export ====================
-
-const exporting = ref(false)
-
 /** 清洗 columns：仅保留后端需要的字段，去除 format/hidden/type 等纯前端属性 */
 function cleanColumns(columns: any[]) {
   return columns.map(({ prop, label, width, minWidth, align, fieldType, optionType }) =>
     ({ prop, label, width, minWidth, align, fieldType, optionType }),
   )
-}
-
-/** 清洗空值 filter */
-function cleanFilter(filter: any[]) {
-  return filter.filter(f => {
-    const v = f.value
-    if (Array.isArray(v)) return v.length > 0 && v.some((e: any) => e !== '')
-    return v !== '' && v != null
-  })
-}
-
-async function handleExport() {
-  const { crud } = props
-  if (!crud.export || exporting.value) return
-  if (!currentQuery.value) {
-    ElMessage.warning('暂无数据可导出')
-    return
-  }
-
-  exporting.value = true
-  try {
-    const filter = cleanFilter(currentQuery.value.filter ?? [])
-    await crud.export({
-      columns: cleanColumns(currentQuery.value.columns),
-      filter,
-      sort: currentQuery.value.sort ?? {},
-    })
-    ElMessage.success('导出成功')
-  } catch {
-    ElMessage.error('导出失败')
-  } finally {
-    exporting.value = false
-  }
 }
 
 // ==================== DOM 插入 selection-bar ====================
@@ -369,10 +327,6 @@ defineExpose({ setSelection: updateBar })
 </script>
 
 <style lang="scss" scoped>
-.u-crud {
-  width: 100%;
-}
-
 .u-crud-toolbar {
   display: flex;
   align-items: center;

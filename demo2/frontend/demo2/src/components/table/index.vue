@@ -4,6 +4,7 @@
     <div class="u-table-toolbar">
       <Search
         v-if="config.search"
+        :key="searchKey"
         :config="config.search"
         :load-options="loadOptions"
         :show-admin-btn="showAdminBtn"
@@ -11,20 +12,29 @@
         @search="onSearchQuery"
         @admin-confirm="onSearchAdminConfirm"
       />
-      <TableSettings
-        :config="config"
-        :show-admin-btn="showAdminBtn"
-        @confirm="onSettingConfirm"
-        @admin-confirm="onAdminConfirm"
-        @reset="onSettingReset"
-      />
+      <div class="u-table-toolbar__right">
+        <el-button
+          v-if="props.export"
+          class="u-export-btn"
+          :loading="exporting"
+          :icon="Download"
+          :title="exporting ? (exportLoadingText || '导出中...') : (exportText || '导出')"
+          @click="handleExport"
+        />
+        <TableSettings
+          :config="config"
+          :show-admin-btn="showAdminBtn"
+          @confirm="onSettingConfirm"
+          @admin-confirm="onAdminConfirm"
+          @reset="onSettingReset"
+        />
+      </div>
     </div>
 
     <div ref="tableWrapperRef" class="u-table-wrapper">
       <el-table
         ref="tableRef"
         :key="reorderKey"
-        v-loading="debouncedLoading"
         :data="tableRows"
         :stripe="config.stripe"
         :size="config.size"
@@ -57,9 +67,9 @@
               @mouseleave="hoverSort = null"
             >
               <span @click.stop="onSort(item.prop!)">{{ item.label }}</span>
-              <span class="u-caret-wrapper" :class="{ visible: sortProp === item.prop || hoverSort === item.prop }">
-                <span class="u-caret-hit" @click.stop="onSort(item.prop!, 'asc')"><i class="u-sort-caret ascending" :class="{ active: sortProp === item.prop && sortOrder === 'asc' }"></i></span>
-                <span class="u-caret-hit" @click.stop="onSort(item.prop!, 'desc')"><i class="u-sort-caret descending" :class="{ active: sortProp === item.prop && sortOrder === 'desc' }"></i></span>
+              <span class="u-caret-wrapper" :class="{ visible: query.sortColumn === item.prop || hoverSort === item.prop }">
+                <span class="u-caret-hit" @click.stop="onSort(item.prop!, 'asc')"><i class="u-sort-caret ascending" :class="{ active: query.sortColumn === item.prop && query.sortDirection === 'asc' }"></i></span>
+                <span class="u-caret-hit" @click.stop="onSort(item.prop!, 'desc')"><i class="u-sort-caret descending" :class="{ active: query.sortColumn === item.prop && query.sortDirection === 'desc' }"></i></span>
               </span>
             </div>
           </template>
@@ -92,8 +102,8 @@
       <!-- 分页器：仅当 data 为 PageResult 时自动显示 -->
       <div v-if="isPaginated" class="u-table-pagination">
         <el-pagination
-          v-model:current-page="currentPage"
-          v-model:page-size="pageSize"
+          v-model:current-page="query.current"
+          v-model:page-size="query.size"
           :total="totalCount"
           :page-sizes="pageSizes"
           layout="total, sizes, prev, pager, next, jumper"
@@ -103,38 +113,23 @@
           @size-change="onSizeChange"
         />
       </div>
-      <TableOverlay
-        :column-highlight-visible="columnHighlightVisible"
-        :column-highlight-style="columnHighlightStyle"
-        :drag-line-visible="dragLineVisible"
-        :drag-line-style="dragLineStyle"
-        :preview-line-visible="previewLineVisible"
-        :preview-line-style="previewLineStyle"
-        :tooltip-visible="tooltipVisible"
-        :tooltip-style="tooltipStyle"
-        :tooltip-text="tooltipText"
-        :drop-line-visible="dropLineVisible"
-        :drop-line-style="dropLineStyle"
-        :col-highlight-visible="colHighlightVisible"
-        :col-highlight-style="colHighlightStyle"
-        :reorder-tooltip-visible="reorderTooltipVisible"
-        :reorder-tooltip-style="reorderTooltipStyle"
-        :reorder-tooltip-label="reorderTooltipLabel"
-      />
+      <TableOverlay :resize="resizeState" :reorder="reorderState" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick, onMounted, inject } from 'vue'
+import { ref, computed, watch, nextTick, onMounted, inject, reactive } from 'vue'
+import { ElMessage } from 'element-plus'
+import { Download } from '@element-plus/icons-vue'
 import { useColumnResize } from './hooks/useColumnResize'
 import { useColumnReorder } from './hooks/useColumnReorder'
-import { useColumnSort } from './hooks/useColumnSort'
 import TableSettings from './TableSettings.vue'
 import TableOverlay from './TableOverlay.vue'
 import Search, { type SearchConfig, type FilterResult } from './search/index.vue'
 import { useTableInit } from './hooks/useTableInit'
-import type { TableQuery, PageResult, OptionItem } from '@/types/table'
+import type { TableQuery, PageResult, OptionItem, FilterItem } from './types'
+
 
 /** 列配置 */
 export interface TableItem {
@@ -170,12 +165,19 @@ export interface TableConfig {
   height?: number | string
   maxHeight?: number | string
   rowKey?: string
-  /** 排序配置 { column, direction } */
-  sort?: { column: string; direction: 'asc' | 'desc' }
-  /** 搜索配置 */
+  /** 搜索配置（含默认排序） */
   search?: SearchConfig
+  /** 默认排序 */
+  sort?: { column: string; direction: 'asc' | 'desc' }
   /** 全局选项映射 { prop → OptionItem[] }，跨 columns/search 共享翻译 */
   optionsMap?: Record<string, OptionItem[]>
+}
+
+/** 导出参数 */
+export interface ExportParams {
+  columns: Pick<TableItem, 'prop' | 'label' | 'width' | 'minWidth' | 'align' | 'fieldType' | 'optionType'>[]
+  filter: FilterItem[]
+  sort?: { column: string; direction: string }
 }
 
 const props = defineProps<{
@@ -189,6 +191,12 @@ const props = defineProps<{
   id?: string
   /** 选项加载器：type=选项类别，keyword=搜索关键词(可选)。用于表格翻译预加载和搜索下拉 */
   loadOptions?: (type: string, keyword?: string) => Promise<{ label: string; value: string }[]>
+  /** 导出 API：传入即显示导出按钮，不传不显示 */
+  'export'?: (params: ExportParams) => Promise<boolean | void>
+  /** 导出按钮文案，默认"导出" */
+  exportText?: string
+  /** 导出中文案，默认"导出中..." */
+  exportLoadingText?: string
 }>()
 
 // ==================== 智能 data 派生 ====================
@@ -227,18 +235,180 @@ function startInternalLoading(): () => void {
   }
 }
 
-// ==================== Table 自管分页状态 ====================
+// ==================== 页码大小持久化（localStorage） ====================
 
-const currentPage = ref(1)
-const pageSize = ref(10)
 const pageSizes = [10, 20, 50, 100]
+
+/** 读取持久化的 pageSize，无 id 或无存储记录时返回默认值 10 */
+function getPersistedPageSize(): number {
+  if (!props.id) return 10
+  try {
+    const raw = localStorage.getItem(`table:pageSize:${props.id}`)
+    if (raw !== null) {
+      const val = Number(raw)
+      if (Number.isInteger(val) && pageSizes.includes(val)) return val
+    }
+  } catch { /* ignore */ }
+  return 10
+}
+
+/** 写入持久化的 pageSize */
+function persistPageSize(size: number) {
+  if (!props.id) return
+  try {
+    localStorage.setItem(`table:pageSize:${props.id}`, String(size))
+  } catch { /* ignore */ }
+}
+
+// ==================== 统一查询参数（运行时状态，与 config 分离，不持久化） ====================
+
+const query = reactive({
+  /** 当前页 (1-based) */
+  current: 1,
+  /** 每页条数 */
+  size: getPersistedPageSize(),
+  /** 筛选条件 */
+  filter: [] as FilterResult[],
+  /** 排序字段 */
+  sortColumn: null as string | null,
+  /** 排序方向 */
+  sortDirection: null as 'asc' | 'desc' | null,
+})
+
+/** 控制 Search 组件重挂载（切换报表 / 系统默认恢复时 +1），强制重新 JSON 深拷贝蓝图 */
+const searchKey = ref(0)
+
+// 从 config 初始化 query.filter 和 query.sort（仅首次，后续手动触发）
+function initQueryFromConfig(cfg?: TableConfig) {
+  const config = cfg || props.config
+  const defaults: FilterResult[] = []
+  config.search?.filter.forEach((col) => {
+    const v = col.value
+    if (v === undefined || v === null) return
+    if (typeof v === 'string' && v === '') return
+    if (Array.isArray(v) && v.length === 0) return
+    defaults.push({
+      column: col.prop,
+      operator: (col.operator || 'contains') as FilterResult['operator'],
+      value: v as FilterResult['value'],
+    })
+  })
+  query.filter = defaults.length ? defaults : []
+
+  const s = config.sort
+  if (s?.column && s?.direction) {
+    query.sortColumn = s.column
+    query.sortDirection = s.direction
+  } else {
+    query.sortColumn = null
+    query.sortDirection = null
+  }
+}
+
+console.log('[table/index] ═══ Table setup 开始 — props.config.columns:', props.config.columns?.length, 'search.filter:', props.config.search?.filter?.length)
+initQueryFromConfig()
+console.log('[table/index] setup initQueryFromConfig 后 → query.filter:', query.filter.map(f => f.column), 'query.sort:', query.sortColumn, query.sortDirection)
+
+// 浅层 watch：config 对象引用被整体替换时，重置 query 状态（不自动查询，由外部显式触发）
+watch(
+  () => props.config,
+  (newConfig) => {
+    console.log('[table/index] ═══ watch props.config 触发 — columns:', newConfig?.columns?.length, 'search.filter:', newConfig?.search?.filter?.length)
+    if (!newConfig?.columns?.length) return
+    query.current = 1
+    query.size = getPersistedPageSize()
+    initQueryFromConfig(newConfig)
+    console.log('[table/index] watch 后 query.filter:', query.filter.map(f => `${f.column}=${f.value}`), 'query.sort:', query.sortColumn, query.sortDirection)
+    searchKey.value++  // 强制 Search 组件重挂载，重新 JSON 深拷贝蓝图
+    console.log('[table/index] searchKey++ →', searchKey.value)
+  },
+)
+
+/** 排序逻辑：sort(prop) 循环 asc→desc→none；sort(prop, 'asc'/'desc') 直指方向 */
+function doSort(prop: string, target?: 'asc' | 'desc') {
+  if (!target) {
+    if (query.sortColumn === prop) {
+      if (query.sortDirection === 'asc') { query.sortDirection = 'desc' }
+      else if (query.sortDirection === 'desc') { query.sortColumn = null; query.sortDirection = null }
+      else { query.sortDirection = 'asc' }
+    } else {
+      query.sortColumn = prop; query.sortDirection = 'asc'
+    }
+  } else {
+    if (query.sortColumn === prop && query.sortDirection === target) {
+      query.sortColumn = null; query.sortDirection = null
+    } else {
+      query.sortColumn = prop; query.sortDirection = target
+    }
+  }
+  query.current = 1
+
+  // 将排序状态写回 config，供持久化
+  if (query.sortColumn && query.sortDirection) {
+    props.config.sort = { column: query.sortColumn, direction: query.sortDirection }
+  } else {
+    delete props.config.sort
+  }
+
+  emit('change', props.config)
+  emitQuery()
+}
+
+// ==================== 导出 ====================
+
+const exporting = ref(false)
+
+/** 清洗 columns：仅保留后端需要的字段 */
+function cleanColumns(cols: TableItem[]) {
+  return cols.map(({ prop, label, width, minWidth, align, fieldType, optionType }) =>
+    ({ prop, label, width, minWidth, align, fieldType, optionType }),
+  )
+}
+
+/** 清洗空值 filter */
+function cleanFilter(filter: FilterItem[]): FilterItem[] {
+  return filter.filter(f => {
+    const v = f.value
+    if (Array.isArray(v)) return v.length > 0 && v.some((e: any) => e !== '')
+    return v !== '' && v != null
+  })
+}
+
+async function handleExport() {
+  if (!props['export'] || exporting.value) return
+  exporting.value = true
+  try {
+    const visibleCols = props.config.columns.filter(c => !c.hidden)
+    const filter = cleanFilter(
+      query.filter
+        .filter(fv => !!fv.column)
+        .map(fv => ({
+          column: fv.column,
+          operator: fv.operator,
+          value: fv.value as FilterItem['value'],
+        })),
+    )
+    await props['export']({
+      columns: cleanColumns(visibleCols),
+      filter,
+      sort: query.sortColumn && query.sortDirection
+        ? { column: query.sortColumn, direction: query.sortDirection }
+        : undefined,
+    })
+    ElMessage.success('导出成功')
+  } catch {
+    // 错误提示由父组件处理
+  } finally {
+    exporting.value = false
+  }
+}
 
 /** 删完最后一页 → 自动回退并重新请求 */
 watch(totalCount, (t) => {
   if (!isPaginated.value) return
-  const max = Math.ceil(t / pageSize.value) || 1
-  if (currentPage.value > max) {
-    currentPage.value = max
+  const max = Math.ceil(t / query.size) || 1
+  if (query.current > max) {
+    query.current = max
     nextTick(() => emitQuery())
   }
 })
@@ -299,15 +469,15 @@ const isFixedCol = (item: TableItem) => !!item.fixed
 const columnsRef = computed(() => props.config.columns)
 
 // 列宽拖拽
-const { dragLineVisible, dragLineStyle, previewLineVisible, previewLineStyle, columnHighlightVisible, columnHighlightStyle, tooltipVisible, tooltipStyle, tooltipText } = useColumnResize({
+const resizeState = reactive(useColumnResize({
   wrapperRef: tableWrapperRef,
   columns: columnsRef,
   edgeThreshold: 12,
   onResizeEnd: () => { emit('change', props.config) },
-})
+}))
 
 // 列排序拖拽
-const { dropLineVisible, dropLineStyle, colHighlightVisible, colHighlightStyle, reorderTooltipVisible, reorderTooltipLabel, reorderTooltipStyle } = useColumnReorder({
+const reorderState = reactive(useColumnReorder({
   wrapperRef: tableWrapperRef,
   columns: columnsRef,
   isFixed: isFixedCol,
@@ -315,65 +485,68 @@ const { dropLineVisible, dropLineStyle, colHighlightVisible, colHighlightStyle, 
     reorderKey.value++
     emit('change', props.config)
   },
-})
+}))
 
-// 单列数据排序 — sync() 闭包捕获 init 时 config，对象被替换后失效，故 watch 直读 props
-const { sortProp, sortOrder, sort } = useColumnSort(props.config)
-watch(() => props.config.sort, (s) => {
-  sortProp.value = s?.column ?? null
-  sortOrder.value = s?.direction ?? null
-})
 const hoverSort = ref<string | null>(null)
+
+
 
 // 统一的查询事件构建
 function emitQuery() {
-  const filter = props.config.search?.filterValues ?? []
-  // 过滤掉隐藏列，供导出等功能判断需要显示哪些列
+  console.log('[table/index] emitQuery 触发 → current:', query.current, 'size:', query.size, 'filter:', query.filter.map(f => `${f.column}=${f.value}`), 'sort:', query.sortColumn, query.sortDirection)
+  const filter: FilterItem[] = query.filter
+    .filter(fv => !!fv.column)
+    .map(fv => ({
+      column: fv.column,
+      operator: fv.operator,
+      value: fv.value as FilterItem['value'],
+    }))
   const visibleColumns = props.config.columns.filter(c => !c.hidden)
-  const query: TableQuery = {
-    current: currentPage.value,
-    size: pageSize.value,
+  const payload: TableQuery = {
+    current: query.current,
+    size: query.size,
     filter,
-    sort: props.config.sort,
+    sort: query.sortColumn && query.sortDirection
+      ? { column: query.sortColumn, direction: query.sortDirection }
+      : undefined,
     columns: visibleColumns,
   }
-  // 始终由 Table 内部管理 loading，通过 done 回调通知父组件结束
   const done = startInternalLoading()
-  emit('query', query, done)
-  reportQuery?.(query)
+  emit('query', payload, done)
+  reportQuery?.(payload)
 }
 
-// 搜索配置变更 → 持久化
+// 搜索配置变更 → 持久化（仅 filter/currentField 等元数据，不含 filterValues）
 function onSearchSave(_cfg: SearchConfig) {
   emit('change', props.config)
 }
 
-// 搜索查询 → 调 API
+// 搜索查询 → 更新 query.filter，调 API（不持久化 config）
 function onSearchQuery(filters: FilterResult[]) {
-  if (props.config.search) {
-    props.config.search.filterValues = filters
-  }
-  // 筛选变化 → 重置到第一页
-  currentPage.value = 1
+  query.filter = filters
+  query.current = 1
   emitQuery()
 }
 
-const onSort = (prop: string, target?: 'asc' | 'desc') => {
-  sort(prop, target)
-  props.config.sort = sortProp.value && sortOrder.value
-    ? { column: sortProp.value, direction: sortOrder.value }
-    : undefined
-  // 排序变化 → 重置到第一页
-  currentPage.value = 1
-  emit('change', props.config)
-  emitQuery()
+function onSort(prop: string, target?: 'asc' | 'desc') {
+  doSort(prop, target)
 }
 
 // ==================== 分页事件 ====================
 
 /** 每页条数变化 → 已在 v-model 中更新，重置到第一页 */
 function onSizeChange(_size: number) {
-  currentPage.value = 1
+  persistPageSize(_size)
+  query.current = 1
+
+  // 将排序状态写回 config，供持久化
+  if (query.sortColumn && query.sortDirection) {
+    props.config.sort = { column: query.sortColumn, direction: query.sortDirection }
+  } else {
+    delete props.config.sort
+  }
+
+  emit('change', props.config)
   emitQuery()
 }
 
@@ -387,11 +560,18 @@ function translateValue(prop: string | undefined, rawValue: any): any {
 const TAG_TYPES = ['primary', 'success', 'warning', 'danger', 'info'] as const
 const DOT_COLORS = ['#409eff', '#67c23a', '#e6a23c', '#f56c6c', '#909399']
 
+/** autoStyle 结果缓存，避免每单元格重复 hash 计算 */
+const styleCache = new Map<string, { tagType: typeof TAG_TYPES[number]; dotColor: string }>()
+
 /** 根据字符串 hash 自动分配一个固定的 type/color，同一 value 始终得到同一颜色 */
 function autoStyle(v: string) {
+  const cached = styleCache.get(v)
+  if (cached) return cached
   const hash = [...v].reduce((h, c) => h + c.charCodeAt(0), 0)
   const idx = Math.abs(hash) % TAG_TYPES.length
-  return { tagType: TAG_TYPES[idx], dotColor: DOT_COLORS[idx] }
+  const result = { tagType: TAG_TYPES[idx], dotColor: DOT_COLORS[idx] }
+  styleCache.set(v, result)
+  return result
 }
 
 /** 获取指定值对应的 el-tag type（显式 style > 自动 fallback） */
@@ -444,15 +624,15 @@ function onSearchAdminConfirm() {
 }
 
 const onSettingReset = (cols: TableItem[]) => {
-  console.log('[Table] onSettingReset 触发', { colCount: cols.length, cols: cols.map(c => c.prop) })
   props.config.columns.splice(0, props.config.columns.length)
   cols.forEach(c => props.config.columns.push(c))
   reorderKey.value++
-  console.log('[Table] reorderKey++ →', reorderKey.value, 'emit reset')
+  searchKey.value++  // 强制 Search 重挂载，以新 columns 重新 JSON 深拷贝初始化 conditions
+  query.filter = []
   emit('reset')
 }
 
-defineExpose({ tableRef, reload })
+defineExpose({ tableRef, reload, refresh: emitQuery })
 </script>
 
 <style lang="scss" scoped>
@@ -465,16 +645,25 @@ defineExpose({ tableRef, reload })
   justify-content: space-between;
   min-height: 36px;
   padding: 4px 6px;
+
+  &__right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+.u-export-btn {
+  height: 28px !important;
+  width: 28px !important;
+  padding: 0 !important;
+  min-width: unset !important;
 }
 
 .u-table-wrapper {
   width: 100%;
   position: relative;
-
-  // 表格撑满容器
-  :deep(.el-table) {
-    width: 100% !important;
-  }
+  overflow: auto;
 
   // 单元格文字溢出省略号
   :deep(.el-table__cell) {

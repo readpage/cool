@@ -13,7 +13,7 @@
 import { computed, reactive } from 'vue'
 import { defineStore, storeToRefs } from 'pinia'
 import type { TableConfig } from '@/components/table/index.vue'
-import type { SysConfigEntity, UserConfigEntity } from '@/api/config'
+import type { SysConfigEntity, UserConfigEntity, ConfigResult } from '@/api/config'
 import { AConfig } from '@/api/config'
 import { readCache, writeCache, removeCache, SCHEMA_VERSION, DEFAULT_MAX_AGE_MS } from './storage'
 import { useUserStore } from '@/store/user'
@@ -113,37 +113,26 @@ export const useTableConfigStore = defineStore('table-config', () => {
   // 防止同一 tableId 并发重复请求
   const pending = new Map<string, Promise<void>>()
 
+  // 已触发过远端拉取的 ID（防止 computed 反复调用 fetchRemote 导致死循环）
+  const fetched = new Set<string>()
+
   // ==================== 内部：后台拉取（fire & forget） ====================
 
   async function fetchRemote(tableId: string): Promise<void> {
     if (pending.has(tableId)) return pending.get(tableId)!
 
     const promise = (async () => {
-      // 第1层：用户个人配置（user_config 表）
       try {
-        const { data: userEntity } = await AConfig.my({ configGroup: DEFAULT_GROUP, configKey: tableId })
-        if (userEntity) {
-          // 避免覆盖用户当前会话中已通过 save() 写入的本地配置
-          if (!configs.has(tableId)) {
-            const config = fromEntity(userEntity)
-            configs.set(tableId, config)
-            serverVersions.set(tableId, 0)
-            writeConfigCache(DEFAULT_GROUP, tableId, config, 0)
-          }
-          return
-        }
-      } catch { /* 继续尝试系统配置 */ }
-
-      // 第2层：系统默认配置（sys_config 表）
-      try {
-        const { data: sysEntity } = await AConfig.system({ configGroup: DEFAULT_GROUP, configKey: tableId })
-        if (sysEntity && !configs.has(tableId)) {
-          const config = fromEntity(sysEntity)
+        // 只获取用户自己的配置（user_config），不再走 copy-on-read 合并逻辑
+        // 版本更新通知：后续可通过 AConfig.checkVersion() 周期性检查 sys_config 版本，引导用户调用 reset
+        const { data: result } = await AConfig.my({ configGroup: DEFAULT_GROUP, configKey: tableId })
+        if (result && result.configValue) {
+          const config = JSON.parse(result.configValue) as TableConfig
           configs.set(tableId, config)
-          serverVersions.set(tableId, sysEntity.version ?? 0)
-          writeConfigCache(DEFAULT_GROUP, tableId, config, sysEntity.version ?? 0)
+          serverVersions.set(tableId, 0) // user_config 无版本号
+          writeConfigCache(DEFAULT_GROUP, tableId, config, 0)
         }
-      } catch { /* 两端都失败，组件走 ?? initTableConfig() */ }
+      } catch { /* 远端失败，保持本地缓存不动 */ }
     })()
 
     pending.set(tableId, promise)
@@ -156,14 +145,19 @@ export const useTableConfigStore = defineStore('table-config', () => {
 
   // ==================== 公开 API ====================
 
-  /** 同步读缓存 + 首次调用 fire & forget 触发后台拉取 */
+  /** 同步返回缓存（如有），同时 fire-and-forget 远端拉取最新配置 */
   function getConfig(tableId: string): TableConfig | null {
-    const cached = configs.get(tableId)
-    if (!cached) {
-      // 首次无缓存：fire & forget 不阻塞返回（后续 configs.set 触发响应式更新）
+    if (!fetched.has(tableId)) {
+      fetched.add(tableId)
       fetchRemote(tableId)
     }
-    return cached ?? null
+    return configs.get(tableId) ?? null
+  }
+
+  /** 显式加载远端配置：拉取并写入 reactive Map，返回最终配置 */
+  async function loadConfig(tableId: string): Promise<TableConfig | null> {
+    await fetchRemote(tableId)
+    return configs.get(tableId) ?? null
   }
 
   // ==================== 初始化 ====================
@@ -171,6 +165,7 @@ export const useTableConfigStore = defineStore('table-config', () => {
   /** 从 localStorage 恢复所有缓存配置（readCache 已内置过期校验，过期时间由写入时设定） */
   function restoreFromLocalStorage(group: string = DEFAULT_GROUP) {
     const prefix = `cfg_${group}_`
+    let restoredCount = 0
     const keysToRemove: string[] = []
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i)
@@ -182,14 +177,25 @@ export const useTableConfigStore = defineStore('table-config', () => {
         }
         const entry = readConfigCache(group, tableId)
         if (entry) {
+          console.log(`[Store.restore] tableId=${tableId}, search.filter:`, (entry.config as any).search?.filter?.map((c: any) => ({ prop: c.prop, value: c.value })))
           configs.set(tableId, entry.config)
           serverVersions.set(tableId, entry.serverVersion)
+          restoredCount++
         }
       }
     }
     for (const k of keysToRemove) {
       localStorage.removeItem(k)
     }
+    console.log(`[TableConfig] restoreFromLocalStorage: ${restoredCount} 条缓存恢复，${keysToRemove.length} 条脏数据清除`)
+  }
+
+  // ==================== 仅写本地（不发请求） ====================
+
+  /** 仅写入本地缓存（Map + localStorage），不触发远程保存。用于加载/回显场景建立基线。 */
+  function setLocal(tableId: string, config: TableConfig, group: string = DEFAULT_GROUP) {
+    configs.set(tableId, config)
+    writeConfigCache(group, tableId, config, serverVersions.get(tableId) ?? 0)
   }
 
   // ==================== 防抖保存 ====================
@@ -197,20 +203,25 @@ export const useTableConfigStore = defineStore('table-config', () => {
   const saveTimers = new Map<string, ReturnType<typeof setTimeout>>()
 
   /** 保存当前用户的表格配置（写入 user_config 表） */
-  async function save(tableId: string, config: TableConfig) {
+  async function save(tableId: string, config: TableConfig, group: string = DEFAULT_GROUP) {
+    console.log('[Store.save] 入参 tableId:', tableId, 'config.search?.filter:', (config as any).search?.filter?.map((c: any) => ({ prop: c.prop, value: c.value, operator: c.operator })))
     configs.set(tableId, config)
-    writeConfigCache(DEFAULT_GROUP, tableId, config, serverVersions.get(tableId) ?? 0)
+    writeConfigCache(group, tableId, config, serverVersions.get(tableId) ?? 0)
+    // 验证写入 localStorage 的内容
+    const verifed = readConfigCache(group, tableId)
+    console.log('[Store.save] localStorage 回读验证:', (verifed as any)?.config?.search?.filter?.map((c: any) => ({ prop: c.prop, value: c.value })))
 
-    const existingTimer = saveTimers.get(tableId)
+    const timerKey = `${group}::${tableId}`
+    const existingTimer = saveTimers.get(timerKey)
     if (existingTimer) clearTimeout(existingTimer)
 
-    saveTimers.set(tableId, setTimeout(async () => {
-      saveTimers.delete(tableId)
+    saveTimers.set(timerKey, setTimeout(async () => {
+      saveTimers.delete(timerKey)
       try {
-        const entity = toUserEntity(DEFAULT_GROUP, tableId, MOCK_USER_ID, config)
+        const entity = toUserEntity(group, tableId, MOCK_USER_ID, config)
         await AConfig.save(entity)
         serverVersions.set(tableId, 0)
-        writeConfigCache(DEFAULT_GROUP, tableId, config, 0)
+        writeConfigCache(group, tableId, config, 0)
       } catch {
         console.warn(`[TableConfigStore] 远端保存失败: ${tableId}`)
       }
@@ -220,9 +231,9 @@ export const useTableConfigStore = defineStore('table-config', () => {
   // ==================== 管理员操作 ====================
 
   /** 管理员保存为系统默认（写入 sys_config 表） */
-  async function saveAsSystem(tableId: string, config: TableConfig) {
+  async function saveAsSystem(tableId: string, config: TableConfig, group: string = DEFAULT_GROUP) {
     try {
-      const entity = toSystemEntity(DEFAULT_GROUP, tableId, config)
+      const entity = toSystemEntity(group, tableId, config)
       const { data: saved } = await AConfig.systemSave(entity)
       configs.set(tableId, config)
       serverVersions.set(tableId, saved.version ?? 0)
@@ -231,31 +242,20 @@ export const useTableConfigStore = defineStore('table-config', () => {
     }
   }
 
-  /** 恢复系统默认（清除本地缓存 → 拉取系统默认 → 覆盖写入用户服务端槽位） */
-  async function resetToSystem(tableId: string, codeDefault: TableConfig) {
+  /** 恢复系统默认 — 调后端 POST /config/reset：sys_config 覆盖 user_config，返回系统配置 */
+  async function resetToSystem(tableId: string, codeDefault: TableConfig, group: string = DEFAULT_GROUP) {
     console.log('[Store] resetToSystem 开始 →', tableId)
     try {
-      removeConfigCache(DEFAULT_GROUP, tableId)
-      serverVersions.delete(tableId)
-      console.log('[Store] 已清除本地缓存')
-
-      const { data: systemEntity } = await AConfig.system({ configGroup: DEFAULT_GROUP, configKey: tableId })
-      if (systemEntity) {
-        const cfg = fromEntity(systemEntity)
+      const { data: result } = await AConfig.reset({ configGroup: group, configKey: tableId })
+      if (result && result.configValue) {
+        const cfg = JSON.parse(result.configValue) as TableConfig
         configs.set(tableId, cfg)
-        serverVersions.set(tableId, systemEntity.version ?? 0)
-        console.log('[Store] 使用服务端系统默认配置 →', { columns: cfg.columns.length, search: !!cfg.search })
-        // 用系统配置覆盖用户服务端槽位
-        const entity = toUserEntity(DEFAULT_GROUP, tableId, MOCK_USER_ID, cfg)
-        await AConfig.save(entity)
-        console.log('[Store] 已覆盖用户服务端配置')
+        serverVersions.set(tableId, result.version ?? 0)
+        writeConfigCache(group, tableId, cfg, result.version ?? 0)
+        console.log('[Store] 后端已用 sys_config 覆盖 user_config →', { columns: cfg.columns.length, search: !!cfg.search, source: result.source })
       } else {
         configs.set(tableId, codeDefault)
         console.log('[Store] 服务端无配置，使用代码默认 initTableConfig →', { columns: codeDefault.columns.length, search: !!codeDefault.search })
-        // 将代码默认写入用户槽位
-        const entity = toUserEntity(DEFAULT_GROUP, tableId, MOCK_USER_ID, codeDefault)
-        await AConfig.save(entity)
-        console.log('[Store] 已用代码默认覆盖用户服务端配置')
       }
     } catch {
       console.warn(`[TableConfigStore] 恢复默认失败: ${tableId}`)
@@ -281,7 +281,7 @@ export const useTableConfigStore = defineStore('table-config', () => {
 
   return {
     configs, serverVersions,
-    getConfig, save, saveAsSystem, resetToSystem,
+    getConfig, loadConfig, setLocal, save, saveAsSystem, resetToSystem,
     restoreFromLocalStorage, batchApply,
     isAdmin,
   }

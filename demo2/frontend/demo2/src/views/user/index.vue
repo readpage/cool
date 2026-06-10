@@ -14,7 +14,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import Table from '@/components/table/index.vue'
-import type { TableConfig, TableQuery, PageResult } from '@/types/table'
+import type { TableConfig, TableQuery, PageResult } from '@/components/table/types'
 import { useTableConfigStore } from '@/store/table-config'
 import { useOptionsStore } from '@/store/options'
 
@@ -64,8 +64,8 @@ function seedConfig() {
 
 // ==================== 配置 & 查询 ====================
 
-/** 配置来源：store 缓存 → 代码兜底（appStore.init 已预加载） */
-const tableConfig = computed(() => $store.getConfig('user') ?? initConfig())
+/** 配置来源：store 缓存 → 代码兜底，远端异步加载不触发重复查询 */
+const tableConfig = computed<TableConfig>(() => $store.getConfig('user') ?? initConfig())
 
 /**
  * 统一查询入口：@query 返回的 payload 直接对齐后端 FilterParam 请求体

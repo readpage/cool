@@ -5,6 +5,7 @@ import com.example.domain.dto.ReportSaveRequest;
 import com.example.template.util.FilterParam;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 报告服务接口
@@ -31,4 +32,13 @@ public interface ReportService {
 
     /** 即时执行 SQL 查询（不依赖已保存的报告） */
     ReportQueryResult execute(String sqlTemplate, FilterParam param);
+
+    /** 导出已保存报告 — 全量查询（不分页） */
+    List<Map<String, Object>> queryAllByTableKey(String tableKey, FilterParam param);
+
+    /** 导出即时 SQL — 全量查询（不分页） */
+    List<Map<String, Object>> executeForExport(String sqlTemplate, FilterParam param);
+
+    /** 统计引用指定数据源的报告数量 */
+    long countByDatasourceId(Long datasourceId);
 }

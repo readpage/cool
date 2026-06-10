@@ -43,22 +43,8 @@ public class JsoupUtils {
 
 
     public static String filter(String str) {
-        if (StrUtils.isEmpty(str)) {
-            return null;
-        }
-        String clean = JsonFilterUtils.filter(str, (k, v) -> {
-            if (StrUtils.isEmpty(v)) {
-                return null;
-            }
-            if (sensitive) {
-                v = SensitiveUtils.filter(v);
-            }
-            if (xss) {
-                v = clean(v);
-            }
-            return v;
-        });
-        return clean;
+        // 去除 XSS 防御：直接返回原字符串，不对请求体做 HTML 实体编码
+        return str;
     }
 
 }

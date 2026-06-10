@@ -77,38 +77,40 @@ public class QueryProxyFactory {
         private Object executeUpdate(String template, Method method, Object[] args) {
             Map<String, Object> params = resolveParams(method, args, template);
             SqlResult result = engine.render(template, params);
-            log(result.getSql(), params);
-            return jdbc.update(result.getSql(), params);
+            String renderedSql = FilterParam.cleanRenderedSql(result.getSql());
+            log(renderedSql, params);
+            return jdbc.update(renderedSql, params);
         }
 
         private Object executeQuery(String template, Method method, Object[] args) {
             Map<String, Object> params = resolveParams(method, args, template);
             SqlResult result = engine.render(template, params);
-            log(result.getSql(), params);
+            String renderedSql = FilterParam.cleanRenderedSql(result.getSql());
+            log(renderedSql, params);
             Class<?> returnType = method.getReturnType();
 
             // 分页查询：返回 PageResult
             if (PageResult.class.isAssignableFrom(returnType)) {
-                return executePageQuery(result.getSql(), params, method, args);
+                return executePageQuery(renderedSql, params, method, args);
             }
 
             if (List.class.isAssignableFrom(returnType)) {
                 // 自动分页：FilterParam.paginate=true 时先 COUNT 再 LIMIT，total 写回 FilterParam
                 FilterParam fp = findFilterParam(args);
                 if (fp != null && fp.isPaginate()) {
-                    return executeImplicitPageQuery(result.getSql(), params, method, fp);
+                    return executeImplicitPageQuery(renderedSql, params, method, fp);
                 }
                 Class<?> elementType = resolveElementType(method.getGenericReturnType());
                 if (Map.class.isAssignableFrom(elementType))
-                    return jdbc.queryForList(result.getSql(), params);
-                return jdbc.query(result.getSql(), params,
+                    return jdbc.queryForList(renderedSql, params);
+                return jdbc.query(renderedSql, params,
                         new BeanPropertyRowMapper<>(elementType));
             }
             if (Map.class.isAssignableFrom(returnType)) {
-                List<Map<String, Object>> list = jdbc.queryForList(result.getSql(), params);
+                List<Map<String, Object>> list = jdbc.queryForList(renderedSql, params);
                 return list.isEmpty() ? null : list.get(0);
             }
-            List<?> list = jdbc.query(result.getSql(), params,
+            List<?> list = jdbc.query(renderedSql, params,
                     new BeanPropertyRowMapper<>(returnType));
             return list.isEmpty() ? null : list.get(0);
         }

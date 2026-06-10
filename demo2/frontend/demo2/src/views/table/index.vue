@@ -15,7 +15,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import Table from '@/components/table/index.vue'
-import type { TableConfig } from '@/types/table'
+import type { TableConfig } from '@/components/table/types'
 import type { TableItem } from '@/components/table/index.vue'
 import { useTableConfigStore } from '@/store/table-config'
 
@@ -61,8 +61,8 @@ const initConfig = (): TableConfig => ({
 
 const selection = ref(false)
 
-/** 配置来源：store 缓存 → 代码兜底（appStore.init 已预加载） */
-const tableConfig = computed(() => $store.getConfig('book') ?? initConfig())
+/** 配置来源：store 缓存 → 代码兜底，远端异步加载不触发重复查询 */
+const tableConfig = computed<TableConfig>(() => $store.getConfig('book') ?? initConfig())
 
 // 配置变更 → appStore 统一保存
 function onConfigChange(config: TableConfig) {

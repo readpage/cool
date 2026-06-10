@@ -13,8 +13,8 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * <h3>语法</h3>
  * <ul>
- *   <li>{{key}} — 字符串插值（从 params 取值直拼 SQL）</li>
- *   <li>#{key}  — 参数化占位符（输出 :key，值放入 paramMap）</li>
+ *   <li>{{key}} — 字符串插值（从 params 取值直拼 SQL，用于 filter/sort 等系统片段）</li>
+ *   <li>#{key}  — 参数化占位符（输出 :key，值由 JDBC 绑定，天然防注入）</li>
  *   <li>[[...]] — 可选块（内部任一 #{key} 有值时保留，否则丢弃）</li>
  * </ul>
  */

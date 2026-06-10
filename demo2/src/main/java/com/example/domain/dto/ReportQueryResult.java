@@ -13,9 +13,9 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ReportQueryResult {
-    /** 列元数据（prop=col_0/col_1...，label=SQL别名） */
+    /** 列元数据（prop=模板提取的原名，用于筛选/排序/数据绑定；label=JDBC别名，用于显示） */
     private List<ColumnMeta> columns;
-    /** 数据行（key=col_N 对应 columns.prop） */
+    /** 数据行（key=prop 对应 columns.prop） */
     private List<Map<String, Object>> list;
     /** 总记录数 */
     private long total;
@@ -25,15 +25,15 @@ public class ReportQueryResult {
     private int size;
 
     /**
-     * 列元数据 — 从 JDBC ResultSetMetaData 自动提取
+     * 列元数据
      */
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
     public static class ColumnMeta {
-        /** 内部字段名（col_0, col_1, ...），驱动无关，永远稳定 */
+        /** 列原名（从 SQL 模板提取 AS 前的标识符），用于 WHERE/ORDER BY 和前端数据绑定 */
         private String prop;
-        /** 显示标签 = SQL getColumnLabel()（别名优先，无别名回退到原始列名） */
+        /** 显示名 = JDBC getColumnLabel()（别名如 用户名），可在表格配置中自行修改 */
         private String label;
         /** SQL 类型（java.sql.Types 值），前端可用于自动格式化 */
         private int sqlType;

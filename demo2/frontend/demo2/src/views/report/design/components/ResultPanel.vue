@@ -7,11 +7,12 @@
 
     <div class="panel-body">
       <Table
-        v-if="resultData"
+        v-if="resultData || tableConfig.columns.length"
         id="report-exec"
         :config="tableConfig"
         :data="tableData"
         :show-admin-btn="false"
+        :export="export"
         @query="(v, done) => $emit('query', v, done)"
       />
       <el-empty v-else description="点击右侧「▶ 运行」执行查询" :image-size="100" />
@@ -20,14 +21,15 @@
 </template>
 
 <script setup lang="ts">
-import Table from '@/components/table/index.vue'
-import type { ReportQueryResult } from '@/types/report'
-import type { TableConfig, TableQuery, PageResult } from '@/types/table'
+import Table, { type ExportParams } from '@/components/table/index.vue'
+import type { ReportQueryResult } from '../../types/report'
+import type { TableConfig, TableQuery, PageResult } from '../../types/table'
 
 defineProps<{
   resultData: ReportQueryResult | null
   tableConfig: TableConfig
   tableData: PageResult
+  export?: (params: ExportParams) => Promise<boolean | void>
 }>()
 
 type DoneFn = () => void

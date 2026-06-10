@@ -6,13 +6,15 @@
  */
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { useTableStore } from './table'
+import { useTableConfigStore } from './table-config'
+import { useOptionsStore } from './options'
 
 export const useAppStore = defineStore('app', () => {
   const initDone = ref(false)
 
   async function init() {
-    await useTableStore().init()
+    useTableConfigStore().restoreFromLocalStorage()  // 表格配置缓存
+    useOptionsStore().init()                         // 下拉选项缓存
     initDone.value = true
   }
 

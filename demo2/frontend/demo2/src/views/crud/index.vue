@@ -4,6 +4,7 @@
       id="crud-demo"
       :config="tableConfig"
       :data="tableData"
+      :export="handleExport"
       selection
       :load-options="loadOptions"
       :showAdminBtn="false"
@@ -19,8 +20,8 @@
 import { ref, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import Crud from '@/components/crud/index.vue'
-import Table from '@/components/table/index.vue'
-import type { TableConfig, TableQuery, PageResult } from '@/types/table'
+import Table, { type ExportParams } from '@/components/table/index.vue'
+import type { TableConfig, TableQuery, PageResult } from '@/components/table/types'
 import type { CrudApi } from '@/components/crud/types'
 import { useTableConfigStore } from '@/store/table-config'
 import { useOptionsStore } from '@/store/options'
@@ -29,7 +30,7 @@ import { AUser } from '@/api'
 
 const $store = useTableConfigStore()
 const tableData = ref<PageResult>({ list: [], total: 0 })
-const tableConfig = computed(() => $store.getConfig('crud-demo') ?? initTableConfig())
+const tableConfig = computed<TableConfig>(() => $store.getConfig('crud-demo') ?? initTableConfig())
 
 // ==================== 选项加载器 ====================
 
@@ -59,6 +60,14 @@ function onConfigChange(config: TableConfig, isAdmin?: boolean) {
 /** 恢复系统默认 → 清除用户缓存，拉取后台默认配置 */
 async function onResetSystem() {
   await $store.resetToSystem('crud-demo', initTableConfig())
+}
+
+// ==================== 导出 ====================
+
+async function handleExport(params: ExportParams) {
+  return AUser.export(params)
+    .then(ok => { if (!ok) ElMessage.warning('导出文件为空') })
+    .catch(() => { ElMessage.error('导出失败') })
 }
 
 // ==================== CRUD API ====================
@@ -99,11 +108,6 @@ const crud: CrudApi = {
     AUser.importExcel(formData)
       .then(res => done(res?.code === 0 || res?.code === 200, res))
       .catch(() => done(false))
-  },
-  export: (data) => {
-    return AUser.export(data)
-      .then(ok => { if (!ok) ElMessage.warning('导出文件为空') })
-      .catch(() => ElMessage.error('导出失败'))
   },
 }
 </script>

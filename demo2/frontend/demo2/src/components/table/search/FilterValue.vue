@@ -1,7 +1,7 @@
 <template>
   <!-- 日期 -->
   <el-date-picker
-    v-if="fieldType === 'date' || fieldType === 'datetime'"
+    v-if="fieldType === 'date' || fieldType === 'datetime' || fieldType === 'year' || fieldType === 'month'"
     :model-value="modelValue"
     @update:model-value="emit('update:modelValue', $event)"
     :type="dateType"
@@ -82,7 +82,9 @@ const attrs = useAttrs()
 const props = defineProps<{
   modelValue: string | string[]
   /** 控件类型 */
-  fieldType?: 'text' | 'date' | 'datetime' | 'daterange' | 'datetimerange' | 'select' | 'remote-select'
+  fieldType?: 'text' | 'date' | 'datetime' | 'year' | 'month' | 'daterange' | 'datetimerange' | 'select' | 'remote-select'
+  /** 日期选择器子类型（覆盖 fieldType 的默认映射） */
+  pickerType?: 'date' | 'datetime' | 'year' | 'month' | 'week'
   /** 当前操作符（影响 select 是否多选） */
   operator?: 'contains' | 'eq' | 'ne' | 'gt' | 'lt' | 'gte' | 'lte' | 'between' | 'in'
   placeholder?: string
@@ -100,8 +102,20 @@ const emit = defineEmits<{
 
 /* ============ 日期 ============ */
 
-const dateType = computed(() => (props.fieldType === 'datetime' ? 'datetime' : 'date'))
-const dateFormat = computed(() => (props.fieldType === 'datetime' ? 'YYYY-MM-DD HH:mm:ss' : 'YYYY-MM-DD'))
+const dateType = computed(() => {
+  if (props.pickerType) return props.pickerType
+  if (props.fieldType === 'datetime') return 'datetime'
+  if (props.fieldType === 'year') return 'year'
+  if (props.fieldType === 'month') return 'month'
+  return 'date'
+})
+const dateFormat = computed(() => {
+  if (props.pickerType === 'year' || props.fieldType === 'year') return 'YYYY'
+  if (props.pickerType === 'month' || props.fieldType === 'month') return 'YYYY-MM'
+  if (props.pickerType === 'week') return 'YYYY ww'
+  if (props.fieldType === 'datetime') return 'YYYY-MM-DD HH:mm:ss'
+  return 'YYYY-MM-DD'
+})
 
 /* ============ 下拉选项标准化 ============ */
 

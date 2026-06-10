@@ -44,6 +44,7 @@
         v-model="item.value"
         :column="item.column"
         :field-type="getFieldType(item.column)"
+        :picker-type="getPickerType(item.column)"
         operator="in"
         :options="getOptions(item.column)"
         :remote-method="getRemoteMethod(item.column)"
@@ -64,6 +65,7 @@
         v-model="item.value"
         :column="item.column"
         :field-type="getFieldType(item.column)"
+        :picker-type="getPickerType(item.column)"
         :operator="item.operator"
         :options="getOptions(item.column)"
         :remote-method="getRemoteMethod(item.column)"
@@ -103,6 +105,7 @@ const emit = defineEmits<{ (e: 'submit'): void }>()
 
 const {
   getFieldType,
+  getPickerType,
   isDateRangeField,
   getDateRangeType,
   getDateFormat,
@@ -119,7 +122,7 @@ const {
 /* ============ 计算属性 ============ */
 
 const displayConditions = computed(() =>
-  props.conditions.filter((c) => c.display && c.column),
+  props.conditions.filter((c) => c.filterMode === 'exposed' && c.column),
 )
 
 const colLabelMap = computed(() => {
@@ -138,7 +141,7 @@ const opLabelMap = computed(() => {
 
 function clearDisplayConditions() {
   props.conditions.forEach((c) => {
-    if (c.display) clearConditionValue(c)
+    if (c.filterMode === 'exposed') clearConditionValue(c)
   })
 }
 </script>

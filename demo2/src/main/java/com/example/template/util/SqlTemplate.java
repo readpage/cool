@@ -1,15 +1,24 @@
 package com.example.template.util;
 
 import com.example.template.QueryProperties;
+import com.example.template.core.SqlResult;
+import com.example.template.core.SqlTemplateEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Component;
 
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * SQL 模板执行器 — 只需 SQL 模板 + FilterParam，内部自动校验列白名单 + 生成参数 + 执行。
@@ -30,20 +39,25 @@ public class SqlTemplate {
 
     private static final Logger log = LoggerFactory.getLogger(SqlTemplate.class);
 
+    /** 数据库类型缓存（DataSource → mysql|sqlserver|oracle|postgresql） */
+    private static final Map<String, String> DB_TYPE_CACHE = new ConcurrentHashMap<>();
+
     private final NamedParameterJdbcTemplate jdbc;
     private final QueryProperties properties;
+    private final SqlTemplateEngine engine;
 
     public SqlTemplate(NamedParameterJdbcTemplate jdbc, QueryProperties properties) {
         this.jdbc = jdbc;
         this.properties = properties;
+        this.engine = new SqlTemplateEngine();
     }
 
     // ==================== 查询 ====================
 
     /**
-     * 执行动态 SQL 模板。
+     * 执行动态 SQL 模板 — 支持完整模板语法：{{key}} / #{key} / [[...]]。
      *
-     * @param sql        SQL 模板（可用 {{filter}} / {{sort}} 占位符）
+     * @param sql        SQL 模板（可用 {{filter}} / {{sort}} 占位符，#{key} 参数化，[[...]] 可选块）
      * @param param      FilterParam 筛选 + 排序参数
      * @param resultType 返回实体类型
      * @param <T>        实体类型
@@ -51,50 +65,67 @@ public class SqlTemplate {
      */
     public <T> List<T> query(String sql, FilterParam param, Class<T> resultType) {
         FilterParam.DaoResult r = param.buildForDao(sql);
-        String finalSql = sql
-                .replace("{{filter}}", r.filter())
-                .replace("{{sort}}",   r.sort());
+        SqlResult rendered = engine.render(sql, r.toFlatMap());
+        String renderedSql = FilterParam.cleanRenderedSql(rendered.getSql());
         if (properties.isLogging()) {
-            log.info("==>  SQL : {}", finalSql);
+            log.info("==>  SQL : {}", renderedSql);
             log.info("==> PARAMS: {}", r.params());
         }
-        return jdbc.query(finalSql, r.params(), new BeanPropertyRowMapper<>(resultType));
+        return jdbc.query(renderedSql, r.params(), new BeanPropertyRowMapper<>(resultType));
     }
 
     /**
-     * 分页查询 — 自动 COUNT + LIMIT。
+     * 分页查询 — 自动 COUNT + LIMIT，多数据库自适应。
      *
-     * @param sql        SQL 模板（可用 {{filter}} / {{sort}} 占位符）
+     * @param sql        SQL 模板（可用 {{filter}} / {{sort}} 占位符，#{key} 参数化，[[...]] 可选块）
      * @param param      FilterParam（需包含 current/size 分页字段）
      * @param resultType 返回实体类型
      * @param <T>        实体类型
      * @return 分页结果
      */
     public <T> PageResult<T> page(String sql, FilterParam param, Class<T> resultType) {
-        FilterParam.DaoResult r = param.buildForDao(sql);
-        String finalSql = sql
-                .replace("{{filter}}", r.filter())
-                .replace("{{sort}}",   r.sort());
+        FilterParam.DaoResult r = param.startPage().buildForDao(sql);
+        SqlResult rendered = engine.render(sql, r.toFlatMap());
+        String renderedSql = FilterParam.cleanRenderedSql(rendered.getSql());
 
         int current = param.getCurrent() > 0 ? param.getCurrent() : 1;
         int size    = param.getSize()    > 0 ? param.getSize()    : 10;
 
         // 1. COUNT
-        String countSql = buildCountSql(finalSql);
-        if (properties.isLogging()) {
-            log.info("==> COUNT : {}", countSql);
-        }
-        Long total = jdbc.queryForObject(countSql, r.params(), Long.class);
+        String countSql = buildCountSql(renderedSql);
+        long total = executeCount(countSql, r.params());
 
-        // 2. LIMIT
-        String limitSql = finalSql + " LIMIT " + size + " OFFSET " + (current - 1) * size;
-        if (properties.isLogging()) {
-            log.info("==>  SQL : {}", limitSql);
-            log.info("==> PARAMS: {}", r.params());
-        }
+        // 2. 分页数据
+        String limitSql = buildLimitSql(renderedSql, size, current);
+        logSql(limitSql, r.params());
         List<T> records = jdbc.query(limitSql, r.params(), new BeanPropertyRowMapper<>(resultType));
 
-        return new PageResult<>(total != null ? total : 0, current, size, records);
+        return new PageResult<>(total, current, size, records);
+    }
+
+    /**
+     * 分页查询（返回原始 Map）— 适用于动态报告等无实体类的场景。
+     *
+     * @param sql   SQL 模板（可用 {{filter}} / {{sort}} 占位符，#{key} 参数化，[[...]] 可选块）
+     * @param param FilterParam（需包含 current/size 分页字段）
+     * @return 分页 Map 结果
+     */
+    public PageResult<Map<String, Object>> pageForMap(String sql, FilterParam param) {
+        FilterParam.DaoResult r = param.startPage().buildForDao(sql);
+        SqlResult rendered = engine.render(sql, r.toFlatMap());
+        String renderedSql = FilterParam.cleanRenderedSql(rendered.getSql());
+
+        int current = param.getCurrent() > 0 ? param.getCurrent() : 1;
+        int size    = param.getSize()    > 0 ? param.getSize()    : 10;
+
+        String countSql = buildCountSql(renderedSql);
+        long total = executeCount(countSql, r.params());
+
+        String limitSql = buildLimitSql(renderedSql, size, current);
+        logSql(limitSql, r.params());
+        List<Map<String, Object>> list = jdbc.queryForList(limitSql, r.params());
+
+        return new PageResult<>(total, current, size, list);
     }
 
     // ==================== 插入 ====================
@@ -298,9 +329,81 @@ public class SqlTemplate {
         return null;
     }
 
-    /** 从 SQL 截取 COUNT：移除 ORDER BY，SELECT ... FROM → SELECT COUNT(*) FROM */
+    /**
+     * 从 SQL 截取 COUNT：移除 ORDER BY，SELECT ... FROM → SELECT COUNT(*) FROM。
+     * 支持 CTE/WITH 查询 — 保留 CTE 部分，仅包装最终 SELECT。
+     */
     private String buildCountSql(String renderedSql) {
         String sql = renderedSql.replaceAll("(?i)\\s+ORDER\\s+BY\\s+.*$", "");
+        if (sql.trim().toUpperCase().startsWith("WITH ")) {
+            Pattern p = Pattern.compile("\\)\\s*SELECT\\s", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+            Matcher m = p.matcher(sql);
+            int splitPos = -1;
+            while (m.find()) {
+                splitPos = m.start() + 1;
+            }
+            if (splitPos > 0) {
+                String ctePart = sql.substring(0, splitPos);
+                String finalSelect = sql.substring(splitPos);
+                return ctePart + "SELECT COUNT(*) FROM (" + finalSelect + ") _count_sub";
+            }
+            return "SELECT COUNT(*) FROM (" + sql + ") _count_sub";
+        }
         return sql.replaceAll("(?i)^\\s*SELECT\\s+.+?\\s+FROM\\s+", "SELECT COUNT(*) FROM ");
+    }
+
+    /** 执行 COUNT 查询，统一处理 null → 0 */
+    private long executeCount(String countSql, Map<String, Object> params) {
+        if (properties.isLogging()) {
+            log.info("==> COUNT : {}", countSql);
+        }
+        Long total = jdbc.queryForObject(countSql, params, Long.class);
+        return total != null ? total : 0;
+    }
+
+    /** 根据数据库类型生成带 LIMIT/OFFSET 的分页 SQL（MySQL / SQLServer / Oracle / PostgreSQL 自适应） */
+    private String buildLimitSql(String renderedSql, int size, int currentPage) {
+        String dbType = detectDbType();
+        int offset = (currentPage - 1) * size;
+        if ("sqlserver".equals(dbType)) {
+            if (!renderedSql.toUpperCase().contains("ORDER BY")) {
+                renderedSql += " ORDER BY (SELECT 0)";
+            }
+            return renderedSql + " OFFSET " + offset + " ROWS FETCH NEXT " + size + " ROWS ONLY";
+        }
+        if ("oracle".equals(dbType)) {
+            return "SELECT * FROM (SELECT _ora_.*, ROWNUM _rn_ FROM (" + renderedSql
+                    + ") _ora_ WHERE ROWNUM <= " + (offset + size) + ") WHERE _rn_ > " + offset;
+        }
+        return renderedSql + " LIMIT " + size + " OFFSET " + offset;
+    }
+
+    /** 从 JDBC URL 检测数据库类型，结果缓存 */
+    private String detectDbType() {
+        DataSource ds = jdbc.getJdbcTemplate().getDataSource();
+        if (ds == null) return "mysql";
+        String key = ds.toString();
+        return DB_TYPE_CACHE.computeIfAbsent(key, k -> {
+            try (Connection conn = ds.getConnection()) {
+                String url = conn.getMetaData().getURL();
+                if (url != null) {
+                    String lowerUrl = url.toLowerCase();
+                    if (lowerUrl.contains(":sqlserver:") || lowerUrl.contains(":jtds:")) return "sqlserver";
+                    if (lowerUrl.contains(":oracle:")) return "oracle";
+                    if (lowerUrl.contains(":postgresql:")) return "postgresql";
+                }
+            } catch (SQLException e) {
+                log.warn("无法检测数据库类型，默认使用 MySQL 语法", e);
+            }
+            return "mysql";
+        });
+    }
+
+    /** 统一日志输出 */
+    private void logSql(String sql, Map<String, Object> params) {
+        if (properties.isLogging()) {
+            log.info("==>  SQL : {}", sql);
+            log.info("==> PARAMS: {}", params);
+        }
     }
 }

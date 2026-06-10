@@ -31,6 +31,13 @@ export interface UserConfigEntity {
   updateTime?: string
 }
 
+/** 配置结果 — 对应 GET /config/version 和 POST /config/reset */
+export interface ConfigResult {
+  configValue: string  // JSON string
+  source: 'user' | 'system'
+  version: number
+}
+
 // ==================== 通用 ConfigValue 解析 ====================
 
 /** 统一入口：从任意配置实体中解析 JSON */
@@ -69,4 +76,12 @@ export const AConfig = {
 
   /** 列出当前用户分组内所有偏好配置 — GET /config/user/list */
   userList: apiAxios<UserConfigEntity[]>('/config/user/list', 'get'),
+
+  // --- 版本检查 & 恢复 ---
+
+  /** 检查系统配置版本 — GET /config/version，返回 sys_config 版本，前端比较后提示用户重置 */
+  checkVersion: apiAxios<ConfigResult>('/config/version', 'get'),
+
+  /** 恢复系统默认 — POST /config/reset，后端用 sys_config 覆盖 user_config 并返回系统配置 */
+  reset: apiAxios<ConfigResult>('/config/user/reset', 'post'),
 }

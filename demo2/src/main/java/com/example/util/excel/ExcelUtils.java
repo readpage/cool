@@ -6,6 +6,9 @@ import cn.idev.excel.read.listener.PageReadListener;
 import com.example.template.util.FilterParam;
 import com.example.template.util.FilterParam.ColumnItem;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.example.util.excel.converter.SqlDateConverter;
+import com.example.util.excel.converter.SqlTimeConverter;
+import com.example.util.excel.converter.SqlTimestampConverter;
 import com.example.util.excel.handler.DynamicCellAlignHandler;
 import com.example.util.excel.handler.DynamicColumnWidthHandler;
 import com.example.util.excel.handler.HeaderStyleHandler;
@@ -245,6 +248,19 @@ public class ExcelUtils {
     }
 
     /**
+     * 动态列导出（适配 Map 数据，用于报告等动态列场景）
+     * <p>与 Bean 版本的区别：通过 {@code Map.get(prop)} 取值，而非 Bean 反射。
+     */
+    public static void exportForMap(HttpServletResponse response, String fileName,
+                                     FilterParam param, List<Map<String, Object>> dataList) throws IOException {
+        List<List<String>> headers = extractHeaders(param);
+        List<List<Object>> rows = extractMapRows(param, dataList);
+        List<ColumnExportConfig> columnConfigs = toColumnConfigs(param);
+
+        writeExport(response, fileName, headers, rows, columnConfigs);
+    }
+
+    /**
      * FilterParam 动态列导出（带 remote-select value→label 转换）
      *
      * @param optionLoader 选项加载器：type → limit → List，用于预加载 value→label 映射
@@ -266,6 +282,9 @@ public class ExcelUtils {
         setResponseHeader(response, fileName);
 
         FastExcel.write(response.getOutputStream())
+                .registerConverter(new SqlTimestampConverter())
+                .registerConverter(new SqlDateConverter())
+                .registerConverter(new SqlTimeConverter())
                 .head(headers)
                 .registerWriteHandler(new HeaderStyleHandler())
                 .registerWriteHandler(new DynamicCellAlignHandler(columnConfigs))
@@ -311,6 +330,9 @@ public class ExcelUtils {
         setResponseHeader(response, fileName);
 
         FastExcel.write(response.getOutputStream())
+                .registerConverter(new SqlTimestampConverter())
+                .registerConverter(new SqlDateConverter())
+                .registerConverter(new SqlTimeConverter())
                 .head(excelHeaders)
                 .registerWriteHandler(new HeaderStyleHandler())
                 .registerWriteHandler(new DynamicCellAlignHandler(columnConfigs))
@@ -383,6 +405,19 @@ public class ExcelUtils {
                     .map(c -> bw.getPropertyValue(c.getProp()))
                     .collect(Collectors.toList());
         }).collect(Collectors.toList());
+    }
+
+    /**
+     * 从 Map 数据中按 columns.prop 提取行（用于报告等动态列导出）
+     */
+    private static List<List<Object>> extractMapRows(FilterParam param, List<Map<String, Object>> dataList) {
+        List<ColumnItem> columns = param.getColumns();
+        if (columns == null || columns.isEmpty()) return Collections.emptyList();
+        return dataList.stream()
+                .map(row -> columns.stream()
+                        .map(c -> row.get(c.getProp()))
+                        .collect(Collectors.toList()))
+                .collect(Collectors.toList());
     }
 
     /**

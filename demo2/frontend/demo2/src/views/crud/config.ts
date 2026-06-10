@@ -1,4 +1,4 @@
-import type { TableConfig } from '@/types/table'
+import type { TableConfig } from '@/components/table/types'
 import type { FormItemConfig } from '@/components/crud/types'
 
 // ==================== 表格配置 ====================

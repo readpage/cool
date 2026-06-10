@@ -20,4 +20,7 @@ import lombok.NoArgsConstructor;
 public class ReportParam extends FilterParam {
     /** SQL 模板（支持 {{filter}} / {{sort}} 占位符） */
     private String sqlTemplate;
+
+    /** 数据源 ID（仅 /execute 即时查询时有效，null=主数据源） */
+    private Long datasourceId;
 }

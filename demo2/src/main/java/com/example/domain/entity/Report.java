@@ -41,6 +41,9 @@ public class Report {
     /** 权限配置 JSON */
     private String permissionConfig;
 
+    /** 关联数据源 ID，NULL 表示使用主数据源 */
+    private Long datasourceId;
+
     /** 创建者 ID */
     private Long creatorId;
 

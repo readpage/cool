@@ -1,5 +1,5 @@
 import { apiAxios, download } from './src/requests'
-import type { PageResult } from '@/types/table'
+import type { PageResult } from '@/components/table/types'
 
 export const AUser = {
   /** 分页查询 */

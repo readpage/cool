@@ -1,7 +1,7 @@
 /**
- * 报告相关类型定义 — 与后端 ReportSaveRequest / ReportDisplayConfig 对齐
+ * 报告相关类型定义（报告模块自包含，不依赖 @/types/）
  */
-import type { TableConfig } from '@/types/table'
+import type { TableConfig } from './table'
 
 // ==================== 筛选 & 排序 ====================
 
@@ -13,6 +13,8 @@ export interface FilterCondition {
   operator: string
   /** 值 */
   value: any
+  /** 标记为 SQL 模板变量（如 #{year}→2025），不生成 WHERE，值通过 JDBC 参数化自动防注入 */
+  variable?: boolean
 }
 
 /** 排序条件 */
@@ -25,7 +27,7 @@ export interface SortCondition {
 
 // ==================== 报告模型（读写复用同一个结构） ====================
 
-/** 报告读写模型 — 与后端 ReportSaveRequest.java 对齐 */
+/** 报告读写模型 */
 export interface ReportSaveRequest {
   /** 报告实体（直接映射 report 表） */
   report: {
@@ -42,32 +44,25 @@ export interface ReportSaveRequest {
     displayType?: string
     /** 权限配置 JSON */
     permissionConfig?: string
+    /** 关联数据源 ID，null=默认主数据源 */
+    datasourceId?: number | null
     /** 创建者 ID */
     creatorId?: number
   }
-  /** 展示配置（filter + sort + tableConfig），来自 sys_config / user_config */
-  displayConfig?: ReportDisplayConfig
-}
-
-// ==================== 展示配置 ====================
-
-/** 报表展示配置 — 与后端 ReportDisplayConfig.java 对齐 */
-export interface ReportDisplayConfig {
-  /** 筛选条件列表 */
-  filter?: FilterCondition[]
-  /** 排序 */
-  sort?: SortCondition
-  /** 表格配置 */
-  tableConfig?: TableConfig
+  /** 展示配置（TableConfig 扁平格式，sort/filter 值内置其中），来自 sys_config / user_config */
+  displayConfig?: TableConfig
 }
 
 // ==================== 列元数据 & 查询结果 ====================
 
-/** 列元数据 — 与后端 ReportQueryResult.ColumnMeta 对齐 */
+/** 列元数据 */
 export interface ColumnMeta {
-  prop: string         // col_0, col_1, ...
-  label: string        // SQL 别名显示名
-  sqlType: number      // java.sql.Types
+  /** 列原名，用于 WHERE/ORDER BY 筛选排序 */
+  prop: string
+  /** 显示名 */
+  label: string
+  /** java.sql.Types 值 */
+  sqlType: number
 }
 
 /** 报告查询结果 */

@@ -1,24 +1,23 @@
 <template>
   <!-- 列宽拖拽：列背景高亮 -->
-  <div v-show="columnHighlightVisible" class="col-highlight" :style="columnHighlightStyle"></div>
+  <div v-show="resize.columnHighlightVisible" class="col-highlight" :style="resize.columnHighlightStyle"></div>
   <!-- 列宽拖拽：实线（原始边界） -->
-  <div v-show="dragLineVisible" class="drag-line" :style="dragLineStyle"></div>
+  <div v-show="resize.dragLineVisible" class="drag-line" :style="resize.dragLineStyle"></div>
   <!-- 列宽拖拽：虚线（鼠标预览） -->
-  <div v-show="previewLineVisible" class="preview-line" :style="previewLineStyle"></div>
+  <div v-show="resize.previewLineVisible" class="preview-line" :style="resize.previewLineStyle"></div>
   <!-- 列宽拖拽：像素提示框 -->
-  <div v-show="tooltipVisible" class="resize-tooltip" :style="tooltipStyle">{{ tooltipText }}</div>
+  <div v-show="resize.tooltipVisible" class="resize-tooltip" :style="resize.tooltipStyle">{{ resize.tooltipText }}</div>
 
   <!-- 列排序拖拽：drop 指示线 -->
-  <div v-show="dropLineVisible" class="drop-line" :style="dropLineStyle"></div>
+  <div v-show="reorder.dropLineVisible" class="drop-line" :style="reorder.dropLineStyle"></div>
   <!-- 列排序拖拽：列背景高亮 -->
-  <div v-show="colHighlightVisible" class="col-reorder-highlight" :style="colHighlightStyle"></div>
+  <div v-show="reorder.colHighlightVisible" class="col-reorder-highlight" :style="reorder.colHighlightStyle"></div>
   <!-- 列排序拖拽：列名提示 -->
-  <div v-show="reorderTooltipVisible" class="reorder-tooltip" :style="reorderTooltipStyle">{{ reorderTooltipLabel }}</div>
+  <div v-show="reorder.reorderTooltipVisible" class="reorder-tooltip" :style="reorder.reorderTooltipStyle">{{ reorder.reorderTooltipLabel }}</div>
 </template>
 
 <script setup lang="ts">
-defineProps<{
-  // --- resize ---
+interface ResizeOverlay {
   columnHighlightVisible: boolean
   columnHighlightStyle: Record<string, string>
   dragLineVisible: boolean
@@ -28,7 +27,9 @@ defineProps<{
   tooltipVisible: boolean
   tooltipStyle: Record<string, string>
   tooltipText: string
-  // --- reorder ---
+}
+
+interface ReorderOverlay {
   dropLineVisible: boolean
   dropLineStyle: Record<string, string>
   colHighlightVisible: boolean
@@ -36,6 +37,11 @@ defineProps<{
   reorderTooltipVisible: boolean
   reorderTooltipStyle: Record<string, string>
   reorderTooltipLabel: string
+}
+
+defineProps<{
+  resize: ResizeOverlay
+  reorder: ReorderOverlay
 }>()
 </script>
 

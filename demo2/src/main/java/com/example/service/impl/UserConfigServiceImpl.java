@@ -9,6 +9,8 @@ import com.example.template.util.SqlTemplate;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 /**
  * <p>
  *  用户偏好配置服务实现类
