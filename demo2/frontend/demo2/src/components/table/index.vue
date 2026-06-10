@@ -305,22 +305,17 @@ function initQueryFromConfig(cfg?: TableConfig) {
   }
 }
 
-console.log('[table/index] ═══ Table setup 开始 — props.config.columns:', props.config.columns?.length, 'search.filter:', props.config.search?.filter?.length)
 initQueryFromConfig()
-console.log('[table/index] setup initQueryFromConfig 后 → query.filter:', query.filter.map(f => f.column), 'query.sort:', query.sortColumn, query.sortDirection)
 
 // 浅层 watch：config 对象引用被整体替换时，重置 query 状态（不自动查询，由外部显式触发）
 watch(
   () => props.config,
   (newConfig) => {
-    console.log('[table/index] ═══ watch props.config 触发 — columns:', newConfig?.columns?.length, 'search.filter:', newConfig?.search?.filter?.length)
     if (!newConfig?.columns?.length) return
     query.current = 1
     query.size = getPersistedPageSize()
     initQueryFromConfig(newConfig)
-    console.log('[table/index] watch 后 query.filter:', query.filter.map(f => `${f.column}=${f.value}`), 'query.sort:', query.sortColumn, query.sortDirection)
     searchKey.value++  // 强制 Search 组件重挂载，重新 JSON 深拷贝蓝图
-    console.log('[table/index] searchKey++ →', searchKey.value)
   },
 )
 
@@ -493,14 +488,22 @@ const hoverSort = ref<string | null>(null)
 
 // 统一的查询事件构建
 function emitQuery() {
-  console.log('[table/index] emitQuery 触发 → current:', query.current, 'size:', query.size, 'filter:', query.filter.map(f => `${f.column}=${f.value}`), 'sort:', query.sortColumn, query.sortDirection)
-  const filter: FilterItem[] = query.filter
-    .filter(fv => !!fv.column)
-    .map(fv => ({
-      column: fv.column,
-      operator: fv.operator,
-      value: fv.value as FilterItem['value'],
-    }))
+  // 按列去重，同名列保留最后一个值（避免外部拼接导致重复）；过滤空值
+  const dedupMap = new Map<string, FilterItem>()
+  for (const fv of query.filter) {
+    if (fv.column) {
+      dedupMap.set(fv.column, {
+        column: fv.column,
+        operator: fv.operator,
+        value: fv.value as FilterItem['value'],
+      })
+    }
+  }
+  const filter: FilterItem[] = [...dedupMap.values()].filter(f => {
+    const v = f.value
+    if (Array.isArray(v)) return v.length > 0 && v.some((e: any) => e !== '')
+    return v !== '' && v !== null && v !== undefined
+  })
   const visibleColumns = props.config.columns.filter(c => !c.hidden)
   const payload: TableQuery = {
     current: query.current,
@@ -521,10 +524,23 @@ function onSearchSave(_cfg: SearchConfig) {
   emit('change', props.config)
 }
 
-// 搜索查询 → 更新 query.filter，调 API（不持久化 config）
+// 搜索查询 → 更新 query.filter，同步 config 默认值，调 API
 function onSearchQuery(filters: FilterResult[]) {
   query.filter = filters
   query.current = 1
+
+  // 同步 config 默认值：搜索条件覆盖 config.search.filter 中对应列的 value
+  const searchMap = new Map(filters.filter(f => f.column).map(f => [f.column, f]))
+  if (props.config.search?.filter) {
+    for (const col of props.config.search.filter) {
+      const sf = searchMap.get(col.prop)
+      if (sf !== undefined) {
+        col.value = sf.value
+        col.operator = sf.operator as any
+      }
+    }
+  }
+
   emitQuery()
 }
 

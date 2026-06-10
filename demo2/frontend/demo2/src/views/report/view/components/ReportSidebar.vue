@@ -175,10 +175,9 @@ function onNodeDblClick(data: TreeNode) {
   }
 }
 
-/** 新建报表 → 新窗口打开 report-design */
+/** 新建报表 → 跳转 report-design */
 function onCreate() {
-  const url = router.resolve({ path: '/report/design' }).href
-  window.open(url, '_blank')
+  router.push({ path: '/report/design' })
 }
 
 /** 监听外部传入的 currentTableKey，同步高亮 */

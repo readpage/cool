@@ -171,16 +171,30 @@ export function useReportPersistence(
     }
 
     const filterMap = new Map(srcSearch.filter.map(f => [f.prop, f]))
+    console.log('[mergeTableConfig] === 筛选器合并 ===')
+    console.log('[mergeTableConfig] resultCols:', JSON.stringify(resultCols.map(c => c.prop)))
+    console.log('[mergeTableConfig] srcSearch.filter (持久化):', JSON.stringify(
+      srcSearch.filter.map(f => ({ prop: f.prop, value: f.value, filterMode: f.filterMode, variable: f.variable }))
+    ))
+    console.log('[mergeTableConfig] variableKeys:', JSON.stringify(variableKeys.value))
+
     const newFilter = resultCols.map(rc => {
       const f = filterMap.get(rc.prop)
       return f ? { ...f, label: rc.label }
         : { prop: rc.prop, label: rc.label, fieldType: 'text' as const, filterMode: 'hide' as const }
     })
 
+    console.log('[mergeTableConfig] newFilter (仅SELECT列):', JSON.stringify(
+      newFilter.map(f => ({ prop: f.prop, filterMode: f.filterMode, variable: f.variable }))
+    ))
+
     // 追加 #{key} 变量项：优先保留用户已改过的配置，否则新建；重名时标记现有列
     for (const key of variableKeys.value) {
+      const inSelectCols = resultProps.has(key)
+      console.log(`[mergeTableConfig] 处理变量 key="${key}", inSelectCols=${inSelectCols}`)
       if (!resultProps.has(key)) {
         const existing = filterMap.get(key)
+        console.log(`[mergeTableConfig]   不在 SELECT 列中, existing:`, existing ? JSON.stringify({ prop: existing.prop, filterMode: existing.filterMode, variable: existing.variable }) : 'null')
         newFilter.push(existing
           ? { ...existing, variable: true }
           : { prop: key, label: key, fieldType: 'text' as const, filterMode: 'exposed' as const, variable: true }
@@ -188,29 +202,43 @@ export function useReportPersistence(
       } else {
         ElMessage.warning(`变量 #{${key}} 与 SELECT 列重名，将标记现有列为模板变量`)
         const idx = newFilter.findIndex(f => f.prop === key && !f.variable)
+        console.log(`[mergeTableConfig]   在 SELECT 列中, findIndex=${idx}, newFilter[${idx}]:`, idx >= 0 ? JSON.stringify({ prop: newFilter[idx].prop, filterMode: newFilter[idx].filterMode, variable: newFilter[idx].variable }) : 'not found')
         if (idx >= 0) {
           newFilter[idx] = { ...newFilter[idx], variable: true, filterMode: 'exposed' as const }
         }
       }
     }
 
+    console.log('[mergeTableConfig] 最终 newFilter:', JSON.stringify(
+      newFilter.map(f => ({ prop: f.prop, label: f.label, value: f.value, filterMode: f.filterMode, variable: f.variable }))
+    ))
+
     return { ...persisted, columns, search: { ...srcSearch, filter: newFilter } }
   }
 
   /** 同步计算 tableConfig（仅在手动调用时执行） */
   function syncTableConfig() {
+    console.log('[syncTableConfig] === 开始同步 tableConfig ===')
+    console.log('[syncTableConfig] hasPersistedConfig:', !!persistedTableConfig.value)
     if (persistedTableConfig.value) {
+      console.log('[syncTableConfig] persisted filter 项数:', persistedTableConfig.value.search?.filter?.length)
       const parsedCols = parseSqlColumns(sqlTemplate.value)
+      console.log('[syncTableConfig] parsedCols from SQL:', JSON.stringify(parsedCols.map(c => c.prop)))
       if (parsedCols.length) {
         const merged = mergeTableConfig(persistedTableConfig.value, parsedCols)
         tableConfig.value = merged
+        console.log('[syncTableConfig] 合并后 filter:', JSON.stringify(
+          tableConfig.value.search?.filter?.map((f: any) => ({ prop: f.prop, filterMode: f.filterMode, variable: f.variable }))
+        ))
         return
       }
       tableConfig.value = persistedTableConfig.value
+      console.log('[syncTableConfig] 无 SQL 列，直接用持久化配置')
       return
     }
     const cols = parseSqlColumns(sqlTemplate.value)
     tableConfig.value = cols.length ? autoGenTableConfig(cols) : { columns: [] }
+    console.log('[syncTableConfig] 自动生成配置')
   }
 
   // ==================== 加载 / 保存 ====================
@@ -228,22 +256,9 @@ export function useReportPersistence(
     if (cfg) {
       persistedTableConfig.value = JSON.parse(JSON.stringify(cfg)) as TableConfig
       syncTableConfig()
-      // 从 search.filter[].value 恢复筛选条件
-      filterConditions.value = []
-      const sqlCols = parseSqlColumns(sqlTemplate.value)
-      const sqlProps = new Set(sqlCols.map(c => c.prop))
-      for (const col of cfg.search?.filter ?? []) {
-        if (col.value !== undefined && col.value !== null && col.value !== '') {
-          // 优先读 ColumnConfig.variable，其次用"不在 SELECT 列中"兜底
-          const isVariable = !!(col.variable || !sqlProps.has(col.prop))
-          filterConditions.value.push({
-            column: col.prop,
-            operator: col.operator || (isVariable ? 'eq' : 'contains'),
-            value: col.value,
-            ...(isVariable ? { variable: true } : {}),
-          })
-        }
-      }
+      // ★ filterConditions（SQL 模板 {{filter}}）与 Table 搜索栏的 config.search.filter[].value 彻底解绑
+      // config.search.filter[].value 仅供 Table 组件初始化，不应污染 filterConditions
+      // filterConditions 由 autoInitFromColumns / 用户手动操作管理
       // 恢复排序
       sortConditions.value = cfg.sort ? [cfg.sort] : []
     }

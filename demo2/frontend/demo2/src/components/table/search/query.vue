@@ -72,9 +72,9 @@
                     </template>
                     <!-- 文本范围：两个输入框 -->
       <template v-else>
-                    <el-input v-model="cond.value[0]" placeholder="最小值" class="cond-value cond-value-between" />
+                    <el-input v-model="cond.value[0]" placeholder="最小值" class="cond-value cond-value-between" clearable />
                     <span class="between-sep">~</span>
-                    <el-input v-model="cond.value[1]" placeholder="最大值" class="cond-value cond-value-between" />
+                    <el-input v-model="cond.value[1]" placeholder="最大值" class="cond-value cond-value-between" clearable />
                   </template>
                   </template>
                   <template v-else-if="cond.operator === 'in'">
@@ -91,7 +91,7 @@
                       placeholder="请选择"
                     />
                     <!-- 文本逗号分隔 -->
-                    <el-input v-else v-model="cond.valueStr" placeholder="多个值用逗号分隔" class="cond-value" />
+                    <el-input v-else v-model="cond.valueStr" placeholder="多个值用逗号分隔" class="cond-value" clearable />
                   </template>
                   <template v-else>
                     <FilterValue
@@ -238,7 +238,23 @@ function cloneFromBlueprint(
     const result = initialValues
       .map(fv => conditionFromFilterResult(fv, blueprint))
       .filter(Boolean) as FilterCondition[]
-    console.log('[query.vue] cloneFromBlueprint 路径① initialValues →', result.map(c => `${c.column}=${c.value}`))
+    // 🔧 补充：filterMode === 'exposed' 但没有初始值的列也要创建条件
+    const exposedNoValue = blueprint.filter(c => c.filterMode === 'exposed'
+      && !initialValues.some(iv => iv.column === c.prop)
+    )
+    if (exposedNoValue.length) {
+      console.log('[query.vue] cloneFromBlueprint 补充 exposed 条件:', exposedNoValue.map(c => `${c.prop}(filterMode=${c.filterMode})`))
+      exposedNoValue.forEach(col => {
+        result.push({
+          column: col.prop,
+          operator: (col.operator ?? defaultOperator(col)) as FilterCondition['operator'],
+          value: '',
+          valueStr: '',
+          filterMode: 'exposed',
+        })
+      })
+    }
+    console.log('[query.vue] cloneFromBlueprint 路径① initialValues →', result.map(c => `${c.column}=${c.value} filterMode=${c.filterMode}`))
     return result
   }
 
@@ -278,10 +294,12 @@ function cloneFromBlueprint(
 /** 外部调用：重新初始化（如系统默认恢复 / 切换报表） */
 function reinit(values?: FilterResult[]) {
   conditions.value = cloneFromBlueprint(props.columns, values)
+  console.log('[query.vue] reinit 后 conditions:', conditions.value.map(c => `${c.column}=${c.value} filterMode=${c.filterMode}`))
 }
 
 /* ============ 初始化 ============ */
 conditions.value = cloneFromBlueprint(props.columns, props.initialValues)
+console.log('[query.vue] 初始化后 conditions:', conditions.value.map(c => `${c.column}=${c.value} filterMode=${c.filterMode}`))
 
 
 /* ============ 条件操作 ============ */

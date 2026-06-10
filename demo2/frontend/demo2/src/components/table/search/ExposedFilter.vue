@@ -34,9 +34,9 @@
         />
       </template>
       <template v-else-if="item.operator === 'between'">
-        <el-input v-model="item.value[0]" size="small" placeholder="最小值" class="exposed-value-half" />
+        <el-input v-model="item.value[0]" size="small" placeholder="最小值" class="exposed-value-half" clearable />
         <span class="between-sep">~</span>
-        <el-input v-model="item.value[1]" size="small" placeholder="最大值" class="exposed-value-half" />
+        <el-input v-model="item.value[1]" size="small" placeholder="最大值" class="exposed-value-half" clearable />
       </template>
       <!-- in 且为下拉 -->
       <FilterValue
@@ -58,6 +58,7 @@
         size="small"
         class="exposed-value"
         placeholder="多个值，逗号分隔"
+        clearable
       />
       <!-- 其他 -->
       <FilterValue
@@ -121,9 +122,9 @@ const {
 
 /* ============ 计算属性 ============ */
 
-const displayConditions = computed(() =>
-  props.conditions.filter((c) => c.filterMode === 'exposed' && c.column),
-)
+const displayConditions = computed(() => {
+  return props.conditions.filter((c) => c.filterMode === 'exposed' && c.column)
+})
 
 const colLabelMap = computed(() => {
   const map: Record<string, string> = {}
@@ -143,6 +144,7 @@ function clearDisplayConditions() {
   props.conditions.forEach((c) => {
     if (c.filterMode === 'exposed') clearConditionValue(c)
   })
+  emit('submit')
 }
 </script>
 

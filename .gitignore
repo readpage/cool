@@ -6,3 +6,4 @@ logs/
 upload/
 .codebuddy/
 .flattened-pom.xml
+workspace.xml

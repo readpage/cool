@@ -45,7 +45,6 @@ import { ref, computed } from 'vue'
 import Input from './input.vue'
 import Query from './query.vue'
 import ExposedFilter from './ExposedFilter.vue'
-import { buildFilter } from './hooks/useSearchHelpers'
 import type { ColumnConfig, FilterResult, FilterOperator } from './types'
 
 /* ============ Props & Emits ============ */
@@ -98,7 +97,6 @@ const initialFilterValues = computed<FilterResult[]>(() => {
       }
     })
     .filter(Boolean) as FilterResult[]
-  console.log('[search/index] initialFilterValues computed →', result.map(r => `${r.column}=${Array.isArray(r.value) ? `[${r.value}]` : r.value}`))
   return result
 })
 
@@ -132,13 +130,23 @@ function onFilter(params: FilterResult[]) {
     }
     return next
   })
-  console.log('[search/index] onFilter →', params.map(p => `${p.column}=${p.value}`))
   emit('save-filter', props.config)
   emit('search', params)
 }
 
 function onSubmit() {
-  const filter = buildFilter(queryRef.value!.conditions)
+  const conditions = queryRef.value!.conditions
+  // 传递所有条件（含空值），让 Table 层感知显式清除并自行过滤空值
+  const filter: FilterResult[] = conditions
+    .filter(c => c.column)
+    .map(c => ({
+      column: c.column,
+      operator: c.operator,
+      value:
+        c.operator === 'between' ? (Array.isArray(c.value) ? [c.value[0] ?? '', c.value[1] ?? ''] as [string, string] : ['', '']) :
+        c.operator === 'in' ? (Array.isArray(c.value) ? c.value : c.valueStr.split(',').map(v => v.trim()).filter(Boolean)) :
+        c.value,
+    }))
   emit('search', filter)
 }
 

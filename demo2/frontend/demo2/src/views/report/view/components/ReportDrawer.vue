@@ -32,10 +32,9 @@ import { Setting, Coin, Lock } from '@element-plus/icons-vue'
 
 const router = useRouter()
 
-/** 新窗口打开数据源管理 */
+/** 跳转数据源管理 */
 function onDatasource() {
-  const url = router.resolve({ path: '/report/datasource' }).href
-  window.open(url, '_blank')
+  router.push({ path: '/report/datasource' })
 }
 
 /** 权限设置（占位，后续完善） */

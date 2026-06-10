@@ -10,6 +10,7 @@
     :placeholder="placeholder"
     :class="[attrs.class, 'cond-value']"
     :teleported="false"
+    clearable
   />
 
   <!-- 静态下拉 -->
@@ -64,6 +65,7 @@
     @update:model-value="emit('update:modelValue', $event)"
     :placeholder="placeholder"
     :class="[attrs.class, 'cond-value']"
+    clearable
   />
 </template>
 

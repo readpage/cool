@@ -81,13 +81,12 @@ async function onReportSelect(tableKey: string) {
   tableRef.value?.refresh()
 }
 
-/** 侧边栏中双击 → 新窗口打开编辑 */
+/** 侧边栏中双击 → 跳转编辑页 */
 function onReportEdit(tableKey: string) {
-  const url = router.resolve({
+  router.push({
     path: '/report/design',
     query: { tableKey },
-  }).href
-  window.open(url, '_blank')
+  })
 }
 
 /** 导出 */

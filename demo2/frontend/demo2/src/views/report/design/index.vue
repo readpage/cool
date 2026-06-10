@@ -153,9 +153,26 @@ function applySidebarJson(): boolean {
   try {
     const parsed = JSON.parse(sidebarJsonText.value)
 
+    console.log('[applySidebarJson] === 开始应用 JSON 配置 ===')
+
     // 1) Apply displayConfig（合并保留用户自定义样式 + SQL 新列）
     if (parsed.displayConfig) {
+      // 日志：应用前的 filter 配置
+      console.log('[applySidebarJson] 应用前 filter:', JSON.stringify(
+        tableConfig.value.search?.filter?.map((f: any) => ({ prop: f.prop, label: f.label, value: f.value, filterMode: f.filterMode, variable: f.variable }))
+      ))
+      console.log('[applySidebarJson] 即将应用的 displayConfig.filter:', JSON.stringify(
+        parsed.displayConfig.search?.filter?.map((f: any) => ({ prop: f.prop, label: f.label, value: f.value, filterMode: f.filterMode, variable: f.variable }))
+      ))
+      console.log('[applySidebarJson] variableKeys:', JSON.stringify(variableKeys.value))
+
       updateTableConfig(parsed.displayConfig)
+
+      // 日志：应用后的 filter 配置
+      console.log('[applySidebarJson] 应用后 filter:', JSON.stringify(
+        tableConfig.value.search?.filter?.map((f: any) => ({ prop: f.prop, label: f.label, value: f.value, filterMode: f.filterMode, variable: f.variable }))
+      ))
+
       // sort 内嵌于 displayConfig.sort
       if (parsed.displayConfig.sort?.column && parsed.displayConfig.sort?.direction) {
         sortConditions.value = [{ column: parsed.displayConfig.sort.column, direction: parsed.displayConfig.sort.direction }]
@@ -167,6 +184,7 @@ function applySidebarJson(): boolean {
     jsonEditorRef.value?.markClean()
     // 应用成功后同步回 JSON 编辑器，保持一致
     sidebarJsonText.value = buildSidebarJson()
+    console.log('[applySidebarJson] === 应用完成，同步回 JSON 编辑器 ===')
     ElMessage.success('配置已应用')
     return true
   } catch (e) {
@@ -186,6 +204,9 @@ watch(availableColumns, (cols) => {
 // 页面初始化 & 加载报告后侧边栏 JSON 同步
 // 后续不再自动覆盖 JSON 手写内容，由用户手动点"刷新"或"应用"触发
 watch([sqlTemplate, tableConfig, filterConditions, sortConditions], () => {
+  console.log('[watch tableConfig] watcher 触发, jsonDirty:', jsonDirty.value, 'filter:', JSON.stringify(
+    tableConfig.value.search?.filter?.map((f: any) => ({ prop: f.prop, filterMode: f.filterMode }))
+  ))
   if (!jsonDirty.value) {
     sidebarJsonText.value = buildSidebarJson()
   }
@@ -203,10 +224,7 @@ const isSaved = computed(() => currentTableKey.value !== '' && !hasUnsavedChange
 
 /** 返回列表页 */
 function goBack() {
-  // TODO: 根据路由结构调整返回目标
-  if (window.history.length > 1) {
-    window.history.back()
-  }
+  router.back()
 }
 
 /** SQL 变更后标记未保存 */
@@ -240,7 +258,6 @@ const execute = throttlePromise(async () => {
   execLoading.value = true
   resetQueryState()
   try {
-    console.log('queryParam', queryParam.value)
     const { data } = await AReport.execute(queryParam.value)
     resultData.value = data ?? null
   } catch (err: any) {
@@ -277,6 +294,12 @@ const onPageChange = throttlePromise(async (v: TableQuery, done: () => void) => 
     }
   }
   tableSearchFilters.value = filters
+  // 🔑 同步 filterConditions：Table 搜索栏"拥有" search.filter 中所有列，无论 Table 当前筛选是否为空
+  // 将这些列从 filterConditions 全部清除，防止已清空的列从 filterConditions 泄露旧值
+  const searchColProps = new Set(
+    (tableConfig.value.search?.filter ?? []).map(col => col.prop),
+  )
+  filterConditions.value = filterConditions.value.filter(f => !searchColProps.has(f.column))
   // 同步表格排序
   if (v.sort) {
     sortConditions.value = [{ column: v.sort.column, direction: v.sort.direction as 'asc' | 'desc' }]

@@ -31,14 +31,27 @@ export function useQueryRuntime(
   }))
 
   /** 自动组装查询参数 */
-  const queryParam = computed<ReportExecuteBody>(() => ({
-    sqlTemplate: sqlTemplate.value,
-    filter: [...getEffectiveFilters(), ...tableSearchFilters.value],
-    sort: sortConditions.value.length > 0 ? sortConditions.value[0] : undefined,
-    current: lastPage.current,
-    size: lastPage.size,
-    datasourceId: datasourceId?.value ?? null,
-  }))
+  const queryParam = computed<ReportExecuteBody>(() => {
+    // 合并去重：tableSearchFilters 覆盖 getEffectiveFilters 同名列
+    const searchColumnMap = new Map(tableSearchFilters.value.map(f => [f.column, f]))
+    const effectiveFilters = getEffectiveFilters().filter(f => !searchColumnMap.has(f.column))
+    // 合并并过滤空值
+    const allFilters = [...effectiveFilters, ...tableSearchFilters.value]
+    const filter = allFilters.filter(f => {
+      const v = f.value
+      if (Array.isArray(v)) return v.length > 0 && v.some((e: any) => e !== '')
+      return v !== '' && v !== null && v !== undefined
+    })
+
+    return {
+      sqlTemplate: sqlTemplate.value,
+      filter,
+      sort: sortConditions.value.length > 0 ? sortConditions.value[0] : undefined,
+      current: lastPage.current,
+      size: lastPage.size,
+      datasourceId: datasourceId?.value ?? null,
+    }
+  })
 
   return { execLoading, resultData, lastPage, tableSearchFilters, tableData, queryParam, resetQueryState }
 }

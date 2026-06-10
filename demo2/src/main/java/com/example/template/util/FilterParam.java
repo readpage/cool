@@ -256,6 +256,9 @@ public class FilterParam implements SqlParamProvider {
         if (renderedSql == null) return null;
         // 1. 去掉空 filter 导致 WHERE 后面直接跟 ORDER BY 的情况
         renderedSql = renderedSql.replaceAll("(?i)\\bWHERE\\s+(ORDER\\s+BY\\b)", "$1");
+        // 1.5 去掉空 filter 导致的悬空 AND/OR 后面直接跟 ORDER BY 的情况
+        //      例如：WHERE age = :age2 AND {{filter}} -> 空 filter → WHERE age = :age2 AND ORDER BY
+        renderedSql = renderedSql.replaceAll("(?i)\\s+(AND|OR)\\s+(ORDER\\s+BY\\b)", " $2");
         // 2. 去掉空 filter/sort 留下的悬空 WHERE / AND / OR / ORDER BY（尾部）
         renderedSql = renderedSql.replaceAll("(?i)\\s+(WHERE|AND|OR|ORDER\\s+BY)\\s*$", "").trim();
         return renderedSql;
