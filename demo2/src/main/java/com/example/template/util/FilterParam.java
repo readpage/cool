@@ -150,6 +150,18 @@ public class FilterParam implements SqlParamProvider {
 
         // SQL 模板提取列（用于校验）：统一取原名（prop），与前端 filter.column 原生列名一致
         List<String> sqlColumns = ColumnExtractor.lastExtract(sqlTemplate);
+
+        // 将 filter/sort 列名归一化为 SQL 模板中的原始大小写，避免数据库区分大小写时列名失效
+        if (filter != null) {
+            for (FilterItem f : filter) {
+                if (Boolean.TRUE.equals(f.getVariable())) continue;
+                f.setColumn(normalizeColumnCase(f.getColumn(), sqlColumns));
+            }
+        }
+        if (sort != null && sort.getColumn() != null) {
+            sort.setColumn(normalizeColumnCase(sort.getColumn(), sqlColumns));
+        }
+
         validateColumns(sqlColumns);
 
         // all 搜索时使用的列：前端 camelCase 转 snake_case 后与 SQL 白名单取交集，防注入
@@ -283,6 +295,20 @@ public class FilterParam implements SqlParamProvider {
             });
         if (sort != null && sort.getColumn() != null)
             ColumnExtractor.checkColumn(allowed, sort.getColumn());
+    }
+
+    /**
+     * 将列名归一化为白名单中的大小写格式。
+     * 例如：白名单含 SID.SDHNUM_0，输入 SID.sdhnum_0 → 输出 SID.SDHNUM_0。
+     * 未匹配到时原样返回（后续 validateColumns 会拦截非法列名）。
+     */
+    private static String normalizeColumnCase(String col, List<String> whitelist) {
+        if (col == null || whitelist == null || whitelist.isEmpty()) return col;
+        String colPure = ColumnExtractor.stripTablePrefix(col);
+        return whitelist.stream()
+                .filter(w -> ColumnExtractor.stripTablePrefix(w).equalsIgnoreCase(colPure))
+                .findFirst()
+                .orElse(col);
     }
 
     private boolean hasAnyCondition() {

@@ -106,6 +106,10 @@ export function useReportView() {
       // 从 API 返回的 displayConfig 直接设置 tableConfig（API 是唯一数据源，不写 localStorage）
       if (data.displayConfig) {
         const clone = JSON.parse(JSON.stringify(data.displayConfig)) as TableConfig
+        // 清理自动生成的 rowKey：SQL 列可能含 `.` 且无法保证唯一性，由 el-table 默认行索引兜底
+        if (clone.rowKey && typeof clone.rowKey === 'string' && clone.rowKey.includes('.')) {
+          delete clone.rowKey
+        }
         console.log('[useReportView] loadAndQuery → displayConfig.columns:', clone.columns?.length, 'search.filter:', clone.search?.filter?.length, 'sort:', clone.sort)
         tableConfig.value = clone
 

@@ -101,7 +101,7 @@ withDefaults(defineProps<{
   reportName?: string
   isSaved?: boolean
   lastSavedTime?: string
-  datasourceId?: number | null
+  datasourceId?: string | number | null
   category?: string
 }>(), {
   loading: false,
@@ -116,7 +116,7 @@ withDefaults(defineProps<{
 defineEmits<{
   'update:modelValue': [value: string]
   'update:reportName': [value: string]
-  'update:datasourceId': [value: number | null]
+  'update:datasourceId': [value: string | number | null]
   'update:category': [value: string]
   run: []
   save: []

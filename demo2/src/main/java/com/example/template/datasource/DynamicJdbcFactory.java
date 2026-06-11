@@ -164,18 +164,29 @@ public class DynamicJdbcFactory {
      */
     public static String buildJdbcUrl(Datasource ds) {
         String dbType = ds.getDbType() != null ? ds.getDbType().toUpperCase() : "MYSQL";
+        String params = ds.getParams();
+        boolean hasInstanceName = params != null && params.toLowerCase().contains("instancename");
+
         String baseUrl = switch (dbType) {
             case "POSTGRESQL" -> String.format(
                 "jdbc:postgresql://%s:%d/%s", ds.getHost(), ds.getPort(), ds.getDbName());
+            case "SQLSERVER" -> hasInstanceName
+                ? String.format("jdbc:sqlserver://%s;databaseName=%s", ds.getHost(), ds.getDbName())
+                : String.format("jdbc:sqlserver://%s:%d;databaseName=%s", ds.getHost(), ds.getPort(), ds.getDbName());
             default -> String.format(
                 "jdbc:mysql://%s:%d/%s", ds.getHost(), ds.getPort(), ds.getDbName());
         };
         StringBuilder urlBuilder = new StringBuilder(baseUrl);
-        if (ds.getParams() != null && !ds.getParams().isBlank()) {
-            urlBuilder.append(baseUrl.contains("?") ? "&" : "?").append(ds.getParams());
+        if (params != null && !params.isBlank()) {
+            // SQL Server 使用 ; 作为参数分隔符，MySQL/PostgreSQL 使用 ?/&
+            if ("SQLSERVER".equals(dbType)) {
+                urlBuilder.append(";").append(params);
+            } else {
+                urlBuilder.append(baseUrl.contains("?") ? "&" : "?").append(params);
+            }
         }
         // MySQL 8.0+ 自动追加必要参数
-        if (!"POSTGRESQL".equals(dbType)) {
+        if ("MYSQL".equals(dbType)) {
             String currentParams = urlBuilder.toString().toLowerCase();
             if (!currentParams.contains("allowpublickeyretrieval")) {
                 urlBuilder.append(currentParams.contains("?") ? "&" : "?")

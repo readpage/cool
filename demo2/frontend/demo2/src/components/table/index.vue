@@ -40,7 +40,7 @@
         :size="config.size"
         :height="config.height"
         :max-height="config.maxHeight"
-        :row-key="config.rowKey"
+        :row-key="tableRowKey"
         :header-cell-style="headerCellStyle"
         @selection-change="(val: any[]) => { emit('selection-change', val); updateSelection?.(val) }"
         @row-dblclick="(row: any, column: any, event: Event) => { crudEditRow?.(row); emit('row-dblclick', row, column, event) }"
@@ -215,6 +215,17 @@ const tableRows = computed(() =>
 const totalCount = computed(() =>
   Array.isArray(props.data) ? 0 : (props.data as PageResult).total ?? 0,
 )
+
+/**
+ * 安全 row-key：Element Plus 对字符串 rowKey 会做 `.` 路径解析（如 "SID.SDHNUM_0" → row['SID']['SDHNUM_0']），
+ * 导致含点的列名报错。此处包装为函数，直接用 bracket notation 取值。
+ */
+const tableRowKey = computed(() => {
+  const rk = props.config.rowKey
+  if (typeof rk === 'function') return rk
+  if (typeof rk === 'string') return (row: any) => row[rk]
+  return undefined
+})
 
 // ==================== 延迟 loading：防止快速渲染闪烁 ====================
 

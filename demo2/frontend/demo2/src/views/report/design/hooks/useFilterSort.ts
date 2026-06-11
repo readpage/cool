@@ -54,21 +54,47 @@ function extractColInfo(expr: string): { prop: string; label: string } {
   m = trimmed.match(/^(.+?)\s+AS\s+(.+)$/i)
   if (m) return { prop: m[2].trim(), label: m[2].trim() }
 
+  // 无引号空格别名: ITM.ITMREF_0 prod_num
+  m = trimmed.match(/^(.+?)\s+([a-zA-Z_]\w*)$/i)
+  if (m) return { prop: m[1].trim(), label: m[2] }
+
   // 无别名：prop 保留表前缀（如 s.prod_num），label 去前缀用于显示
   const prop = trimmed
   return { prop, label: stripTablePrefix(prop) }
 }
 
 /**
+ * 计算字符串中指定位置之前（不含 pos）的括号深度。
+ */
+function parenDepth(s: string, pos: number): number {
+  let depth = 0
+  let inSingle = false
+  let inDouble = false
+  for (let i = 0; i < pos; i++) {
+    const c = s[i]
+    if (inSingle) { if (c === "'") inSingle = false; continue }
+    if (inDouble) { if (c === '"') inDouble = false; continue }
+    if (c === "'") { inSingle = true; continue }
+    if (c === '"') { inDouble = true; continue }
+    if (c === '(') depth++
+    else if (c === ')') depth--
+  }
+  return depth
+}
+
+/**
  * 从 SQL 模板中解析 SELECT 与 FROM 之间的列信息。
- * 搜索最后一个 SELECT 和 FROM，提取中间的列表达式。
+ * 取最外层（括号深度为 0）的最后一个 SELECT...FROM，跳过子查询。
  * prop 取原名，label 取别名，没有别名则取原名。
  */
 export function parseSqlColumns(sql: string): { prop: string; label: string }[] {
-  // 支持 WITH CTE：匹配最后一个 SELECT...FROM，跳过 CTE 内部的子 SELECT
   const allMatches = [...sql.matchAll(/\bSELECT\s+(.+?)\s+FROM\b/gis)]
   if (allMatches.length === 0) return []
-  const match = allMatches[allMatches.length - 1]
+
+  // 只保留括号深度为 0（最外层）的 SELECT...FROM
+  const outerMatches = allMatches.filter(m => parenDepth(sql, m.index!) === 0)
+  if (outerMatches.length === 0) return []
+  const match = outerMatches[outerMatches.length - 1]
 
   const raw = match[1]
   const parts = splitByComma(raw)
@@ -98,10 +124,13 @@ function inferDefaultOperator(label?: string): string {
  * 返回缺少别名的列表达式列表，为空表示全部合法。
  */
 export function validateSqlAliases(sql: string): string[] {
-  // 支持 WITH CTE：匹配最后一个 SELECT...FROM，跳过 CTE 内部的子 SELECT
   const allMatches = [...sql.matchAll(/\bSELECT\s+(.+?)\s+FROM\b/gis)]
   if (allMatches.length === 0) return []
-  const match = allMatches[allMatches.length - 1]
+
+  // 只保留括号深度为 0（最外层）的 SELECT...FROM
+  const outerMatches = allMatches.filter(m => parenDepth(sql, m.index!) === 0)
+  if (outerMatches.length === 0) return []
+  const match = outerMatches[outerMatches.length - 1]
 
   const parts = splitByComma(match[1])
   const missing: string[] = []
@@ -110,11 +139,12 @@ export function validateSqlAliases(sql: string): string[] {
     const expr = part.trim()
     if (expr === '*' || expr === '') continue
 
-    // 检查是否有别名（单引号/双引号/反引号/AS 别名）
+    // 检查是否有别名（单引号/双引号/反引号/AS 别名/无引号空格别名）
     const hasAlias = /^.+?\s+'[^']+'\s*$/i.test(expr)
       || /^.+?\s+"[^"]+"\s*$/i.test(expr)
       || /^.+?\s+`[^`]+`\s*$/i.test(expr)
       || /^.+?\s+AS\s+.+$/i.test(expr)
+      || /^.+?\s+[a-zA-Z_]\w*\s*$/i.test(expr)
 
     if (!hasAlias) {
       const pureCol = expr.replace(/^[\w_]+\./, '').replace(/\s+/g, ' ')

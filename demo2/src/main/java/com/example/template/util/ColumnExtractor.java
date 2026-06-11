@@ -47,7 +47,10 @@ public class ColumnExtractor {
                 .replaceAll("\\[\\[.*?]]", " ");
         Matcher m = SELECT_FROM.matcher(sql);
         String clause = null;
-        while (m.find()) clause = m.group(1);
+        while (m.find()) {
+            // 只取最外层（括号深度为 0）的 SELECT...FROM，跳过子查询
+            if (depth(sql, m.start()) == 0) clause = m.group(1);
+        }
         if (clause == null) return List.of();
 
         List<String> result = new ArrayList<>();
@@ -90,9 +93,18 @@ public class ColumnExtractor {
             }
         }
 
-        // 5) 空格别名（纯标识符）: 别名即为可用列名
+        // 5) 空格别名（纯标识符）
         Matcher sp = SPACE_ALIAS.matcher(col);
-        if (sp.find()) return sp.group(1);
+        if (sp.find()) {
+            if (extractProp) {
+                // 取空格别名前面的原名
+                String prop = col.substring(0, sp.start()).strip();
+                if (!prop.isEmpty() && !FUNCTION_CALL.matcher(prop).matches()) return prop;
+                return "";
+            } else {
+                return sp.group(1);
+            }
+        }
 
         // 6) 无别名表达式 → 跳过
         if (FUNCTION_CALL.matcher(col).matches()) return "";
@@ -190,12 +202,37 @@ public class ColumnExtractor {
         return doToUnderScore(camelCase);
     }
 
+    /**
+     * 计算字符串中指定位置之前的括号深度（忽略引号内的括号）。
+     */
+    private static int depth(String s, int end) {
+        int d = 0;
+        boolean inSingle = false, inDouble = false;
+        for (int i = 0; i < end && i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (inSingle) {
+                if (c == '\'') inSingle = false;
+                continue;
+            }
+            if (inDouble) {
+                if (c == '"') inDouble = false;
+                continue;
+            }
+            if (c == '\'') { inSingle = true; continue; }
+            if (c == '"') { inDouble = true; continue; }
+            if (c == '(') d++;
+            else if (c == ')') d--;
+        }
+        return d;
+    }
+
     private static String doToUnderScore(String camelCase) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < camelCase.length(); i++) {
             char c = camelCase.charAt(i);
             if (Character.isUpperCase(c)) {
-                if (i > 0) sb.append('_');  // 首字母大写不加下划线
+                // 仅当前字符是小写 → 大写的过渡时才插入下划线，避免 IDENT2_0 → i_d_e_n_t2_0
+                if (i > 0 && Character.isLowerCase(camelCase.charAt(i - 1))) sb.append('_');
                 sb.append(Character.toLowerCase(c));
             } else {
                 sb.append(c);

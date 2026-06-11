@@ -30,8 +30,12 @@ import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import javax.sql.DataSource;
+import java.sql.Connection;
 import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -298,8 +302,8 @@ public class ReportServiceImpl implements ReportService {
         if (properties.isLogging()) log.info("==> COUNT: {}", countSql);
         Long total = targetJdbc.queryForObject(countSql, rawParams, Long.class);
 
-        // 分页数据
-        String pagedSql = renderedSql + " LIMIT " + size + " OFFSET " + ((current - 1) * size);
+        // 分页数据（根据数据库类型自适应 LIMIT/OFFSET、FETCH 或 ROWNUM）
+        String pagedSql = buildLimitSql(renderedSql, size, current, targetJdbc);
         if (properties.isLogging()) log.info("==> SQL: {}", pagedSql);
 
         List<String> lastExtractProps = ColumnExtractor.lastExtract(sql);
@@ -355,6 +359,49 @@ public class ReportServiceImpl implements ReportService {
             throw new RuntimeException("数据源连接池未初始化，请先保存数据源配置: id=" + datasourceId);
         }
         return target;
+    }
+
+    /**
+     * 根据数据库类型生成分页 SQL（MySQL / PostgreSQL / SQLServer / Oracle 自适应）。
+     */
+    private String buildLimitSql(String renderedSql, int size, int currentPage, NamedParameterJdbcTemplate targetJdbc) {
+        String dbType = detectDbType(targetJdbc);
+        int offset = (currentPage - 1) * size;
+        if ("sqlserver".equals(dbType)) {
+            if (!renderedSql.toUpperCase().contains("ORDER BY")) {
+                renderedSql += " ORDER BY (SELECT 0)";
+            }
+            return renderedSql + " OFFSET " + offset + " ROWS FETCH NEXT " + size + " ROWS ONLY";
+        }
+        if ("oracle".equals(dbType)) {
+            return "SELECT * FROM (SELECT _ora_.*, ROWNUM _rn_ FROM (" + renderedSql
+                    + ") _ora_ WHERE ROWNUM <= " + (offset + size) + ") WHERE _rn_ > " + offset;
+        }
+        return renderedSql + " LIMIT " + size + " OFFSET " + offset;
+    }
+
+    /** 数据库类型缓存（DataSource → mysql|sqlserver|oracle|postgresql） */
+    private static final Map<String, String> DB_TYPE_CACHE = new ConcurrentHashMap<>();
+
+    /** 从 JDBC URL 检测数据库类型 */
+    private String detectDbType(NamedParameterJdbcTemplate targetJdbc) {
+        DataSource ds = targetJdbc.getJdbcTemplate().getDataSource();
+        if (ds == null) return "mysql";
+        String key = ds.toString();
+        return DB_TYPE_CACHE.computeIfAbsent(key, k -> {
+            try (Connection conn = ds.getConnection()) {
+                String url = conn.getMetaData().getURL();
+                if (url != null) {
+                    String lowerUrl = url.toLowerCase();
+                    if (lowerUrl.contains(":sqlserver:") || lowerUrl.contains(":jtds:")) return "sqlserver";
+                    if (lowerUrl.contains(":oracle:")) return "oracle";
+                    if (lowerUrl.contains(":postgresql:")) return "postgresql";
+                }
+            } catch (SQLException e) {
+                log.warn("无法检测数据库类型，默认使用 MySQL 语法", e);
+            }
+            return "mysql";
+        });
     }
 
     /**

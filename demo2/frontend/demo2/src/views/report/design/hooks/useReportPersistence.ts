@@ -66,7 +66,8 @@ export function useReportPersistence(
     }
 
     const search: SearchConfig = { filter, currentField: 'all' }
-    return { columns, search, stripe: true, size: 'small', rowKey: columns[0]?.prop }
+    // 不设置 rowKey：SQL 查询结果无可靠主键，任意列都可能重复，el-table 默认用行索引即可
+    return { columns, search, stripe: true, size: 'small' }
   }
 
   /**
@@ -254,6 +255,10 @@ export function useReportPersistence(
 
     const cfg = def.displayConfig
     if (cfg) {
+      // 清理自动生成的 rowKey：SQL 列可能含 `.` 且无法保证唯一性
+      if (cfg.rowKey && typeof cfg.rowKey === 'string' && cfg.rowKey.includes('.')) {
+        delete cfg.rowKey
+      }
       persistedTableConfig.value = JSON.parse(JSON.stringify(cfg)) as TableConfig
       syncTableConfig()
       // ★ filterConditions（SQL 模板 {{filter}}）与 Table 搜索栏的 config.search.filter[].value 彻底解绑

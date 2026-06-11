@@ -349,7 +349,7 @@ public class SqlTemplate {
             }
             return "SELECT COUNT(*) FROM (" + sql + ") _count_sub";
         }
-        return sql.replaceAll("(?i)^\\s*SELECT\\s+.+?\\s+FROM\\s+", "SELECT COUNT(*) FROM ");
+        return "SELECT COUNT(*) FROM (" + sql + ") _count_sub";
     }
 
     /** 执行 COUNT 查询，统一处理 null → 0 */
