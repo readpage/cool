@@ -67,7 +67,7 @@ export function useReportPersistence(
 
     const search: SearchConfig = { filter, currentField: 'all' }
     // 不设置 rowKey：SQL 查询结果无可靠主键，任意列都可能重复，el-table 默认用行索引即可
-    return { columns, search, stripe: true, size: 'small' }
+    return { columns, search, stripe: true }
   }
 
   /**
