@@ -30,6 +30,7 @@
           :data="tableData"
           :show-admin-btn="false"
           :export="handleExport"
+          :load-options="loadOptions"
           @query="onPageChange"
           @change="saveConfigToStore"
           @reset="resetConfigToSystem"
@@ -52,8 +53,11 @@ import Table, { type ExportParams } from '@/components/table/index.vue'
 import ReportDrawer from './components/ReportDrawer.vue'
 import ReportSidebar from './components/ReportSidebar.vue'
 import { useReportView } from './hooks/useReportView'
+import { useOptionsStore } from '@/store/options'
 import { AReport } from '@/api/report'
 import type { ReportQueryBody } from '@/api/report'
+
+const loadOptions = (type: string, keyword?: string) => useOptionsStore().getOptions(type, keyword)
 
 const route = useRoute()
 const router = useRouter()

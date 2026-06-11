@@ -88,8 +88,6 @@ export function useReportPersistence(
       if (label !== undefined) {
         seen.add(col.prop)
         columns.push({ ...col, label })
-      } else {
-        console.log(`[mergeTableConfig] 列已从 SQL 移除: prop="${col.prop}", label="${col.label}"`)
       }
     }
 
@@ -103,9 +101,6 @@ export function useReportPersistence(
 
     // 按 SQL 相邻列自动定位：每列向其最近的已持久化"邻居"靠拢
     if (newCols.length) {
-      console.log(`[mergeTableConfig] 新增列: ${newCols.map(c => c.prop).join(', ')}`, {
-        persistedColumns: columns.map(c => c.prop),
-      })
       const sqlIndex = new Map(resultCols.map((c, i) => [c.prop, i]))
       for (const nc of newCols) {
         const si = sqlIndex.get(nc.prop)!
@@ -125,14 +120,11 @@ export function useReportPersistence(
         }
 
         if (insertAt >= 0) {
-          console.log(`[mergeTableConfig] "${nc.prop}" → 插入位置 index=${insertAt}`)
           columns.splice(insertAt, 0, nc)
         } else {
-          console.log(`[mergeTableConfig] "${nc.prop}" 无相邻参考列，追加末尾`)
           columns.push(nc)
         }
       }
-      console.log(`[mergeTableConfig] 最终列顺序: ${columns.map(c => c.prop).join(' → ')}`)
     }
 
     // 筛选器以 SQL 列为源重建
@@ -172,30 +164,17 @@ export function useReportPersistence(
     }
 
     const filterMap = new Map(srcSearch.filter.map(f => [f.prop, f]))
-    console.log('[mergeTableConfig] === 筛选器合并 ===')
-    console.log('[mergeTableConfig] resultCols:', JSON.stringify(resultCols.map(c => c.prop)))
-    console.log('[mergeTableConfig] srcSearch.filter (持久化):', JSON.stringify(
-      srcSearch.filter.map(f => ({ prop: f.prop, value: f.value, filterMode: f.filterMode, variable: f.variable }))
-    ))
-    console.log('[mergeTableConfig] variableKeys:', JSON.stringify(variableKeys.value))
 
     const newFilter = resultCols.map(rc => {
       const f = filterMap.get(rc.prop)
-      return f ? { ...f, label: rc.label }
+      return f ? { ...f }
         : { prop: rc.prop, label: rc.label, fieldType: 'text' as const, filterMode: 'hide' as const }
     })
 
-    console.log('[mergeTableConfig] newFilter (仅SELECT列):', JSON.stringify(
-      newFilter.map(f => ({ prop: f.prop, filterMode: f.filterMode, variable: f.variable }))
-    ))
-
     // 追加 #{key} 变量项：优先保留用户已改过的配置，否则新建；重名时标记现有列
     for (const key of variableKeys.value) {
-      const inSelectCols = resultProps.has(key)
-      console.log(`[mergeTableConfig] 处理变量 key="${key}", inSelectCols=${inSelectCols}`)
       if (!resultProps.has(key)) {
         const existing = filterMap.get(key)
-        console.log(`[mergeTableConfig]   不在 SELECT 列中, existing:`, existing ? JSON.stringify({ prop: existing.prop, filterMode: existing.filterMode, variable: existing.variable }) : 'null')
         newFilter.push(existing
           ? { ...existing, variable: true }
           : { prop: key, label: key, fieldType: 'text' as const, filterMode: 'exposed' as const, variable: true }
@@ -203,43 +182,29 @@ export function useReportPersistence(
       } else {
         ElMessage.warning(`变量 #{${key}} 与 SELECT 列重名，将标记现有列为模板变量`)
         const idx = newFilter.findIndex(f => f.prop === key && !f.variable)
-        console.log(`[mergeTableConfig]   在 SELECT 列中, findIndex=${idx}, newFilter[${idx}]:`, idx >= 0 ? JSON.stringify({ prop: newFilter[idx].prop, filterMode: newFilter[idx].filterMode, variable: newFilter[idx].variable }) : 'not found')
         if (idx >= 0) {
           newFilter[idx] = { ...newFilter[idx], variable: true, filterMode: 'exposed' as const }
         }
       }
     }
 
-    console.log('[mergeTableConfig] 最终 newFilter:', JSON.stringify(
-      newFilter.map(f => ({ prop: f.prop, label: f.label, value: f.value, filterMode: f.filterMode, variable: f.variable }))
-    ))
-
     return { ...persisted, columns, search: { ...srcSearch, filter: newFilter } }
   }
 
   /** 同步计算 tableConfig（仅在手动调用时执行） */
   function syncTableConfig() {
-    console.log('[syncTableConfig] === 开始同步 tableConfig ===')
-    console.log('[syncTableConfig] hasPersistedConfig:', !!persistedTableConfig.value)
     if (persistedTableConfig.value) {
-      console.log('[syncTableConfig] persisted filter 项数:', persistedTableConfig.value.search?.filter?.length)
       const parsedCols = parseSqlColumns(sqlTemplate.value)
-      console.log('[syncTableConfig] parsedCols from SQL:', JSON.stringify(parsedCols.map(c => c.prop)))
       if (parsedCols.length) {
         const merged = mergeTableConfig(persistedTableConfig.value, parsedCols)
         tableConfig.value = merged
-        console.log('[syncTableConfig] 合并后 filter:', JSON.stringify(
-          tableConfig.value.search?.filter?.map((f: any) => ({ prop: f.prop, filterMode: f.filterMode, variable: f.variable }))
-        ))
         return
       }
       tableConfig.value = persistedTableConfig.value
-      console.log('[syncTableConfig] 无 SQL 列，直接用持久化配置')
       return
     }
     const cols = parseSqlColumns(sqlTemplate.value)
     tableConfig.value = cols.length ? autoGenTableConfig(cols) : { columns: [] }
-    console.log('[syncTableConfig] 自动生成配置')
   }
 
   // ==================== 加载 / 保存 ====================
@@ -319,9 +284,6 @@ export function useReportPersistence(
 
   /** 手动刷新表格配置（列合并、新增列位置等）——在点击"运行"时调用 */
   function refreshTableConfig() {
-    console.log('[useReportPersistence] refreshTableConfig 触发', {
-      sqlCols: parseSqlColumns(sqlTemplate.value).map(c => c.prop),
-    })
     syncTableConfig()
   }
 

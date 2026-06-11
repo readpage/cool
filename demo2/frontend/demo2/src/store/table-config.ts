@@ -177,7 +177,6 @@ export const useTableConfigStore = defineStore('table-config', () => {
         }
         const entry = readConfigCache(group, tableId)
         if (entry) {
-          console.log(`[Store.restore] tableId=${tableId}, search.filter:`, (entry.config as any).search?.filter?.map((c: any) => ({ prop: c.prop, value: c.value })))
           configs.set(tableId, entry.config)
           serverVersions.set(tableId, entry.serverVersion)
           restoredCount++
@@ -187,7 +186,6 @@ export const useTableConfigStore = defineStore('table-config', () => {
     for (const k of keysToRemove) {
       localStorage.removeItem(k)
     }
-    console.log(`[TableConfig] restoreFromLocalStorage: ${restoredCount} 条缓存恢复，${keysToRemove.length} 条脏数据清除`)
   }
 
   // ==================== 仅写本地（不发请求） ====================
@@ -204,12 +202,8 @@ export const useTableConfigStore = defineStore('table-config', () => {
 
   /** 保存当前用户的表格配置（写入 user_config 表） */
   async function save(tableId: string, config: TableConfig, group: string = DEFAULT_GROUP) {
-    console.log('[Store.save] 入参 tableId:', tableId, 'config.search?.filter:', (config as any).search?.filter?.map((c: any) => ({ prop: c.prop, value: c.value, operator: c.operator })))
     configs.set(tableId, config)
     writeConfigCache(group, tableId, config, serverVersions.get(tableId) ?? 0)
-    // 验证写入 localStorage 的内容
-    const verifed = readConfigCache(group, tableId)
-    console.log('[Store.save] localStorage 回读验证:', (verifed as any)?.config?.search?.filter?.map((c: any) => ({ prop: c.prop, value: c.value })))
 
     const timerKey = `${group}::${tableId}`
     const existingTimer = saveTimers.get(timerKey)
@@ -244,7 +238,6 @@ export const useTableConfigStore = defineStore('table-config', () => {
 
   /** 恢复系统默认 — 调后端 POST /config/reset：sys_config 覆盖 user_config，返回系统配置 */
   async function resetToSystem(tableId: string, codeDefault: TableConfig, group: string = DEFAULT_GROUP) {
-    console.log('[Store] resetToSystem 开始 →', tableId)
     try {
       const { data: result } = await AConfig.reset({ configGroup: group, configKey: tableId })
       if (result && result.configValue) {
@@ -252,15 +245,12 @@ export const useTableConfigStore = defineStore('table-config', () => {
         configs.set(tableId, cfg)
         serverVersions.set(tableId, result.version ?? 0)
         writeConfigCache(group, tableId, cfg, result.version ?? 0)
-        console.log('[Store] 后端已用 sys_config 覆盖 user_config →', { columns: cfg.columns.length, search: !!cfg.search, source: result.source })
       } else {
         configs.set(tableId, codeDefault)
-        console.log('[Store] 服务端无配置，使用代码默认 initTableConfig →', { columns: codeDefault.columns.length, search: !!codeDefault.search })
       }
     } catch {
       console.warn(`[TableConfigStore] 恢复默认失败: ${tableId}`)
       configs.set(tableId, codeDefault)
-      console.log('[Store] 异常兜底，使用代码默认')
     }
   }
 

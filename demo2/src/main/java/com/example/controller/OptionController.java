@@ -3,6 +3,7 @@ package com.example.controller;
 import cn.undraw.util.result.R;
 import com.example.domain.entity.Option;
 import com.example.service.OptionService;
+import com.example.service.ReportOptionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -19,23 +20,39 @@ import java.util.List;
 @RequestMapping("/option")
 public class OptionController {
 
+    /** @ 前缀表示选项数据来自报告 SQL 执行，而非 options 表 */
+    private static final String RPT_PREFIX = "@";
+
     @Resource
     private OptionService optionService;
 
-    @Operation(summary = "远程搜索选项 — 根据 type 和 keyword 模糊匹配 label，默认最多返回 20 条")
+    @Resource
+    private ReportOptionService reportOptionService;
+
+    @Operation(summary = "远程搜索选项 — type 以 '@' 开头时走报告SQL，否则查 options 表")
     @GetMapping("/search")
     public R<List<Option>> search(
-            @Parameter(description = "选项类型") @RequestParam(required = false) String type,
+            @Parameter(description = "选项类型（@前缀→报告SQL，否则→options表）") @RequestParam(required = false) String type,
             @Parameter(description = "搜索关键字") @RequestParam(required = false) String keyword,
             @Parameter(description = "返回上限，默认 20") @RequestParam(defaultValue = "20") Integer limit) {
+        // 分支：@ 前缀 → 报告 SQL 路径
+        if (type != null && type.startsWith(RPT_PREFIX)) {
+            String tableKey = type.substring(RPT_PREFIX.length());
+            return R.ok(reportOptionService.getOptionsFromReport(tableKey, keyword, limit));
+        }
         return R.ok(optionService.search(type, keyword, limit));
     }
 
-    @Operation(summary = "根据 type 查询所有有效选项，默认最多返回 50 条")
+    @Operation(summary = "根据 type 查询所有有效选项 — type 以 '@' 开头时走报告SQL，否则查 options 表")
     @GetMapping("/list")
     public R<List<Option>> listByType(
-            @Parameter(description = "选项类型") @RequestParam(required = false) String type,
+            @Parameter(description = "选项类型（@前缀→报告SQL，否则→options表）") @RequestParam(required = false) String type,
             @Parameter(description = "返回上限，默认 50") @RequestParam(defaultValue = "50") Integer limit) {
+        // 分支：@ 前缀 → 报告 SQL 路径
+        if (type != null && type.startsWith(RPT_PREFIX)) {
+            String tableKey = type.substring(RPT_PREFIX.length());
+            return R.ok(reportOptionService.getOptionsFromReport(tableKey, null, limit));
+        }
         return R.ok(optionService.listByType(type, limit));
     }
 

@@ -1,6 +1,7 @@
 import { ref, onMounted, nextTick, type ComputedRef, type Ref } from 'vue'
 import type { TableConfig, TableItem } from '../index.vue'
 import type { OptionItem, OptionStyle } from '../types'
+import { plainOptionsCache, cacheVersion } from '../search/filterCache'
 
 interface UseTableInitOptions {
   config: TableConfig
@@ -34,7 +35,6 @@ export function useTableInit(options: UseTableInitOptions) {
 
   onMounted(async () => {
     await nextTick()
-    console.log('[useTableInit] onMounted → 准备 emitQuery()')
 
     // 1. 初始查询
     emitQuery()
@@ -111,6 +111,11 @@ export function useTableInit(options: UseTableInitOptions) {
         )
         for (const { prop, items } of results) {
           ingestOptions(prop, items as OptionItem[])
+          // 同步写入 FilterValue 共享缓存，确保 remote-select 初始即有 label
+          if (items.length > 0) {
+            plainOptionsCache[prop] = items as OptionItem[]
+            cacheVersion.value++
+          }
         }
       }
     }

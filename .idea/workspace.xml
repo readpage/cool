@@ -5,15 +5,21 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="18fbe13d-d477-4a78-a9bc-379cfd296fb0" name="Changes" comment="update: spring-boot3">
-      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/components.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/components.d.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/table/hooks/useTableInit.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/table/hooks/useTableInit.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/table/index.vue" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/table/index.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/table/search/FilterValue.vue" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/table/search/FilterValue.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/table/search/index.vue" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/table/search/index.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/table/search/query.vue" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/components/table/search/query.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/store/table-config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/store/table-config.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/report/design/components/ResultPanel.vue" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/report/design/components/ResultPanel.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/report/design/components/SqlPanel.vue" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/report/design/components/SqlPanel.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/report/design/hooks/useFilterSort.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/report/design/hooks/useFilterSort.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/report/design/hooks/useQueryRuntime.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/report/design/hooks/useQueryRuntime.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/report/design/hooks/useReportPersistence.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/report/design/hooks/useReportPersistence.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/report/design/index.vue" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/report/design/index.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/report/view/hooks/useReportView.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/report/view/hooks/useReportView.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/service/impl/ReportServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/src/main/java/com/example/service/impl/ReportServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/template/datasource/DynamicJdbcFactory.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/src/main/java/com/example/template/datasource/DynamicJdbcFactory.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/template/util/ColumnExtractor.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/src/main/java/com/example/template/util/ColumnExtractor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/report/view/index.vue" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/frontend/demo2/src/views/report/view/index.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/controller/OptionController.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/src/main/java/com/example/controller/OptionController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo2/src/main/java/com/example/template/util/FilterParam.java" beforeDir="false" afterPath="$PROJECT_DIR$/demo2/src/main/java/com/example/template/util/FilterParam.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -259,7 +265,7 @@
     "run.configurations.included.in.services": "true",
     "settings.editor.selected.configurable": "preferences.pluginManager",
     "spring.configuration.checksum": "adc14bc5942187ae9b51210c3694fa90",
-    "ts.external.directory.path": "D:\\code\\Java\\cool\\demo2\\frontend\\demo2\\node_modules\\typescript\\lib",
+    "ts.external.directory.path": "D:\\Code\\Java\\cool\\demo2\\frontend\\demo2\\node_modules\\typescript\\lib",
     "vue.rearranger.settings.migration": "true",
     "应用程序.CodeGenerator.executor": "Run",
     "应用程序.EasyExcelExample.executor": "Debug",

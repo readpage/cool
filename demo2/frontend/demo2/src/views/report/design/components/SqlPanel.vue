@@ -35,7 +35,7 @@
           clearable
           filterable
         >
-          <el-option label="默认主数据源" :value="null" />
+          <el-option label="默认主数据源" value="" />
           <el-option
             v-for="ds in datasourceList"
             :key="ds.id"

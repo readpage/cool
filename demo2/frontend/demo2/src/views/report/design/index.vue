@@ -25,6 +25,7 @@
         :table-config="tableConfig"
         :table-data="tableData"
         :export="handleExport"
+        :load-options="loadOptions"
         @query="onPageChange"
       />
     </div>
@@ -66,6 +67,7 @@ import { useReportPersistence } from './hooks/useReportPersistence'
 import { useFilterSort, validateSqlAliases, parseSqlColumns } from './hooks/useFilterSort'
 import { useDragSplit } from './hooks/useDragSplit'
 import { throttlePromise } from '@/utils/throttle'
+import { useOptionsStore } from '@/store/options'
 import { AReport } from '@/api/report'
 import type { ReportExecuteBody } from '@/api/report'
 import type { TableQuery } from '../types/table'
@@ -107,6 +109,8 @@ const {
 } = useQueryRuntime(sqlTemplate, filterConditions, sortConditions, getEffectiveFilters, datasourceId)
 
 const { topHeight, onDividerMouseDown } = useDragSplit()
+
+const loadOptions = (type: string, keyword?: string) => useOptionsStore().getOptions(type, keyword)
 
 const route = useRoute()
 const router = useRouter()
@@ -204,9 +208,6 @@ watch(availableColumns, (cols) => {
 // 页面初始化 & 加载报告后侧边栏 JSON 同步
 // 后续不再自动覆盖 JSON 手写内容，由用户手动点"刷新"或"应用"触发
 watch([sqlTemplate, tableConfig, filterConditions, sortConditions], () => {
-  console.log('[watch tableConfig] watcher 触发, jsonDirty:', jsonDirty.value, 'filter:', JSON.stringify(
-    tableConfig.value.search?.filter?.map((f: any) => ({ prop: f.prop, filterMode: f.filterMode }))
-  ))
   if (!jsonDirty.value) {
     sidebarJsonText.value = buildSidebarJson()
   }
@@ -402,9 +403,27 @@ function onBeforeUnload(e: BeforeUnloadEvent) {
 }
 
 function onKeydown(e: KeyboardEvent) {
+  // Ctrl/Cmd + Enter：执行 SQL
   if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
     e.preventDefault()
     execute()
+    return
+  }
+
+  // Ctrl/Cmd + Shift + F：格式化 JSON
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'F') {
+    e.preventDefault()
+    jsonEditorRef.value?.format()
+    ElMessage.success('JSON 已格式化')
+    return
+  }
+
+  // Ctrl/Cmd + Shift + M：压缩 JSON
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'M') {
+    e.preventDefault()
+    jsonEditorRef.value?.minify()
+    ElMessage.success('JSON 已压缩')
+    return
   }
 }
 

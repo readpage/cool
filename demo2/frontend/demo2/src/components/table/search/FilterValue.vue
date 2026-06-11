@@ -19,6 +19,9 @@
     :model-value="modelValue"
     @update:model-value="emit('update:modelValue', $event)"
     :multiple="operator === 'in'"
+    :collapse-tags="operator === 'in'"
+    :collapse-tags-tooltip="operator === 'in'"
+    :max-collapse-tags="3"
     :placeholder="placeholder"
     :class="[attrs.class, 'cond-value']"
     style="min-width: 150px"
@@ -39,9 +42,12 @@
     v-else-if="fieldType === 'remote-select'"
     v-model="remoteModelValue"
     :multiple="operator === 'in'"
+    :collapse-tags="operator === 'in'"
+    :collapse-tags-tooltip="operator === 'in'"
+    :max-collapse-tags="1"
     :placeholder="placeholder"
     :class="[attrs.class, 'cond-value']"
-    style="min-width: 150px"
+    style="min-width: 170px"
     :teleported="false"
     clearable
     filterable
@@ -70,7 +76,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, useAttrs } from 'vue'
+import { ref, computed, watch, useAttrs, onMounted } from 'vue'
 import { plainOptionsCache, cacheVersion, type OptionItem } from './filterCache'
 
 /* ============ 多根节点 class 透传 ============ */
@@ -163,6 +169,39 @@ const safeRemoteOptions = computed<OptionItem[]>(() => {
     }
   }
   return [...seen.values()]
+})
+
+/** 挂载时预加载：若当前有值但缓存无真实 label，自动拉取选项 */
+onMounted(async () => {
+  if (props.fieldType !== 'remote-select') return
+  if (!props.modelValue) return
+  if (!props.remoteMethod) return
+
+  const vals = Array.isArray(props.modelValue) ? props.modelValue : [props.modelValue]
+  if (vals.length === 0) return
+
+  // 检查是否所有值都已存在于缓存中（且有真实 label，非 value===label 的兜底）
+  const missing = vals.filter(v => {
+    if (!v) return false
+    const cached = safeRemoteOptions.value
+    return !cached.some(o => o.value === v && o.label !== v)
+  })
+
+  if (missing.length === 0) return  // 已有真实 label，无需加载
+
+  try {
+    remoteLoading.value = true
+    const items = await props.remoteMethod('')
+    remoteOptions.value = items
+    if (props.column) {
+      plainOptionsCache[props.column] = items
+      cacheVersion.value++
+    }
+  } catch {
+    // 静默失败，已有兜底显示
+  } finally {
+    remoteLoading.value = false
+  }
 })
 
 /** 本地 v-model 中介：通过改变引用让 Element Plus 感知 options label 变化 */

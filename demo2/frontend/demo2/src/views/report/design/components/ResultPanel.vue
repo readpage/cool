@@ -13,6 +13,7 @@
         :data="tableData"
         :show-admin-btn="false"
         :export="export"
+        :load-options="loadOptions"
         @query="(v, done) => $emit('query', v, done)"
       />
       <el-empty v-else description="点击右侧「▶ 运行」执行查询" :image-size="100" />
@@ -30,6 +31,7 @@ defineProps<{
   tableConfig: TableConfig
   tableData: PageResult
   export?: (params: ExportParams) => Promise<boolean | void>
+  loadOptions?: (type: string, keyword?: string) => Promise<{ label: string; value: string }[]>
 }>()
 
 type DoneFn = () => void

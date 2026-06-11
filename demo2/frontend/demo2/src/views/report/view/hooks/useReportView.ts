@@ -110,7 +110,6 @@ export function useReportView() {
         if (clone.rowKey && typeof clone.rowKey === 'string' && clone.rowKey.includes('.')) {
           delete clone.rowKey
         }
-        console.log('[useReportView] loadAndQuery → displayConfig.columns:', clone.columns?.length, 'search.filter:', clone.search?.filter?.length, 'sort:', clone.sort)
         tableConfig.value = clone
 
         // 恢复筛选条件（用于发送 API 查询）+ 建立 variableMap
@@ -121,10 +120,7 @@ export function useReportView() {
             filterConditions.value.push({ column: col.prop, operator: col.operator || 'contains', value: col.value, variable: col.variable })
           }
         }
-        console.log('[useReportView] loadAndQuery → filterConditions:', filterConditions.value.map(f => `${f.column}=${f.value}`))
         sortConditions.value = clone.sort ? [clone.sort] : []
-      } else {
-        console.log('[useReportView] loadAndQuery → displayConfig 为空!')
       }
 
       // 重置分页
@@ -140,7 +136,6 @@ export function useReportView() {
 
   /** 翻页 / 筛选 / 排序（Promise 安全节流，done 回调正常结束） */
   const onPageChange = throttlePromise(async (v: TableQuery, done: () => void) => {
-    console.log('[useReportView] onPageChange 收到查询 → current:', v.current, 'size:', v.size, 'filter:', v.filter.map(f => `${f.column}=${f.value}`), 'sort:', v.sort)
     lastPage.current = v.current
     lastPage.size = v.size
 

@@ -35,7 +35,7 @@ export function useQueryRuntime(
     // 合并去重：tableSearchFilters 覆盖 getEffectiveFilters 同名列
     const searchColumnMap = new Map(tableSearchFilters.value.map(f => [f.column, f]))
     const effectiveFilters = getEffectiveFilters().filter(f => !searchColumnMap.has(f.column))
-    // 合并并过滤空值
+    // 合并且过滤空值（$ 动态变量已在 Table.emitQuery() 中解析）
     const allFilters = [...effectiveFilters, ...tableSearchFilters.value]
     const filter = allFilters.filter(f => {
       const v = f.value
@@ -49,7 +49,7 @@ export function useQueryRuntime(
       sort: sortConditions.value.length > 0 ? sortConditions.value[0] : undefined,
       current: lastPage.current,
       size: lastPage.size,
-      datasourceId: datasourceId?.value ?? null,
+      datasourceId: datasourceId?.value || null,
     }
   })
 

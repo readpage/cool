@@ -143,6 +143,7 @@
 import { ref, computed, toRef } from 'vue'
 import { Filter, Plus, Remove, Close } from '@element-plus/icons-vue'
 import FilterValue from './FilterValue.vue'
+import { resolveValue } from '@/utils/dynamic-var'
 import { useSearchHelpers, OPERATOR_MAP, defaultOperator, buildFilter, clearConditionValue } from './hooks/useSearchHelpers.js'
 import type { ColumnConfig, FilterCondition, FilterResult } from './types.js'
 
@@ -243,7 +244,6 @@ function cloneFromBlueprint(
       && !initialValues.some(iv => iv.column === c.prop)
     )
     if (exposedNoValue.length) {
-      console.log('[query.vue] cloneFromBlueprint 补充 exposed 条件:', exposedNoValue.map(c => `${c.prop}(filterMode=${c.filterMode})`))
       exposedNoValue.forEach(col => {
         result.push({
           column: col.prop,
@@ -254,18 +254,23 @@ function cloneFromBlueprint(
         })
       })
     }
-    console.log('[query.vue] cloneFromBlueprint 路径① initialValues →', result.map(c => `${c.column}=${c.value} filterMode=${c.filterMode}`))
     return result
   }
 
   // ② 从蓝图默认值构建（ColumnConfig.value 有值的列）
-  const defaults = blueprint.filter(c => {
-    const v = c.value
-    if (v === undefined || v === null) return false
-    if (typeof v === 'string' && v === '') return false
-    if (Array.isArray(v) && v.length === 0) return false
-    return true
-  })
+  // 🔑 先解析动态变量（$thisMonth 等），再过滤空值
+  const defaults = blueprint
+    .map(col => {
+      const resolved = resolveValue(col.value)
+      return { ...col, value: resolved }
+    })
+    .filter(c => {
+      const v = c.value
+      if (v === undefined || v === null) return false
+      if (typeof v === 'string' && v === '') return false
+      if (Array.isArray(v) && v.length === 0) return false
+      return true
+    })
 
   if (defaults.length) {
     const result = defaults.map(col => ({
@@ -275,31 +280,26 @@ function cloneFromBlueprint(
       valueStr: '',
       filterMode: col.filterMode ?? 'hide',
     }))
-    console.log('[query.vue] cloneFromBlueprint 路径② blueprint默认值 →', result.map(c => `${c.column}=${c.value}`))
     return result
   }
 
   // ③ 没有默认值 → 用 filterMode !== 'hide' 的列创建空条件
   const visible = blueprint.filter(c => c.filterMode !== 'hide')
   if (visible.length) {
-    console.log('[query.vue] cloneFromBlueprint 路径③ 空条件 → visible:', visible.map(c => c.prop))
     return visible.map(col => createCondition(col.prop))
   }
 
   // ④ 兜底：一个空条件
-  console.log('[query.vue] cloneFromBlueprint 路径④ 兜底空条件')
   return [createCondition()]
 }
 
 /** 外部调用：重新初始化（如系统默认恢复 / 切换报表） */
 function reinit(values?: FilterResult[]) {
   conditions.value = cloneFromBlueprint(props.columns, values)
-  console.log('[query.vue] reinit 后 conditions:', conditions.value.map(c => `${c.column}=${c.value} filterMode=${c.filterMode}`))
 }
 
 /* ============ 初始化 ============ */
 conditions.value = cloneFromBlueprint(props.columns, props.initialValues)
-console.log('[query.vue] 初始化后 conditions:', conditions.value.map(c => `${c.column}=${c.value} filterMode=${c.filterMode}`))
 
 
 /* ============ 条件操作 ============ */

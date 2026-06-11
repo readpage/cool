@@ -212,20 +212,21 @@ public class FilterParam implements SqlParamProvider {
             if (val instanceof Collection<?> col && col.isEmpty()) continue;
             if (first) { first = false; }
             else { where.append(" AND "); }
-            if ("all".equalsIgnoreCase(c.column())) {
-                // 全字段匹配：对每个可见列生成 OR 条件
-                if (allSearchColumns.isEmpty()) {
-                    where.append("1=0"); // 无可用列，查不出任何数据
-                } else {
-                    where.append("(");
-                    for (int i = 0; i < allSearchColumns.size(); i++) {
-                        if (i > 0) where.append(" OR ");
-                        where.append(c.operator().toSql(allSearchColumns.get(i), val,
-                                allSearchColumns.get(i) + "_", idx, namedParams));
-                    }
-                    where.append(")");
-                }
+        if ("all".equalsIgnoreCase(c.column())) {
+            // 全字段匹配：对每个可见列生成 OR 条件，最多匹配前 15 列
+            if (allSearchColumns.isEmpty()) {
+                where.append("1=0"); // 无可用列，查不出任何数据
             } else {
+                where.append("(");
+                int maxAllColumns = Math.min(allSearchColumns.size(), 15);
+                for (int i = 0; i < maxAllColumns; i++) {
+                    if (i > 0) where.append(" OR ");
+                    where.append(c.operator().toSql(allSearchColumns.get(i), val,
+                            allSearchColumns.get(i) + "_", idx, namedParams));
+                }
+                where.append(")");
+            }
+        } else {
                 where.append(c.operator().toSql(c.column(), val, c.column() + "_", idx, namedParams));
             }
         }

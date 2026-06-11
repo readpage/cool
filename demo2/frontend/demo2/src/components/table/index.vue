@@ -128,6 +128,7 @@ import TableSettings from './TableSettings.vue'
 import TableOverlay from './TableOverlay.vue'
 import Search, { type SearchConfig, type FilterResult } from './search/index.vue'
 import { useTableInit } from './hooks/useTableInit'
+import { resolveValue } from '@/utils/dynamic-var'
 import type { TableQuery, PageResult, OptionItem, FilterItem } from './types'
 
 
@@ -294,14 +295,15 @@ function initQueryFromConfig(cfg?: TableConfig) {
   const config = cfg || props.config
   const defaults: FilterResult[] = []
   config.search?.filter.forEach((col) => {
-    const v = col.value
-    if (v === undefined || v === null) return
-    if (typeof v === 'string' && v === '') return
-    if (Array.isArray(v) && v.length === 0) return
+    // 🔑 解析动态变量（$today, $thisYear 等）
+    const resolved = resolveValue(col.value)
+    if (resolved === undefined || resolved === null) return
+    if (typeof resolved === 'string' && resolved === '') return
+    if (Array.isArray(resolved) && resolved.length === 0) return
     defaults.push({
       column: col.prop,
       operator: (col.operator || 'contains') as FilterResult['operator'],
-      value: v as FilterResult['value'],
+      value: resolved as FilterResult['value'],
     })
   })
   query.filter = defaults.length ? defaults : []
@@ -510,11 +512,13 @@ function emitQuery() {
       })
     }
   }
-  const filter: FilterItem[] = [...dedupMap.values()].filter(f => {
-    const v = f.value
-    if (Array.isArray(v)) return v.length > 0 && v.some((e: any) => e !== '')
-    return v !== '' && v !== null && v !== undefined
-  })
+  const filter: FilterItem[] = [...dedupMap.values()]
+    .map(f => ({ ...f, value: resolveValue(f.value) }))
+    .filter(f => {
+      const v = f.value
+      if (Array.isArray(v)) return v.length > 0 && v.some((e: any) => e !== '')
+      return v !== '' && v !== null && v !== undefined
+    })
   const visibleColumns = props.config.columns.filter(c => !c.hidden)
   const payload: TableQuery = {
     current: query.current,
@@ -546,8 +550,12 @@ function onSearchQuery(filters: FilterResult[]) {
     for (const col of props.config.search.filter) {
       const sf = searchMap.get(col.prop)
       if (sf !== undefined) {
-        col.value = sf.value
-        col.operator = sf.operator as any
+        // 🔑 保留原始动态变量引用，避免 $thisMonth → 硬编码日期
+        const isDynamic = typeof col.value === 'string' && col.value.startsWith('$')
+        if (!isDynamic) {
+          col.value = sf.value
+          col.operator = sf.operator as any
+        }
       }
     }
   }

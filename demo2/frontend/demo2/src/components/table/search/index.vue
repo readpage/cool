@@ -45,6 +45,7 @@ import { ref, computed } from 'vue'
 import Input from './input.vue'
 import Query from './query.vue'
 import ExposedFilter from './ExposedFilter.vue'
+import { resolveValue } from '@/utils/dynamic-var'
 import type { ColumnConfig, FilterResult, FilterOperator } from './types'
 
 /* ============ Props & Emits ============ */
@@ -86,14 +87,15 @@ const searchOptions = computed(() =>
 const initialFilterValues = computed<FilterResult[]>(() => {
   const result = props.config.filter
     .map(c => {
-      const v = c.value
-      if (v === undefined || v === null) return null
-      if (typeof v === 'string' && v === '') return null
-      if (Array.isArray(v) && v.length === 0) return null
+      // 🔑 解析动态变量（$today, $thisYear 等）
+      const resolved = resolveValue(c.value)
+      if (resolved === undefined || resolved === null) return null
+      if (typeof resolved === 'string' && resolved === '') return null
+      if (Array.isArray(resolved) && resolved.length === 0) return null
       return {
         column: c.prop,
         operator: (c.operator || 'contains') as FilterOperator,
-        value: v as FilterResult['value'],
+        value: resolved as FilterResult['value'],
       }
     })
     .filter(Boolean) as FilterResult[]
@@ -119,8 +121,12 @@ function onFilter(params: FilterResult[]) {
     const fm = filterModeMap.get(col.prop)
     const next: typeof col = { ...col }
     if (pv) {
-      next.value = pv.value
-      next.operator = pv.operator
+      // 🔑 保留原始动态变量引用，避免 $thisMonth → 硬编码日期
+      const isDynamic = typeof col.value === 'string' && col.value.startsWith('$')
+      if (!isDynamic) {
+        next.value = pv.value
+        next.operator = pv.operator
+      }
     } else {
       next.value = ''
     }
