@@ -79,7 +79,7 @@ public class ReportOptionService {
         }
 
         // 4. 执行报告 SQL
-        ReportQueryResult result = reportService.queryByTableKey(tableKey, param);
+        ReportQueryResult result = reportService.queryByTableKeyInternal(tableKey, param);
 
         // 5. 从列元数据找到 value/label 对应的 prop
         //    buildColumnsAndRemap 后：col.prop=AS 前原名, col.label=AS 后别名

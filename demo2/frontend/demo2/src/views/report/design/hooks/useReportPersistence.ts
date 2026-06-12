@@ -224,6 +224,14 @@ export function useReportPersistence(
       if (cfg.rowKey && typeof cfg.rowKey === 'string' && cfg.rowKey.includes('.')) {
         delete cfg.rowKey
       }
+      // 校验 sort.column 是否仍在当前 SQL 列中，不匹配则清除（避免 tableConfig 携带旧值）
+      if (cfg.sort) {
+        const parsedCols = parseSqlColumns(sqlTemplate.value)
+        const validProps = new Set(parsedCols.map(c => c.prop))
+        if (!validProps.has(cfg.sort.column)) {
+          delete cfg.sort
+        }
+      }
       persistedTableConfig.value = JSON.parse(JSON.stringify(cfg)) as TableConfig
       syncTableConfig()
       // ★ filterConditions（SQL 模板 {{filter}}）与 Table 搜索栏的 config.search.filter[].value 彻底解绑

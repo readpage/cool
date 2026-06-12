@@ -51,6 +51,8 @@ export interface ReportSaveRequest {
   }
   /** 展示配置（TableConfig 扁平格式，sort/filter 值内置其中），来自 sys_config / user_config */
   displayConfig?: TableConfig
+  /** 关联数据源名称（后端冗余返回，免去前端全量拉取数据源列表） */
+  datasourceName?: string
 }
 
 // ==================== 列元数据 & 查询结果 ====================
@@ -65,6 +67,21 @@ export interface ColumnMeta {
   sqlType: number
 }
 
+/**
+ * 报告摘要 — 仅用于左侧列表展示
+ * 不含 sqlTemplate / permissionConfig / displayConfig 等敏感/冗余字段
+ */
+export interface ReportSummary {
+  id: number
+  tableKey: string
+  name: string
+  description?: string
+  category?: string
+  displayType?: string
+  datasourceName?: string
+  updateTime?: string
+}
+
 /** 报告查询结果 */
 export interface ReportQueryResult {
   columns: ColumnMeta[]
@@ -72,4 +89,19 @@ export interface ReportQueryResult {
   total: number
   current: number
   size: number
+}
+
+// ==================== 权限 ====================
+
+/** 报表权限配置 DTO — 对齐后端 ReportPermissionDto */
+export interface ReportPermissionDto {
+  /** 允许访问的角色 ID 列表（白名单模式，为空 = 仅创建者可访问） */
+  roleIds: number[]
+}
+
+/** 角色 — 对齐后端 role 表 */
+export interface Role {
+  id: number
+  name: string
+  nickname: string
 }

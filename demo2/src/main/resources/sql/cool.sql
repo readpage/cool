@@ -97,6 +97,9 @@ CREATE TABLE `report`  (
   INDEX `idx_datasource_id`(`datasource_id` ASC) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 12 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = 'BI 报表（问题）' ROW_FORMAT = Dynamic;
 
+-- 多值索引：加速 JSON_OVERLAPS 权限角色匹配查询（MySQL 8.0.17+）
+-- ALTER TABLE report ADD INDEX idx_perm_roles ((CAST(permission_config->'$.roleIds' AS UNSIGNED ARRAY)));
+
 -- ----------------------------
 -- Table structure for role
 -- ----------------------------

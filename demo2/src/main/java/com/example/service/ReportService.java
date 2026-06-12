@@ -1,7 +1,10 @@
 package com.example.service;
 
+import com.example.domain.dto.ReportPermissionDto;
 import com.example.domain.dto.ReportQueryResult;
 import com.example.domain.dto.ReportSaveRequest;
+import com.example.domain.dto.ReportSummary;
+import com.example.domain.entity.Role;
 import com.example.template.util.FilterParam;
 
 import java.util.List;
@@ -15,11 +18,11 @@ public interface ReportService {
     /** 报告列表（不含用户个性化展示配置） */
     List<ReportSaveRequest> list();
 
+    /** 报告摘要列表（不含敏感信息，用于侧边栏展示） */
+    List<ReportSummary> listSummary(Long userId, List<Integer> userRoleIds);
+
     /** 获取报告定义（含系统默认展示配置） */
     ReportSaveRequest getByTableKey(String tableKey);
-
-    /** 获取报告定义（copy-on-read：无 user_config 时从 sys_config 复制一份） */
-    ReportSaveRequest getByTableKey(String tableKey, Long userId);
 
     /** 保存报告定义（含展示配置） */
     void save(ReportSaveRequest req);
@@ -27,8 +30,11 @@ public interface ReportService {
     /** 删除报告（含关联的展示配置） */
     void deleteByTableKey(String tableKey);
 
-    /** 执行已保存报告的查询 */
-    ReportQueryResult queryByTableKey(String tableKey, FilterParam param);
+    /** 执行已保存报告的查询（含权限校验） */
+    ReportQueryResult queryByTableKey(String tableKey, FilterParam param, Long userId, List<Integer> userRoleIds);
+
+    /** 执行已保存报告的查询（内部调用，不校验权限，用于选项下拉等场景） */
+    ReportQueryResult queryByTableKeyInternal(String tableKey, FilterParam param);
 
     /** 即时执行 SQL 查询（不依赖已保存的报告） */
     ReportQueryResult execute(String sqlTemplate, FilterParam param);
@@ -41,4 +47,12 @@ public interface ReportService {
 
     /** 统计引用指定数据源的报告数量 */
     long countByDatasourceId(Long datasourceId);
+
+    // ==================== 权限管理 ====================
+
+    /** 获取报表权限配置 */
+    ReportPermissionDto getPermission(String tableKey);
+
+    /** 更新报表权限配置 */
+    void updatePermission(String tableKey, ReportPermissionDto dto);
 }

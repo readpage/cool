@@ -8,12 +8,15 @@ import org.apache.poi.ss.usermodel.*;
 import java.util.List;
 
 /**
- * 仅对实际写入的数据单元格设置居中对齐（不触碰 setDefaultColumnStyle，避免全列 1048576 行空边框）
+ * 按列配置的 align 对齐数据单元格（left / center / right），
+ * 不触碰 setDefaultColumnStyle，避免全列 1048576 行空边框。
  */
 public class DynamicCellAlignHandler implements CellWriteHandler {
 
     private final List<ColumnExportConfig> cols;
+    private CellStyle leftStyle;
     private CellStyle centerStyle;
+    private CellStyle rightStyle;
 
     public DynamicCellAlignHandler(List<ColumnExportConfig> cols) {
         this.cols = cols;
@@ -24,20 +27,41 @@ public class DynamicCellAlignHandler implements CellWriteHandler {
         if (ctx.getHead()) return;           // 跳过表头
         int colIdx = ctx.getColumnIndex();
         if (colIdx >= cols.size()) return;
-        if (!"center".equals(cols.get(colIdx).getAlign())) return;
+
+        String align = cols.get(colIdx).getAlign();
+        CellStyle target = getOrCreateStyle(ctx, align);
+        if (target == null) return;          // 未指定对齐或未知值 → 保持 Excel 默认
 
         Cell cell = ctx.getCell();
         if (cell == null) return;
+        cell.setCellStyle(target);
+    }
 
-        if (centerStyle == null) {
-            Workbook wb = ctx.getWriteWorkbookHolder().getCachedWorkbook();
-            centerStyle = wb.createCellStyle();
-            centerStyle.setAlignment(HorizontalAlignment.CENTER);
-            centerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
-            Font font = wb.createFont();
-            font.setFontHeightInPoints((short) 10);
-            centerStyle.setFont(font);
+    private CellStyle getOrCreateStyle(CellWriteHandlerContext ctx, String align) {
+        if (align == null) return null;
+        switch (align.toLowerCase()) {
+            case "left":
+                if (leftStyle == null) leftStyle = createStyle(ctx, HorizontalAlignment.LEFT);
+                return leftStyle;
+            case "center":
+                if (centerStyle == null) centerStyle = createStyle(ctx, HorizontalAlignment.CENTER);
+                return centerStyle;
+            case "right":
+                if (rightStyle == null) rightStyle = createStyle(ctx, HorizontalAlignment.RIGHT);
+                return rightStyle;
+            default:
+                return null;
         }
-        cell.setCellStyle(centerStyle);
+    }
+
+    private CellStyle createStyle(CellWriteHandlerContext ctx, HorizontalAlignment hAlign) {
+        Workbook wb = ctx.getWriteWorkbookHolder().getCachedWorkbook();
+        CellStyle style = wb.createCellStyle();
+        style.setAlignment(hAlign);
+        style.setVerticalAlignment(VerticalAlignment.CENTER);
+        Font font = wb.createFont();
+        font.setFontHeightInPoints((short) 10);
+        style.setFont(font);
+        return style;
     }
 }

@@ -54,11 +54,53 @@ public class ColumnExtractor {
         if (clause == null) return List.of();
 
         List<String> result = new ArrayList<>();
-        for (String part : clause.split(",")) {
+        // 括号感知的逗号切分，不拆开函数参数内的逗号
+        for (String part : splitSelectItems(clause)) {
             String col = cleanColumnName(part.strip(), extractProp);
             if (!col.isEmpty() && !result.contains(col)) result.add(col);
         }
         return Collections.unmodifiableList(result);
+    }
+
+    /**
+     * 按最外层逗号切分 SELECT 列项，不拆分函数括号/引号内的逗号。
+     * 例如：{@code id, FORMAT(SIH.CREDAT_0, 'yyyy-MM-dd'), name}
+     * → {@code ["id", "FORMAT(SIH.CREDAT_0, 'yyyy-MM-dd')", "name"]}
+     */
+    private static List<String> splitSelectItems(String clause) {
+        List<String> items = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
+        int depth = 0;
+        boolean inSingle = false, inDouble = false;
+        for (int i = 0; i < clause.length(); i++) {
+            char c = clause.charAt(i);
+            if (inSingle) {
+                current.append(c);
+                if (c == '\'') inSingle = false;
+            } else if (inDouble) {
+                current.append(c);
+                if (c == '"') inDouble = false;
+            } else if (c == '\'') {
+                current.append(c);
+                inSingle = true;
+            } else if (c == '"') {
+                current.append(c);
+                inDouble = true;
+            } else if (c == '(') {
+                current.append(c);
+                depth++;
+            } else if (c == ')') {
+                current.append(c);
+                depth--;
+            } else if (c == ',' && depth == 0) {
+                items.add(current.toString());
+                current.setLength(0);
+            } else {
+                current.append(c);
+            }
+        }
+        if (current.length() > 0) items.add(current.toString());
+        return items;
     }
 
     private static String cleanColumnName(String raw, boolean extractProp) {
@@ -72,7 +114,7 @@ public class ColumnExtractor {
                 // 取 AS 前面的原名
                 String prop = col.substring(0, as.start()).strip();
                 if (!prop.isEmpty() && !FUNCTION_CALL.matcher(prop).matches()) return prop;
-                return "";
+                return stripQuotes(as.group(1));  // 函数表达式 + AS → 返回别名（对齐前端）
             } else {
                 // 取 AS 后面的别名
                 return stripQuotes(as.group(1));
@@ -86,7 +128,7 @@ public class ColumnExtractor {
                 if (extractProp) {
                     String prop = col.substring(0, m.start()).strip();
                     if (!prop.isEmpty() && !FUNCTION_CALL.matcher(prop).matches()) return prop;
-                    return "";
+                    return prop;  // 函数表达式 + 引号别名 → 保留完整表达式（对齐前端）
                 } else {
                     return m.group(1);
                 }
@@ -100,14 +142,14 @@ public class ColumnExtractor {
                 // 取空格别名前面的原名
                 String prop = col.substring(0, sp.start()).strip();
                 if (!prop.isEmpty() && !FUNCTION_CALL.matcher(prop).matches()) return prop;
-                return "";
+                return prop;  // 函数表达式 + 空格别名 → 保留完整表达式（对齐前端）
             } else {
                 return sp.group(1);
             }
         }
 
-        // 6) 无别名表达式 → 跳过
-        if (FUNCTION_CALL.matcher(col).matches()) return "";
+        // 6) 无别名函数表达式 → 保留原始文本（保持索引对齐，不丢弃）
+        if (FUNCTION_CALL.matcher(col).matches()) return col;
 
         return col;
     }
@@ -164,6 +206,8 @@ public class ColumnExtractor {
     public static void checkColumn(List<String> allowed, String column) {
         if (allowed.isEmpty()) return;
         if ("all".equalsIgnoreCase(column.strip())) return;   // 全字段匹配，无需校验
+        // 函数表达式（如 FORMAT(SIH.CREDAT_0, 'yyyy-MM-dd')）跳过校验
+        if (column.contains("(") || column.contains("'")) return;
         String col = column.strip();
         if (allowed.contains(col)) return;
         // 多表兼容：去掉表前缀再匹配（如 "id" ↔ "u.id"）

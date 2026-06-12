@@ -3,11 +3,15 @@ package com.example.controller;
 import cn.undraw.util.result.R;
 import lombok.extern.slf4j.Slf4j;
 import com.example.domain.dto.ReportParam;
+import com.example.domain.dto.ReportPermissionDto;
 import com.example.domain.dto.ReportQueryResult;
 import com.example.domain.dto.ReportSaveRequest;
+import com.example.domain.dto.ReportSummary;
 import com.example.domain.entity.Datasource;
+import com.example.domain.entity.Role;
 import com.example.service.DatasourceService;
 import com.example.service.ReportService;
+import com.example.service.RoleService;
 import com.example.template.datasource.DynamicJdbcFactory;
 import com.example.template.util.FilterParam;
 import com.example.util.excel.ExcelUtils;
@@ -39,25 +43,19 @@ public class ReportController {
     @Resource
     private DynamicJdbcFactory dynamicJdbcFactory;
 
-    /** 默认用户 ID（后续接入认证后替换） */
-    private static final Long DEFAULT_USER_ID = 1L;
+    @Resource
+    private RoleService roleService;
 
-    @Operation(summary = "报告列表")
-    @GetMapping("/list")
-    public R<List<ReportSaveRequest>> list() {
-        return R.ok(reportService.list());
+    @Operation(summary = "报告摘要列表（轻量，不含 SQL 模板等敏感信息）")
+    @GetMapping("/summary")
+    public R<List<ReportSummary>> summary() {
+        return R.ok(reportService.listSummary(1L, List.of()));
     }
 
     @Operation(summary = "管理端获取报告定义 — 纯 sys_config，无 copy-on-read")
     @GetMapping("/get")
     public R<ReportSaveRequest> getForEdit(@RequestParam String tableKey) {
         return R.ok(reportService.getByTableKey(tableKey));
-    }
-
-    @Operation(summary = "用户端获取报告定义 — copy-on-read，user_config 优先")
-    @GetMapping("/user/get")
-    public R<ReportSaveRequest> getForUser(@RequestParam String tableKey) {
-        return R.ok(reportService.getByTableKey(tableKey, DEFAULT_USER_ID));
     }
 
     @Operation(summary = "保存报告（新增/更新），含 report 实体 + displayConfig")
@@ -74,20 +72,12 @@ public class ReportController {
         return R.ok("删除成功");
     }
 
-    @Operation(summary = "管理端执行报告查询（预览）")
-    @PostMapping("/{tableKey}/query")
-    public R<ReportQueryResult> query(@PathVariable String tableKey, @RequestBody FilterParam param) {
-        log.info("==> report/query tableKey:{}, filter:{}, sort:{}, page:{}/{}",
-                tableKey, param.getFilter(), param.getSort(), param.getCurrent(), param.getSize());
-        return R.ok(reportService.queryByTableKey(tableKey, param));
-    }
-
     @Operation(summary = "用户端执行报告查询")
     @PostMapping("/user/query")
     public R<ReportQueryResult> queryForUser(@RequestParam String tableKey, @RequestBody FilterParam param) {
         log.info("==> report/user/query tableKey:{}, filter:{}, sort:{}, page:{}/{}",
                 tableKey, param.getFilter(), param.getSort(), param.getCurrent(), param.getSize());
-        return R.ok(reportService.queryByTableKey(tableKey, param));
+        return R.ok(reportService.queryByTableKey(tableKey, param, 1L, List.of()));
     }
 
     @Operation(summary = "即时执行 SQL")
@@ -127,6 +117,28 @@ public class ReportController {
                                   HttpServletResponse response) throws IOException {
         List<Map<String, Object>> data = reportService.executeForExport(param.getSqlTemplate(), param);
         ExcelUtils.exportForMap(response, "导出数据", param, data);
+    }
+
+    // ==================== 权限管理 ====================
+
+    @Operation(summary = "获取报表权限配置")
+    @GetMapping("/{tableKey}/permission")
+    public R<ReportPermissionDto> getPermission(@PathVariable String tableKey) {
+        return R.ok(reportService.getPermission(tableKey));
+    }
+
+    @Operation(summary = "更新报表权限配置")
+    @PutMapping("/{tableKey}/permission")
+    public R<String> updatePermission(@PathVariable String tableKey,
+                                       @RequestBody ReportPermissionDto dto) {
+        reportService.updatePermission(tableKey, dto);
+        return R.ok("权限更新成功");
+    }
+
+    @Operation(summary = "获取所有角色列表（用于权限设置下拉）")
+    @GetMapping("/roles")
+    public R<List<Role>> listRoles() {
+        return R.ok(roleService.listAll());
     }
 
     // ==================== 数据源管理 ====================
@@ -171,4 +183,5 @@ public class ReportController {
         }
         return R.fail(error);
     }
+
 }

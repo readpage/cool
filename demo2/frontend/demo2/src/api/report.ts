@@ -3,7 +3,8 @@
  */
 import { apiAxios, download } from './src/requests'
 import type { ResApi } from './src/requests'
-import type { ReportSaveRequest, ReportQueryResult, FilterCondition, SortCondition } from '@/views/report/types/report'
+import type { ReportSaveRequest, ReportQueryResult, ReportSummary, ReportPermissionDto, Role } from '@/views/report/types/report'
+import type { FilterCondition, SortCondition } from '@/views/report/types/report'
 import type { TableItem } from '@/views/report/types/table'
 
 // ==================== 参数接口（对齐后端 FilterParam / ReportParam） ====================
@@ -30,13 +31,12 @@ export const AReport = {
   /** 报告列表 — GET /report/list */
   list: apiAxios<ReportSaveRequest[]>('/report/list', 'get'),
 
+  /** 报告摘要列表（轻量，不含敏感信息）— GET /report/summary */
+  summary: apiAxios<ReportSummary[]>('/report/summary', 'get'),
+
   /** 获取报告定义 — GET /report/get?tableKey=xxx（管理端，纯 sys_config） */
   get: (tableKey: string) =>
     apiAxios<ReportSaveRequest>('/report/get', 'get')({ tableKey }),
-
-  /** 获取报告定义 — GET /report/user/get?tableKey=xxx（用户端，user_config 优先） */
-  getUserReport: (tableKey: string) =>
-    apiAxios<ReportSaveRequest>('/report/user/get', 'get')({ tableKey }),
 
   /** 保存报告定义 — POST /report/save（body: ReportSaveRequest） */
   save: apiAxios<string, ReportSaveRequest>('/report/save', 'post'),
@@ -70,4 +70,17 @@ export const AReport = {
   /** 导出即时 SQL 结果 Excel — POST /report/execute/export */
   executeExport: (body: ReportExecuteBody) =>
     download(`/report/execute/export`, 'post')(body),
+
+  // ==================== 权限管理 ====================
+
+  /** 获取报表权限配置 — GET /report/{tableKey}/permission */
+  getPermission: (tableKey: string) =>
+    apiAxios<ReportPermissionDto>(`/report/${tableKey}/permission`, 'get')(),
+
+  /** 更新报表权限配置 — PUT /report/{tableKey}/permission */
+  updatePermission: (tableKey: string, dto: ReportPermissionDto) =>
+    apiAxios<string>(`/report/${tableKey}/permission`, 'put')(dto),
+
+  /** 获取所有角色列表 — GET /report/roles */
+  listRoles: apiAxios<Role[]>('/report/roles', 'get'),
 }

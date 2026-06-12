@@ -86,6 +86,7 @@ public class FilterParam implements SqlParamProvider {
 
     @Data
     @Accessors(chain = true)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class ColumnItem {
         /** 实体字段名（如 username / createTime），通过 getter 取值 */
         private String prop;
@@ -110,6 +111,28 @@ public class FilterParam implements SqlParamProvider {
          * 后端导入时用于匹配选项映射。
          */
         private String optionType;
+
+        /** 数字格式化配置（fieldType='number' 时有效） */
+        private NumberFormatConfig numberFormat;
+    }
+
+    /**
+     * 数字格式化配置 — 对齐前端 NumberFormatConfig。
+     */
+    @Data
+    @Accessors(chain = true)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class NumberFormatConfig {
+        /** 小数位数。不指定则自动去除无意义尾部零 */
+        private Integer decimals;
+        /** 千分位分隔符，默认 true */
+        private Boolean thousands;
+        /** 前缀，如 ¥、$ */
+        private String prefix;
+        /** 后缀，如 元、kg、% */
+        private String suffix;
+        /** null/undefined/空串 占位符，默认 "—" */
+        private String nullPlaceholder;
     }
 
     /**
@@ -138,28 +161,19 @@ public class FilterParam implements SqlParamProvider {
      * 模板中可用 {@code {{filter}}} / {@code {{sort}}} 占位符。
      */
     public DaoResult buildForDao(String sqlTemplate) {
-        // 前端传 camelCase（如 createTime），统一转 snake_case（如 create_time）与 SQL 列白名单匹配
-        if (filter != null) {
-            for (FilterItem f : filter) {
-                f.setColumn(ColumnExtractor.toUnderScoreCase(f.getColumn()));
-            }
-        }
-        if (sort != null && sort.getColumn() != null) {
-            sort.setColumn(ColumnExtractor.toUnderScoreCase(sort.getColumn()));
-        }
-
         // SQL 模板提取列（用于校验）：统一取原名（prop），与前端 filter.column 原生列名一致
         List<String> sqlColumns = ColumnExtractor.lastExtract(sqlTemplate);
 
-        // 将 filter/sort 列名归一化为 SQL 模板中的原始大小写，避免数据库区分大小写时列名失效
+        // 列名校验归一化：先原始值直接匹配白名单 → 匹配不上再 camelCase→snake_case 后匹配
+        // 函数表达式（含括号或引号）不转换，避免破坏 SQL 语法
         if (filter != null) {
             for (FilterItem f : filter) {
                 if (Boolean.TRUE.equals(f.getVariable())) continue;
-                f.setColumn(normalizeColumnCase(f.getColumn(), sqlColumns));
+                f.setColumn(matchOrConvert(f.getColumn(), sqlColumns));
             }
         }
         if (sort != null && sort.getColumn() != null) {
-            sort.setColumn(normalizeColumnCase(sort.getColumn(), sqlColumns));
+            sort.setColumn(matchOrConvert(sort.getColumn(), sqlColumns));
         }
 
         validateColumns(sqlColumns);
@@ -171,6 +185,7 @@ public class FilterParam implements SqlParamProvider {
                     .map(ColumnItem::getProp)
                     .filter(Objects::nonNull)
                 .map(ColumnExtractor::toUnderScoreCase)   // camelCase → snake_case
+                .map(col -> normalizeColumnCase(col, sqlColumns))  // 归一化回 SQL 白名单的大小写
                 .filter(col -> sqlColumns.contains(col)
                         || sqlColumns.stream().anyMatch(c -> ColumnExtractor.stripTablePrefix(c).equalsIgnoreCase(ColumnExtractor.stripTablePrefix(col))))
                 .toList();
@@ -296,6 +311,26 @@ public class FilterParam implements SqlParamProvider {
             });
         if (sort != null && sort.getColumn() != null)
             ColumnExtractor.checkColumn(allowed, sort.getColumn());
+    }
+
+    /**
+     * 列名匹配策略：先尝试原始值直接匹配白名单，不成功再 camelCase→snake_case 转换后匹配。
+     * 函数表达式（含括号或引号）跳过转换，保留原始值交由后续 validateColumns 校验。
+     */
+    private static String matchOrConvert(String column, List<String> whitelist) {
+        if (column == null || whitelist == null || whitelist.isEmpty()) return column;
+        // 1) 原始值直接匹配（大小写不敏感 → 返回白名单大小写）
+        String matched = normalizeColumnCase(column, whitelist);
+        if (!matched.equals(column)) {
+            return matched;
+        }
+        // 2) 函数表达式（如 FORMAT(SIH.CREDAT_0, 'yyyy-MM-dd')）不转换
+        if (column.contains("(") || column.contains("'")) {
+            return column;
+        }
+        // 3) 驼峰转下划线后再匹配
+        String underscored = ColumnExtractor.toUnderScoreCase(column);
+        return normalizeColumnCase(underscored, whitelist);
     }
 
     /**

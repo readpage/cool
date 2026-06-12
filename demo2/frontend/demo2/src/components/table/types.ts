@@ -9,6 +9,26 @@ export interface OptionStyle { tagType?: 'primary' | 'success' | 'warning' | 'da
 export interface OptionItem { label: string; value: string; style?: OptionStyle }
 
 /**
+ * 数字格式化配置
+ *
+ * @example 自动去除多余零："43.00000000" → "43"
+ * @example 固定小数位 + 千分位：{ decimals: 2, thousands: true } → "12,345.68"
+ * @example 带前后缀：{ prefix: '¥', decimals: 2, suffix: ' 元' } → "¥12,345.68 元"
+ */
+export interface NumberFormatConfig {
+  /** 小数位数。不指定则自动去除无意义尾部零（"43.0000" → "43"） */
+  decimals?: number
+  /** 千分位分隔符，默认 true */
+  thousands?: boolean
+  /** 前缀，如 ¥、$ */
+  prefix?: string
+  /** 后缀，如 元、kg、% */
+  suffix?: string
+  /** null/undefined/空串 占位符，默认 "—" */
+  nullPlaceholder?: string
+}
+
+/**
  * 表格列配置
  */
 export interface TableItem {
@@ -23,8 +43,11 @@ export interface TableItem {
   sortable?: boolean | 'custom'
   hidden?: boolean
 
-  /** 列数据类型：声明后自动启用选项翻译。select=静态选项，remote-select=动态加载 */
-  fieldType?: 'text' | 'select' | 'remote-select'
+  /** 列数据类型：声明后自动启用选项翻译。text=纯文本，select=静态选项，remote-select=动态加载，number=数字格式化 */
+  fieldType?: 'text' | 'select' | 'remote-select' | 'number'
+
+  /** 数字格式化配置（fieldType='number' 时有效） */
+  numberFormat?: NumberFormatConfig
 
   /** 静态选项（fieldType='select' 时使用），支持 { label, value, style? } 或纯字符串 */
   options?: (OptionItem | string)[]

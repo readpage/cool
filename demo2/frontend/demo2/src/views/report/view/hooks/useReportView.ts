@@ -1,18 +1,32 @@
 import { ref, reactive, computed } from 'vue'
-import { ElMessage } from 'element-plus'
 import { AReport } from '@/api/report'
-import { ADatasource } from '@/api/datasource'
-import type { ReportQueryResult, FilterCondition, SortCondition } from '../../types/report'
+import type { ReportQueryResult, FilterCondition, SortCondition, ReportSummary } from '../../types/report'
 import type { TableConfig, PageResult, TableQuery } from '../../types/table'
 import { throttlePromise } from '@/utils/throttle'
 import { useTableConfigStore } from '@/store/table-config'
 
 const REPORT_GROUP = 'report'
 
+/** 模块级共享缓存：同一页面内 ReportSidebar 和 loadAndQuery 共用一个 summary 请求 */
+let _summaryPromise: Promise<ReportSummary[]> | null = null
+let _summaryCache: ReportSummary[] | null = null
+
+export async function fetchSummary(): Promise<ReportSummary[]> {
+  if (_summaryCache) return _summaryCache
+  if (_summaryPromise) return _summaryPromise
+  _summaryPromise = AReport.summary().then(({ data }) => {
+    _summaryCache = data ?? []
+    return _summaryCache
+  }).catch(() => {
+    _summaryPromise = null
+    return [] as ReportSummary[]
+  })
+  return _summaryPromise
+}
+
 export function useReportView() {
   const currentTableKey = ref('')
   const reportName = ref('')
-  const currentDatasourceId = ref<number | null>(null)
   const datasourceLabel = ref('')
   const resultData = ref<ReportQueryResult | null>(null)
 
@@ -70,31 +84,23 @@ export function useReportView() {
   }, 300)
 
   /** 加载报表定义并执行首次查询 */
-  async function loadAndQuery(tableKey: string) {
+  async function loadAndQuery(tableKey: string, summary?: ReportSummary) {
     if (!tableKey) return
 
     try {
-      const { data } = await AReport.getUserReport(tableKey)
-      if (!data) {
-        ElMessage.warning('报表不存在')
-        currentTableKey.value = ''
-        reportName.value = ''
-        return
+      // 无 summary 传入时（如 URL 直链加载），兜底从 summary 列表查找（与 Sidebar 共享同一请求缓存）
+      if (!summary) {
+        try {
+          const summaries = await fetchSummary()
+          summary = summaries.find(s => s.tableKey === tableKey)
+        } catch { /* 元数据获取失败不影响主流程 */ }
       }
 
-      reportName.value = data.report.name
-      currentDatasourceId.value = data.report.datasourceId ?? null
-
-      // 解析数据源标签
-      if (data.report.datasourceId) {
-        try {
-          const { data: dsList } = await ADatasource.list({})
-          const ds = (dsList ?? []).find((d: any) => d.id === data.report.datasourceId)
-          datasourceLabel.value = ds ? ds.name : `数据源 #${data.report.datasourceId}`
-        } catch {
-          datasourceLabel.value = ''
-        }
+      if (summary) {
+        reportName.value = summary.name
+        datasourceLabel.value = summary.datasourceName || ''
       } else {
+        reportName.value = ''
         datasourceLabel.value = ''
       }
 
@@ -103,9 +109,10 @@ export function useReportView() {
       sortConditions.value = []
       variableMap.value = {}
 
-      // 从 API 返回的 displayConfig 直接设置 tableConfig（API 是唯一数据源，不写 localStorage）
-      if (data.displayConfig) {
-        const clone = JSON.parse(JSON.stringify(data.displayConfig)) as TableConfig
+      // 从 Store 加载 displayConfig（优先 user_config，无则 sys_config fallback + copy-on-read）
+      const config = await $store.loadOrInit(tableKey, REPORT_GROUP)
+      if (config) {
+        const clone = JSON.parse(JSON.stringify(config)) as TableConfig
         // 清理自动生成的 rowKey：SQL 列可能含 `.` 且无法保证唯一性，由 el-table 默认行索引兜底
         if (clone.rowKey && typeof clone.rowKey === 'string' && clone.rowKey.includes('.')) {
           delete clone.rowKey
@@ -121,6 +128,9 @@ export function useReportView() {
           }
         }
         sortConditions.value = clone.sort ? [clone.sort] : []
+      } else {
+        // 无配置（报表定义存在但无 displayConfig）
+        tableConfig.value = { columns: [] }
       }
 
       // 重置分页
@@ -130,7 +140,6 @@ export function useReportView() {
       // ★ 查询由 Table 组件统一触发（首次渲染 → useTableInit.onMounted，后续切换 → watch）
     } catch (err) {
       console.error('加载报表失败', err)
-      ElMessage.error('加载报表失败')
     }
   }
 
@@ -187,7 +196,6 @@ export function useReportView() {
   return {
     currentTableKey,
     reportName,
-    currentDatasourceId,
     datasourceLabel,
     resultData,
     tableConfig,

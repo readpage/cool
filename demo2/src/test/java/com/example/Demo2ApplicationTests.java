@@ -177,12 +177,12 @@ class Demo2ApplicationTests {
         assertEquals(List.of("id", "username", "age"),
                 engine.extractColumns("SELECT id, username, age FROM users"));
 
-        // AS 别名 → 取原名
-        assertEquals(List.of("id", "name", "age"),
+        // AS 别名 → 取原名（AS 前面的标识符）
+        assertEquals(List.of("id", "username", "age"),
                 engine.extractColumns("SELECT id, username AS name, age FROM users"));
 
-        // 表前缀 → 去前缀
-        assertEquals(List.of("id", "name"),
+        // 表前缀 → 保留表前缀（extract 返回原始标识符，不过滤表前缀）
+        assertEquals(List.of("u.id", "u.name"),
                 engine.extractColumns("SELECT u.id, u.name FROM users u"));
 
         // * 通配符 → 返回空
@@ -274,9 +274,9 @@ class Demo2ApplicationTests {
         System.out.println("Filter SQL : " + where);
         System.out.println("Params    : " + out);
 
-        assertEquals("WHERE 1=1 AND name LIKE CONCAT('%', :name_0, '%') AND age BETWEEN :age_0 AND :age_1 AND dept IN (:dept_0, :dept_1) AND status != :status_0",
+        assertEquals("WHERE 1=1 AND name LIKE CONCAT('%', :name_0, '%') AND age BETWEEN :age_1 AND :age_2 AND dept IN (:dept_3, :dept_4) AND status != :status_5",
                 where.toString());
-        assertEquals(Map.of("name_0", "李", "age_0", 25, "age_1", 45, "dept_0", "研发", "dept_1", "产品", "status_0", "离职"), out);
+        assertEquals(Map.of("name_0", "李", "age_1", 25, "age_2", 45, "dept_3", "研发", "dept_4", "产品", "status_5", "离职"), out);
     }
 
     // ==================== 初始化/清理 ====================

@@ -21,4 +21,7 @@ public class ReportSaveRequest {
 
     /** 展示配置（TableConfig 等），后端仅存储/透传 */
     private JsonNode displayConfig;
+
+    /** 关联数据源名称（冗余字段，由 Service 层填充，免去前端全量拉取数据源列表） */
+    private String datasourceName;
 }

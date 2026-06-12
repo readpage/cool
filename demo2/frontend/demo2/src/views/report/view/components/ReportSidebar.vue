@@ -77,7 +77,8 @@ import { ref, watch, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { Search, Plus, Folder, Document, DArrowLeft, DArrowRight } from '@element-plus/icons-vue'
 import { AReport } from '@/api/report'
-import type { ReportSaveRequest } from '../../types/report'
+import { fetchSummary } from '../hooks/useReportView'
+import type { ReportSummary } from '@/api/report'
 
 interface TreeNode {
   id: string
@@ -91,7 +92,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  select: [tableKey: string]
+  select: [tableKey: string, summary?: ReportSummary]
   edit: [tableKey: string]
 }>()
 
@@ -100,15 +101,15 @@ const treeRef = ref()
 const collapsed = ref(false)
 const loading = ref(false)
 const searchKeyword = ref('')
-const list = ref<ReportSaveRequest[]>([])
+const list = ref<ReportSummary[]>([])
 
 /** 按分类构建 el-tree 数据 */
 const treeData = ref<TreeNode[]>([])
 
-function buildTree(raw: ReportSaveRequest[]): TreeNode[] {
-  const categoryMap = new Map<string, ReportSaveRequest[]>()
+function buildTree(raw: ReportSummary[]): TreeNode[] {
+  const categoryMap = new Map<string, ReportSummary[]>()
   raw.forEach(item => {
-    const cat = item.report.category || '未分类'
+    const cat = item.category || '未分类'
     if (!categoryMap.has(cat)) categoryMap.set(cat, [])
     categoryMap.get(cat)!.push(item)
   })
@@ -119,9 +120,9 @@ function buildTree(raw: ReportSaveRequest[]): TreeNode[] {
       id: `cat-${cat}`,
       label: cat,
       children: items.map(item => ({
-        id: item.report.tableKey,
-        label: item.report.name,
-        tableKey: item.report.tableKey,
+        id: item.tableKey,
+        label: item.name,
+        tableKey: item.tableKey,
       })),
     })
   })
@@ -132,8 +133,8 @@ function buildTree(raw: ReportSaveRequest[]): TreeNode[] {
 async function fetchList() {
   loading.value = true
   try {
-    const { data } = await AReport.list()
-    list.value = data ?? []
+    const data = await fetchSummary()
+    list.value = data
     treeData.value = buildTree(list.value)
     // 如果已有选中报表，恢复高亮（等待 el-tree 渲染完成）
     if (props.currentTableKey) {
@@ -164,7 +165,8 @@ function onSearch() {
 /** 单击树节点 → 切换到对应报表 */
 function onNodeClick(data: TreeNode) {
   if (data.tableKey) {
-    emit('select', data.tableKey)
+    const summary = list.value.find(s => s.tableKey === data.tableKey)
+    emit('select', data.tableKey, summary)
   }
 }
 

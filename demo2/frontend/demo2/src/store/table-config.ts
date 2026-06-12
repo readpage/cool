@@ -160,6 +160,42 @@ export const useTableConfigStore = defineStore('table-config', () => {
     return configs.get(tableId) ?? null
   }
 
+  // ==================== 加载 / 初始化（copy-on-read） ====================
+
+  /** 
+   * 加载配置（用于首次加载/切换报表时）：
+   * 优先用户配置，无则从系统配置 copy-on-read，都没有则返回 null
+   */
+  async function loadOrInit(tableId: string, group: string = DEFAULT_GROUP): Promise<TableConfig | null> {
+    // 1) 优先查 user_config
+    try {
+      const { data: uc } = await AConfig.my({ configGroup: group, configKey: tableId })
+      if (uc && uc.configValue) {
+        const config = JSON.parse(uc.configValue) as TableConfig
+        configs.set(tableId, config)
+        writeConfigCache(group, tableId, config, 0)
+        return config
+      }
+    } catch { /* fall through */ }
+
+    // 2) 回退到 sys_config（copy-on-read：写入 user_config）
+    try {
+      const { data: sc } = await AConfig.system({ configGroup: group, configKey: tableId })
+      if (sc && sc.configValue) {
+        const config = JSON.parse(sc.configValue) as TableConfig
+        configs.set(tableId, config)
+        writeConfigCache(group, tableId, config, sc.version ?? 0)
+
+        // copy-on-read：异步写入 user_config
+        const entity = toUserEntity(group, tableId, MOCK_USER_ID, config)
+        AConfig.save(entity).catch(() => {})
+        return config
+      }
+    } catch { /* fall through */ }
+
+    return null
+  }
+
   // ==================== 初始化 ====================
 
   /** 从 localStorage 恢复所有缓存配置（readCache 已内置过期校验，过期时间由写入时设定） */
@@ -271,7 +307,7 @@ export const useTableConfigStore = defineStore('table-config', () => {
 
   return {
     configs, serverVersions,
-    getConfig, loadConfig, setLocal, save, saveAsSystem, resetToSystem,
+    getConfig, loadConfig, loadOrInit, setLocal, save, saveAsSystem, resetToSystem,
     restoreFromLocalStorage, batchApply,
     isAdmin,
   }

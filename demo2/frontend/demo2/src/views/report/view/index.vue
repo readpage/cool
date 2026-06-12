@@ -9,7 +9,7 @@
         </el-tag>
       </div>
       <div class="toolbar-right">
-        <ReportDrawer />
+        <ReportDrawer :current-table-key="currentTableKey" />
       </div>
     </div>
 
@@ -56,6 +56,7 @@ import { useReportView } from './hooks/useReportView'
 import { useOptionsStore } from '@/store/options'
 import { AReport } from '@/api/report'
 import type { ReportQueryBody } from '@/api/report'
+import type { ReportSummary } from '@/views/report/types/report'
 
 const loadOptions = (type: string, keyword?: string) => useOptionsStore().getOptions(type, keyword)
 
@@ -76,10 +77,10 @@ const {
 } = useReportView()
 
 /** 侧边栏中选择报表 */
-async function onReportSelect(tableKey: string) {
+async function onReportSelect(tableKey: string, summary?: ReportSummary) {
   if (tableKey === currentTableKey.value) return
   currentTableKey.value = tableKey
-  await loadAndQuery(tableKey)
+  await loadAndQuery(tableKey, summary)
   router.replace({ query: { tableKey } })
   await nextTick()
   tableRef.value?.refresh()

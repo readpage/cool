@@ -402,7 +402,13 @@ public class ExcelUtils {
         return dataList.stream().map(item -> {
             BeanWrapperImpl bw = new BeanWrapperImpl(item);
             return columns.stream()
-                    .map(c -> bw.getPropertyValue(c.getProp()))
+                    .map(c -> {
+                        Object val = bw.getPropertyValue(c.getProp());
+                        if ("number".equals(c.getFieldType())) {
+                            return formatNumber(val, c.getNumberFormat());
+                        }
+                        return val;
+                    })
                     .collect(Collectors.toList());
         }).collect(Collectors.toList());
     }
@@ -415,9 +421,69 @@ public class ExcelUtils {
         if (columns == null || columns.isEmpty()) return Collections.emptyList();
         return dataList.stream()
                 .map(row -> columns.stream()
-                        .map(c -> row.get(c.getProp()))
+                        .map(c -> {
+                            Object val = row.get(c.getProp());
+                            if ("number".equals(c.getFieldType())) {
+                                return formatNumber(val, c.getNumberFormat());
+                            }
+                            return val;
+                        })
                         .collect(Collectors.toList()))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * 数字格式化 — 对齐前端 formatNumber()，将数值按 NumberFormatConfig 转为显示字符串。
+     * <p>若 cfg 为 null，返回原始值不做处理。</p>
+     */
+    private static String formatNumber(Object value, FilterParam.NumberFormatConfig cfg) {
+        if (cfg == null) {
+            return value == null ? "—" : value.toString();
+        }
+        String placeholder = cfg.getNullPlaceholder() != null ? cfg.getNullPlaceholder() : "—";
+        if (value == null || (value instanceof String s && s.isEmpty())) {
+            return placeholder;
+        }
+        double num;
+        if (value instanceof Number) {
+            num = ((Number) value).doubleValue();
+        } else {
+            try {
+                num = Double.parseDouble(value.toString());
+            } catch (NumberFormatException e) {
+                return value.toString();
+            }
+        }
+
+        // 小数位处理
+        String formatted;
+        if (cfg.getDecimals() != null) {
+            formatted = String.format("%." + cfg.getDecimals() + "f", num);
+        } else {
+            // 自动去除无意义尾部零：123.4500 → "123.45"，123.0 → "123"
+            if (num == Math.floor(num) && !Double.isInfinite(num)) {
+                formatted = String.valueOf((long) num);
+            } else {
+                formatted = String.valueOf(num);
+            }
+        }
+
+        // 千分位
+        if (cfg.getThousands() == null || cfg.getThousands()) {
+            String[] parts = formatted.split("\\.");
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < parts[0].length(); i++) {
+                if (i > 0 && (parts[0].length() - i) % 3 == 0) {
+                    sb.append(',');
+                }
+                sb.append(parts[0].charAt(i));
+            }
+            formatted = parts.length > 1 ? sb.append('.').append(parts[1]).toString() : sb.toString();
+        }
+
+        return (cfg.getPrefix() != null ? cfg.getPrefix() : "")
+                + formatted
+                + (cfg.getSuffix() != null ? cfg.getSuffix() : "");
     }
 
     /**
@@ -447,8 +513,9 @@ public class ExcelUtils {
             return Collections.emptyList();
         }
         log.info("FilterParam.columns count={}", columns.size());
-        columns.forEach(c -> log.info("  column prop={}, label={}, width={}, minWidth={}",
-                c.getProp(), c.getLabel(), c.getWidth(), c.getMinWidth()));
+        columns.forEach(c -> log.info("  column prop={}, label={}, align={}, fieldType={}, numberFormat={}",
+                c.getProp(), c.getLabel(), c.getAlign(), c.getFieldType(),
+                c.getNumberFormat() != null ? "present" : "null"));
         return columns.stream()
                 .map(c -> new ColumnExportConfig(c.getAlign(), c.getWidth(), c.getMinWidth()))
                 .collect(Collectors.toList());

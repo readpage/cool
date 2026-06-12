@@ -177,9 +177,15 @@ function applySidebarJson(): boolean {
         tableConfig.value.search?.filter?.map((f: any) => ({ prop: f.prop, label: f.label, value: f.value, filterMode: f.filterMode, variable: f.variable }))
       ))
 
-      // sort 内嵌于 displayConfig.sort
+      // sort 内嵌于 displayConfig.sort（校验 sort.column 是否仍在当前 SQL 列中）
       if (parsed.displayConfig.sort?.column && parsed.displayConfig.sort?.direction) {
-        sortConditions.value = [{ column: parsed.displayConfig.sort.column, direction: parsed.displayConfig.sort.direction }]
+        const parsedCols = parseSqlColumns(sqlTemplate.value)
+        const validProps = new Set(parsedCols.map(c => c.prop))
+        if (validProps.has(parsed.displayConfig.sort.column)) {
+          sortConditions.value = [{ column: parsed.displayConfig.sort.column, direction: parsed.displayConfig.sort.direction }]
+        } else {
+          sortConditions.value = []
+        }
       } else {
         sortConditions.value = []
       }
@@ -198,9 +204,16 @@ function applySidebarJson(): boolean {
   }
 }
 
-// SQL 列变化时自动初始化筛选/排序默认行
+// SQL 列变化时 → 清洗过期列，然后按需自动初始化
 watch(availableColumns, (cols) => {
-  if (cols && cols.length > 0 && filterConditions.value.length === 0) {
+  if (!cols || cols.length === 0) return
+
+  // 清洗不在当前 SQL 列中的过期筛选/排序条件
+  const validProps = new Set(cols.map((c: any) => c.prop))
+  filterConditions.value = filterConditions.value.filter(f => validProps.has(f.column))
+  sortConditions.value = sortConditions.value.filter(s => validProps.has(s.column))
+
+  if (filterConditions.value.length === 0) {
     autoInitFromColumns(cols, sqlTemplate.value)
   }
 })

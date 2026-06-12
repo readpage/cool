@@ -55,7 +55,7 @@ public interface UserDao {
      */
     @Query("""
             SELECT id, username, password, age, sex, phone, create_time, update_time
-            FROM user {{filter}}
+            FROM user WHERE {{filter}}
             {{sort}}
             """)
     List<User> list(FilterParam params);

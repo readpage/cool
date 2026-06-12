@@ -17,29 +17,45 @@
           <el-icon :size="15"><Coin /></el-icon>
           <span>数据源</span>
         </div>
-        <div class="menu-item disabled" @click="onPermission">
+        <div class="menu-item" @click="onPermission">
           <el-icon :size="15"><Lock /></el-icon>
           <span>权限设置</span>
         </div>
       </div>
     </el-popover>
+
+    <!-- 权限设置弹窗 -->
+    <PermissionDialog ref="permDialogRef" :table-key="currentTableKey" @saved="$emit('permSaved')" />
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Setting, Coin, Lock } from '@element-plus/icons-vue'
+import PermissionDialog from './PermissionDialog.vue'
+
+defineProps<{
+  /** 当前选中报表的 tableKey，用于权限设置 */
+  currentTableKey: string
+}>()
+
+defineEmits<{
+  /** 权限保存成功 */
+  permSaved: []
+}>()
 
 const router = useRouter()
+const permDialogRef = ref<InstanceType<typeof PermissionDialog>>()
 
 /** 跳转数据源管理 */
 function onDatasource() {
   router.push({ path: '/report/datasource' })
 }
 
-/** 权限设置（占位，后续完善） */
+/** 打开权限设置弹窗 */
 function onPermission() {
-  // TODO: 后续实现权限设置功能
+  permDialogRef.value?.show()
 }
 </script>
 
@@ -84,15 +100,5 @@ function onPermission() {
   &:hover {
     background: #f0f2f5;
   }
-
-  &.disabled {
-    color: #c0c4cc;
-    cursor: not-allowed;
-
-    &:hover {
-      background: transparent;
-    }
-  }
 }
-
 </style>

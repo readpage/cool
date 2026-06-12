@@ -75,7 +75,10 @@
           </template>
           <template #default="scope" v-if="item.type !== 'index'">
             <slot :name="item.prop" :row="scope.row" :index="scope.$index" :value="scope.row[item.prop!]">
-              <template v-if="item.format === 'tag'">
+              <template v-if="item.fieldType === 'number'">
+                {{ formatNumber(scope.row[item.prop!], item.numberFormat) }}
+              </template>
+              <template v-else-if="item.format === 'tag'">
                 <el-tag
                   :type="getTagType(item.prop!, scope.row[item.prop!])"
                   size="small"
@@ -129,7 +132,7 @@ import TableOverlay from './TableOverlay.vue'
 import Search, { type SearchConfig, type FilterResult } from './search/index.vue'
 import { useTableInit } from './hooks/useTableInit'
 import { resolveValue } from '@/utils/dynamic-var'
-import type { TableQuery, PageResult, OptionItem, FilterItem } from './types'
+import type { TableQuery, PageResult, OptionItem, FilterItem, NumberFormatConfig } from './types'
 
 
 /** 列配置 */
@@ -145,8 +148,8 @@ export interface TableItem {
   sortable?: boolean | 'custom'
   hidden?: boolean
 
-  /** 列数据类型：声明后自动启用选项翻译。select=静态，remote-select=动态 */
-  fieldType?: 'text' | 'select' | 'remote-select'
+  /** 列数据类型：声明后自动启用选项翻译。select=静态，remote-select=动态，number=数字格式化 */
+  fieldType?: 'text' | 'select' | 'remote-select' | 'number'
 
   /** 远程选项加载标识（fieldType='remote-select' 时有效），作为 loadOptions(type) 的 type 参数 */
   optionType?: string
@@ -156,6 +159,9 @@ export interface TableItem {
 
   /** 单元格显示格式：text=纯文本（默认），tag=标签，dot=圆点+文本 */
   format?: 'text' | 'tag' | 'dot'
+
+  /** 数字格式化配置（fieldType='number' 时有效） */
+  numberFormat?: NumberFormatConfig
 }
 
 /** 表格配置（服务端返回，不含 data） */
@@ -176,7 +182,7 @@ export interface TableConfig {
 
 /** 导出参数 */
 export interface ExportParams {
-  columns: Pick<TableItem, 'prop' | 'label' | 'width' | 'minWidth' | 'align' | 'fieldType' | 'optionType'>[]
+  columns: Pick<TableItem, 'prop' | 'label' | 'width' | 'minWidth' | 'align' | 'fieldType' | 'optionType' | 'numberFormat'>[]
   filter: FilterItem[]
   sort?: { column: string; direction: string }
 }
@@ -249,7 +255,7 @@ function startInternalLoading(): () => void {
 
 // ==================== 页码大小持久化（localStorage） ====================
 
-const pageSizes = [10, 20, 50, 100]
+const pageSizes = [10, 15, 20, 50, 100]
 
 /** 读取持久化的 pageSize，无 id 或无存储记录时返回默认值 10 */
 function getPersistedPageSize(): number {
@@ -368,8 +374,8 @@ const exporting = ref(false)
 
 /** 清洗 columns：仅保留后端需要的字段 */
 function cleanColumns(cols: TableItem[]) {
-  return cols.map(({ prop, label, width, minWidth, align, fieldType, optionType }) =>
-    ({ prop, label, width, minWidth, align, fieldType, optionType }),
+  return cols.map(({ prop, label, width, minWidth, align, fieldType, optionType, numberFormat }) =>
+    ({ prop, label, width, minWidth, align, fieldType, optionType, numberFormat }),
   )
 }
 
@@ -590,6 +596,36 @@ function translateValue(prop: string | undefined, rawValue: any): any {
   if (!prop || rawValue == null) return rawValue
   const dict = internalLookup.value[prop]
   return dict ? (dict[String(rawValue)] ?? rawValue) : rawValue
+}
+
+/**
+ * 格式化数字单元格
+ * - "43.00000000" → (auto) "43"
+ * - 12345.678 + { decimals: 2, thousands: true } → "12,345.68"
+ * - 99.5 + { prefix: '¥', suffix: ' 元' } → "¥99.50 元"
+ */
+function formatNumber(value: any, cfg?: NumberFormatConfig): string {
+  const placeholder = cfg?.nullPlaceholder ?? '—'
+  if (value === null || value === undefined || value === '') return placeholder
+
+  const num = typeof value === 'string' ? parseFloat(value) : (typeof value === 'number' ? value : NaN)
+  if (isNaN(num)) return String(value)
+
+  let formatted: string
+  if (cfg?.decimals !== undefined) {
+    formatted = num.toFixed(cfg.decimals)
+  } else {
+    // 自动去除尾部零：123.4500 → "123.45"，123.0000 → "123"
+    formatted = num.toString()
+  }
+
+  if (cfg?.thousands !== false) {
+    const [intPart, decPart] = formatted.split('.')
+    const withComma = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+    formatted = decPart !== undefined ? `${withComma}.${decPart}` : withComma
+  }
+
+  return `${cfg?.prefix ?? ''}${formatted}${cfg?.suffix ?? ''}`
 }
 
 const TAG_TYPES = ['primary', 'success', 'warning', 'danger', 'info'] as const

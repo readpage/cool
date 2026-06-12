@@ -1,9 +1,12 @@
 package com.example.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.example.dao.ReportDao;
 import com.example.domain.dto.ReportParam;
+import com.example.domain.dto.ReportPermissionDto;
 import com.example.domain.dto.ReportQueryResult;
 import com.example.domain.dto.ReportSaveRequest;
+import com.example.domain.dto.ReportSummary;
 import com.example.domain.entity.Datasource;
 import com.example.domain.entity.Report;
 import com.example.domain.entity.SysConfig;
@@ -13,7 +16,6 @@ import com.example.mapper.ReportMapper;
 import com.example.service.DatasourceService;
 import com.example.service.ReportService;
 import com.example.service.SysConfigService;
-import com.example.service.UserConfigService;
 import com.example.template.core.SqlResult;
 import com.example.template.core.SqlTemplateEngine;
 import com.example.template.datasource.DynamicJdbcFactory;
@@ -54,15 +56,12 @@ public class ReportServiceImpl implements ReportService {
 
     private static final String DISPLAY_GROUP = "report";
 
-    // 默认用户 ID（后续接入认证后替换为当前登录用户）
-    private static final Long DEFAULT_USER_ID = 1L;
-
     @Resource
     private ReportMapper reportMapper;
     @Resource
-    private SysConfigService sysConfigService;
+    private ReportDao reportDao;
     @Resource
-    private UserConfigService userConfigService;
+    private SysConfigService sysConfigService;
     @Resource
     private SqlTemplate sqlTemplate;
     @Resource
@@ -99,46 +98,36 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
+    public List<ReportSummary> listSummary(Long userId, List<Integer> userRoleIds) {
+        String roleIdsJson = buildRoleIdsJson(userRoleIds);
+        List<Report> reports = reportDao.listAccessibleReports(userId, roleIdsJson);
+        return reports.stream().map(r -> {
+            ReportSummary s = new ReportSummary();
+            s.setId(r.getId());
+            s.setTableKey(r.getTableKey());
+            s.setName(r.getName());
+            s.setDescription(r.getDescription());
+            s.setCategory(r.getCategory());
+            s.setDisplayType(r.getDisplayType());
+            s.setUpdateTime(r.getUpdateTime());
+            // 填充数据源名称
+            if (r.getDatasourceId() != null) {
+                try {
+                    Datasource ds = datasourceService.getById(r.getDatasourceId());
+                    s.setDatasourceName(ds != null ? ds.getName() : null);
+                } catch (Exception e) {
+                    log.warn("获取数据源名称失败: datasourceId={}", r.getDatasourceId(), e);
+                }
+            }
+            return s;
+        }).collect(Collectors.toList());
+    }
+
+    @Override
     public ReportSaveRequest getByTableKey(String tableKey) {
         Report report = findByTableKey(tableKey);
         if (report == null) return null;
         return toDefinition(report);
-    }
-
-    @Override
-    public ReportSaveRequest getByTableKey(String tableKey, Long userId) {
-        Report report = findByTableKey(tableKey);
-        if (report == null) return null;
-        ReportSaveRequest def = toDefinition(report);
-
-        // 1) 优先查 user_config（最快路径，1 次查询）
-        UserConfig uc = userConfigService.getUserConfig(userId, DISPLAY_GROUP, tableKey);
-        if (uc != null && uc.getConfigValue() != null) {
-            try {
-                JsonNode userConfig = objectMapper.readTree(uc.getConfigValue());
-                def.setDisplayConfig(userConfig);
-                return def;
-            } catch (JsonProcessingException e) {
-                log.error("解析用户展示配置失败: tableKey={} userId={}", tableKey, userId, e);
-            }
-        }
-
-        // 2) 用户无配置，且系统默认存在 → copy-on-read：复制到 user_config
-        JsonNode sysDisplay = def.getDisplayConfig();
-        if (sysDisplay != null) {
-            try {
-                UserConfig newUc = new UserConfig();
-                newUc.setConfigGroup(DISPLAY_GROUP);
-                newUc.setConfigKey(tableKey);
-                newUc.setUserId(userId);
-                newUc.setConfigValue(objectMapper.writeValueAsString(sysDisplay));
-                userConfigService.upsert(newUc);
-            } catch (JsonProcessingException e) {
-                log.error("copy-on-read 写入 user_config 失败: tableKey={} userId={}", tableKey, userId, e);
-            }
-        }
-
-        return def;
     }
 
     @Override
@@ -217,7 +206,21 @@ public class ReportServiceImpl implements ReportService {
     // ==================== 查询执行 ====================
 
     @Override
-    public ReportQueryResult queryByTableKey(String tableKey, FilterParam param) {
+    public ReportQueryResult queryByTableKey(String tableKey, FilterParam param,
+                                              Long userId, List<Integer> userRoleIds) {
+        Report report = findByTableKey(tableKey);
+        if (report == null) throw new RuntimeException("报告不存在: " + tableKey);
+
+        if (!hasAccess(report, userId, userRoleIds)) {
+            throw new RuntimeException("无权访问该报告: " + tableKey);
+        }
+
+        NamedParameterJdbcTemplate targetJdbc = resolveJdbc(report.getDatasourceId());
+        return executeQuery(report.getSqlTemplate(), param, targetJdbc);
+    }
+
+    @Override
+    public ReportQueryResult queryByTableKeyInternal(String tableKey, FilterParam param) {
         Report report = findByTableKey(tableKey);
         if (report == null) throw new RuntimeException("报告不存在: " + tableKey);
         NamedParameterJdbcTemplate targetJdbc = resolveJdbc(report.getDatasourceId());
@@ -243,6 +246,16 @@ public class ReportServiceImpl implements ReportService {
     private ReportSaveRequest toDefinition(Report report) {
         ReportSaveRequest result = new ReportSaveRequest();
         result.setReport(report);
+
+        // 关联数据源名称（冗余返回，免去前端全量拉取数据源列表）
+        if (report.getDatasourceId() != null) {
+            try {
+                Datasource ds = datasourceService.getById(report.getDatasourceId());
+                result.setDatasourceName(ds != null ? ds.getName() : null);
+            } catch (Exception e) {
+                log.warn("获取数据源名称失败: datasourceId={}", report.getDatasourceId(), e);
+            }
+        }
 
         // 加载系统默认展示配置（configKey = table_key）
         SysConfig sc = sysConfigService.getSystemConfig(DISPLAY_GROUP, report.getTableKey());
@@ -488,5 +501,77 @@ public class ReportServiceImpl implements ReportService {
         return reportMapper.selectCount(
             new LambdaQueryWrapper<Report>().eq(Report::getDatasourceId, datasourceId)
         );
+    }
+
+    // ==================== 权限管理 ====================
+
+    @Override
+    public ReportPermissionDto getPermission(String tableKey) {
+        Report report = findByTableKey(tableKey);
+        if (report == null) throw new RuntimeException("报告不存在: " + tableKey);
+
+        if (report.getPermissionConfig() == null || report.getPermissionConfig().isBlank()) {
+            return new ReportPermissionDto();
+        }
+        try {
+            return objectMapper.readValue(report.getPermissionConfig(), ReportPermissionDto.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("权限配置解析失败: " + tableKey, e);
+        }
+    }
+
+    @Override
+    public void updatePermission(String tableKey, ReportPermissionDto dto) {
+        Report report = findByTableKey(tableKey);
+        if (report == null) throw new RuntimeException("报告不存在: " + tableKey);
+        try {
+            report.setPermissionConfig(objectMapper.writeValueAsString(dto));
+            reportMapper.updateById(report);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("权限配置序列化失败: " + tableKey, e);
+        }
+    }
+
+    // ==================== 权限校验 ====================
+
+    /**
+     * 判断当前用户是否有权访问指定报表。
+     * <ul>
+     *   <li>创建者始终有权限</li>
+     *   <li>permissionConfig.roleIds 与 userRoleIds 有交集 → 放行</li>
+     *   <li>否则拒绝</li>
+     * </ul>
+     */
+    private boolean hasAccess(Report report, Long userId, List<Integer> userRoleIds) {
+        // 创建者始终有权访问
+        if (userId != null && userId.equals(report.getCreatorId())) {
+            return true;
+        }
+        // 无权限配置 → 拒绝（非创建者）
+        if (report.getPermissionConfig() == null || report.getPermissionConfig().isBlank()) {
+            return false;
+        }
+        try {
+            ReportPermissionDto perm = objectMapper.readValue(
+                report.getPermissionConfig(), ReportPermissionDto.class);
+
+            if (perm.getRoleIds() != null && !perm.getRoleIds().isEmpty()
+                    && userRoleIds != null) {
+                return userRoleIds.stream().anyMatch(id -> perm.getRoleIds().contains(id));
+            }
+            return false;
+        } catch (JsonProcessingException e) {
+            log.error("解析权限配置失败: tableKey={}", report.getTableKey(), e);
+            return false;
+        }
+    }
+
+    /** 将角色 ID 列表转为 JSON 数组字符串，供 JSON_OVERLAPS 使用 */
+    private String buildRoleIdsJson(List<Integer> userRoleIds) {
+        if (userRoleIds == null || userRoleIds.isEmpty()) {
+            return "[]";
+        }
+        return "[" + userRoleIds.stream().map(String::valueOf)
+            .collect(Collectors.joining(",")) + "]";
     }
 }

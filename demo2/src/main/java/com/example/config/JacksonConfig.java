@@ -33,7 +33,18 @@ public class JacksonConfig {
         SimpleModule module = new SimpleModule();
         // 例如，将Long类型序列化为字符串
         module.addSerializer(Long.class, ToStringSerializer.instance);
-        module.addSerializer(BigDecimal.class, ToStringSerializer.instance);
+        // BigDecimal 使用 toPlainString() 替代 toString()，避免科学计数法（如 0E-8）
+        module.addSerializer(BigDecimal.class, new JsonSerializer<BigDecimal>() {
+            @Override
+            public void serialize(BigDecimal value, JsonGenerator gen,
+                                  SerializerProvider serializers) throws IOException {
+                if (value == null) {
+                    gen.writeNull();
+                } else {
+                    gen.writeString(value.toPlainString());
+                }
+            }
+        });
         module.addSerializer(Timestamp.class, TimestampSerializer.instance);
         mapper.registerModule(module);
 
