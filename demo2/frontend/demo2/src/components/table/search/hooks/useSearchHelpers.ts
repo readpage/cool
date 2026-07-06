@@ -89,8 +89,8 @@ export function useSearchHelpers(
     return getColByProp(prop)?.fieldType
   }
 
-  function getPickerType(prop: string): string | undefined {
-    return (getColByProp(prop) as any)?.pickerType
+  function getPickerType(prop: string): ColumnConfig['pickerType'] {
+    return getColByProp(prop)?.pickerType
   }
 
   function isDateRangeField(prop: string): boolean {

@@ -5,6 +5,7 @@ import cn.idev.excel.FastExcel;
 import cn.idev.excel.read.listener.PageReadListener;
 import com.example.template.util.FilterParam;
 import com.example.template.util.FilterParam.ColumnItem;
+import com.example.template.util.FilterParam.NumberFormatConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.example.util.excel.converter.SqlDateConverter;
 import com.example.util.excel.converter.SqlTimeConverter;
@@ -22,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -402,13 +404,7 @@ public class ExcelUtils {
         return dataList.stream().map(item -> {
             BeanWrapperImpl bw = new BeanWrapperImpl(item);
             return columns.stream()
-                    .map(c -> {
-                        Object val = bw.getPropertyValue(c.getProp());
-                        if ("number".equals(c.getFieldType())) {
-                            return formatNumber(val, c.getNumberFormat());
-                        }
-                        return val;
-                    })
+                    .map(c -> formatCellValue(bw.getPropertyValue(c.getProp()), c.getNumberFormat()))
                     .collect(Collectors.toList());
         }).collect(Collectors.toList());
     }
@@ -421,69 +417,40 @@ public class ExcelUtils {
         if (columns == null || columns.isEmpty()) return Collections.emptyList();
         return dataList.stream()
                 .map(row -> columns.stream()
-                        .map(c -> {
-                            Object val = row.get(c.getProp());
-                            if ("number".equals(c.getFieldType())) {
-                                return formatNumber(val, c.getNumberFormat());
-                            }
-                            return val;
-                        })
+                        .map(c -> formatCellValue(row.get(c.getProp()), c.getNumberFormat()))
                         .collect(Collectors.toList()))
                 .collect(Collectors.toList());
     }
 
     /**
-     * 数字格式化 — 对齐前端 formatNumber()，将数值按 NumberFormatConfig 转为显示字符串。
-     * <p>若 cfg 为 null，返回原始值不做处理。</p>
+     * 根据 NumberFormatConfig 格式化单元格值。
+     * 仅当 value 是 Number 且配置了数字格式化时生效，否则原样返回。
      */
-    private static String formatNumber(Object value, FilterParam.NumberFormatConfig cfg) {
-        if (cfg == null) {
-            return value == null ? "—" : value.toString();
+    private static Object formatCellValue(Object value, NumberFormatConfig config) {
+        if (config == null) return value;
+        if (value == null) {
+            return config.getNullPlaceholder() != null ? config.getNullPlaceholder() : "—";
         }
-        String placeholder = cfg.getNullPlaceholder() != null ? cfg.getNullPlaceholder() : "—";
-        if (value == null || (value instanceof String s && s.isEmpty())) {
-            return placeholder;
-        }
-        double num;
-        if (value instanceof Number) {
-            num = ((Number) value).doubleValue();
-        } else {
-            try {
-                num = Double.parseDouble(value.toString());
-            } catch (NumberFormatException e) {
-                return value.toString();
-            }
-        }
+        if (!(value instanceof Number num)) return value;
 
-        // 小数位处理
+        String prefix = config.getPrefix() != null ? config.getPrefix() : "";
+        String suffix = config.getSuffix() != null ? config.getSuffix() : "";
+
         String formatted;
-        if (cfg.getDecimals() != null) {
-            formatted = String.format("%." + cfg.getDecimals() + "f", num);
+        if (config.getDecimals() != null) {
+            String pattern = "0";
+            if (config.getThousands() != null && config.getThousands()) {
+                pattern = "#,##0";
+            }
+            pattern += "." + "0".repeat(config.getDecimals());
+            formatted = new DecimalFormat(pattern).format(num);
+        } else if (config.getThousands() != null && config.getThousands()) {
+            formatted = new DecimalFormat("#,##0.##########").format(num);
         } else {
-            // 自动去除无意义尾部零：123.4500 → "123.45"，123.0 → "123"
-            if (num == Math.floor(num) && !Double.isInfinite(num)) {
-                formatted = String.valueOf((long) num);
-            } else {
-                formatted = String.valueOf(num);
-            }
+            formatted = num.toString();
         }
 
-        // 千分位
-        if (cfg.getThousands() == null || cfg.getThousands()) {
-            String[] parts = formatted.split("\\.");
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < parts[0].length(); i++) {
-                if (i > 0 && (parts[0].length() - i) % 3 == 0) {
-                    sb.append(',');
-                }
-                sb.append(parts[0].charAt(i));
-            }
-            formatted = parts.length > 1 ? sb.append('.').append(parts[1]).toString() : sb.toString();
-        }
-
-        return (cfg.getPrefix() != null ? cfg.getPrefix() : "")
-                + formatted
-                + (cfg.getSuffix() != null ? cfg.getSuffix() : "");
+        return prefix + formatted + suffix;
     }
 
     /**
@@ -497,10 +464,10 @@ public class ExcelUtils {
             return columns.stream()
                     .map(c -> {
                         Object raw = bw.getPropertyValue(c.getProp());
-                        if (!"remote-select".equals(c.getFieldType()) || raw == null) {
-                            return raw;
+                        if ("remote-select".equals(c.getFieldType()) && raw != null) {
+                            raw = ctx.convertValueToLabel(c, raw.toString());
                         }
-                        return ctx.convertValueToLabel(c, raw.toString());
+                        return formatCellValue(raw, c.getNumberFormat());
                     })
                     .collect(Collectors.toList());
         }).collect(Collectors.toList());

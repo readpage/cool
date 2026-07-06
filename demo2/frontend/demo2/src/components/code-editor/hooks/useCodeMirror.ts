@@ -8,7 +8,7 @@ import {
 } from '@codemirror/view'
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands'
 import { bracketMatching, foldGutter, foldKeymap } from '@codemirror/language'
-import type { Extension } from '@codemirror/state'
+import { Compartment, type Extension } from '@codemirror/state'
 
 export interface UseCodeMirrorOptions {
   container: Readonly<ShallowRef<HTMLDivElement | undefined>>
@@ -28,6 +28,7 @@ export function useCodeMirror(options: UseCodeMirrorOptions) {
   let view: EditorView | null = null
   let ignoreNextUpdate = false
   const isDirty = ref(false)
+  const editableCompartment = new Compartment()
 
   onMounted(() => {
     if (!options.container.value) return
@@ -66,9 +67,7 @@ export function useCodeMirror(options: UseCodeMirrorOptions) {
       exts.push(placeholderExt(options.placeholder.value))
     }
 
-    if (options.readonly.value) {
-      exts.push(EditorView.editable.of(false))
-    }
+    exts.push(editableCompartment.of(EditorView.editable.of(!options.readonly.value)))
 
     view = new EditorView({
       doc: options.modelValue.value,
@@ -96,7 +95,7 @@ export function useCodeMirror(options: UseCodeMirrorOptions) {
     (val) => {
       if (!view) return
       view.dispatch({
-        effects: EditorView.editable.reconfigure(EditorView.editable.of(!val)),
+        effects: editableCompartment.reconfigure(EditorView.editable.of(!val)),
       })
     },
   )

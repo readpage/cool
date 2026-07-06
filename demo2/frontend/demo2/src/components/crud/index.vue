@@ -1,7 +1,10 @@
 <template>
   <div class="u-crud">
-    <!-- 顶部工具栏 — 右上角布局 -->
+    <!-- 顶部工具栏 — 左右布局 -->
     <div class="u-crud-toolbar">
+      <div class="u-crud-toolbar__left">
+        <slot name="toolbar-left" />
+      </div>
       <div class="u-crud-toolbar__actions">
         <!-- 新增 -->
         <el-button
@@ -98,6 +101,7 @@ const props = defineProps<{
 
 defineSlots<{
   default(): any
+  'toolbar-left'?(): any
   'toolbar-actions'?(): any
   'footer-actions'?(scope: { data: Record<string, any>; saving: boolean }): any
 }>()
@@ -323,19 +327,25 @@ onUnmounted(() => {
   barEl?.remove()
 })
 
-defineExpose({ setSelection: updateBar })
+defineExpose({ setSelection: updateBar, openForm })
 </script>
 
 <style lang="scss" scoped>
 .u-crud-toolbar {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   min-height: 44px;
   padding: 6px 12px;
   margin-bottom: 4px;
   border-radius: 6px;
   background: #fff;
+
+  &__left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
 
   &__actions {
     display: flex;

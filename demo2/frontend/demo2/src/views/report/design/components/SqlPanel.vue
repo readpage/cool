@@ -33,14 +33,13 @@
           size="small"
           class="datasource-select"
           clearable
-          filterable
         >
-          <el-option label="默认主数据源" value="" />
+          <el-option label="默认主数据源" :value="null" />
           <el-option
-            v-for="ds in datasourceList"
-            :key="ds.id"
-            :label="ds.name"
-            :value="ds.id"
+            v-for="dt in datasourceTypes"
+            :key="dt.value"
+            :label="dt.label"
+            :value="dt.value"
           />
         </el-select>
       </div>
@@ -90,8 +89,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import CodeEditor from '@/components/code-editor/CodeEditor.vue'
-import { ADatasource } from '@/api/datasource'
-import type { DatasourceEntity } from '@/api/datasource'
+import { ADatasource, type DatasourceType } from '@/api/datasource'
 
 withDefaults(defineProps<{
   modelValue: string
@@ -123,12 +121,12 @@ defineEmits<{
   back: []
 }>()
 
-const datasourceList = ref<DatasourceEntity[]>([])
+const datasourceTypes = ref<DatasourceType[]>([])
 
 onMounted(async () => {
   try {
-    const { data } = await ADatasource.list({})
-    datasourceList.value = data ?? []
+    const { data } = await ADatasource.types({})
+    datasourceTypes.value = data ?? []
   } catch (e) {
     console.error('获取数据源列表失败', e)
   }

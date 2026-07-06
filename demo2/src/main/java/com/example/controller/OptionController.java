@@ -30,7 +30,7 @@ public class OptionController {
     private ReportOptionService reportOptionService;
 
     @Operation(summary = "远程搜索选项 — type 以 '@' 开头时走报告SQL，否则查 options 表")
-    @GetMapping("/search")
+    @GetMapping("/user/search")
     public R<List<Option>> search(
             @Parameter(description = "选项类型（@前缀→报告SQL，否则→options表）") @RequestParam(required = false) String type,
             @Parameter(description = "搜索关键字") @RequestParam(required = false) String keyword,
@@ -44,7 +44,7 @@ public class OptionController {
     }
 
     @Operation(summary = "根据 type 查询所有有效选项 — type 以 '@' 开头时走报告SQL，否则查 options 表")
-    @GetMapping("/list")
+    @GetMapping("/user/list")
     public R<List<Option>> listByType(
             @Parameter(description = "选项类型（@前缀→报告SQL，否则→options表）") @RequestParam(required = false) String type,
             @Parameter(description = "返回上限，默认 50") @RequestParam(defaultValue = "50") Integer limit) {

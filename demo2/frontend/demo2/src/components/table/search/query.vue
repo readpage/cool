@@ -215,9 +215,11 @@ function conditionFromFilterResult(fv: FilterResult, cols: ColumnConfig[]): Filt
     value:
       fv.operator === 'between' && Array.isArray(v)
         ? (v as [string, string])
-        : fv.operator === 'in'
-          ? ''
-          : (v as string),
+        : fv.operator === 'in' && Array.isArray(v)
+          ? [...v]
+          : fv.operator === 'in'
+            ? (v as string)
+            : (v as string),
     valueStr,
     filterMode: col.filterMode ?? 'hide',
   }

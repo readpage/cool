@@ -41,7 +41,7 @@ export function useReportPersistence(
       prop: col.prop,
       label: col.label,
       fieldType: 'text' as const,
-      filterMode: (idx < MAX_VISIBLE_FILTERS ? 'show' : 'hide') as const,
+      filterMode: (idx < MAX_VISIBLE_FILTERS ? 'show' : 'hide'),
     }))
 
     // 追加 #{key} 变量项（不与 SELECT 列重名时新建；重名时标记现有列）
@@ -156,7 +156,7 @@ export function useReportPersistence(
           filter: appendVariables(resultCols.map((c, i) => ({
             prop: c.prop, label: c.label,
             fieldType: 'text' as const,
-            filterMode: (i < MAX_VISIBLE_FILTERS ? 'show' : 'hide') as const,
+            filterMode: (i < MAX_VISIBLE_FILTERS ? 'show' : 'hide'),
           }))),
           currentField: 'all',
         },

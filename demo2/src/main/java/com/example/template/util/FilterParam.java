@@ -282,13 +282,13 @@ public class FilterParam implements SqlParamProvider {
      */
     public static String cleanRenderedSql(String renderedSql) {
         if (renderedSql == null) return null;
-        // 1. 去掉空 filter 导致 WHERE 后面直接跟 ORDER BY 的情况
-        renderedSql = renderedSql.replaceAll("(?i)\\bWHERE\\s+(ORDER\\s+BY\\b)", "$1");
-        // 1.5 去掉空 filter 导致的悬空 AND/OR 后面直接跟 ORDER BY 的情况
+        // 1. 去掉空 filter 导致 WHERE 后面直接跟 ORDER BY / GROUP BY 的情况
+        renderedSql = renderedSql.replaceAll("(?i)\\bWHERE\\s+(ORDER\\s+BY\\b|GROUP\\s+BY\\b)", "$1");
+        // 1.5 去掉空 filter 导致的悬空 AND/OR 后面直接跟 ORDER BY / GROUP BY 的情况
         //      例如：WHERE age = :age2 AND {{filter}} -> 空 filter → WHERE age = :age2 AND ORDER BY
-        renderedSql = renderedSql.replaceAll("(?i)\\s+(AND|OR)\\s+(ORDER\\s+BY\\b)", " $2");
-        // 2. 去掉空 filter/sort 留下的悬空 WHERE / AND / OR / ORDER BY（尾部）
-        renderedSql = renderedSql.replaceAll("(?i)\\s+(WHERE|AND|OR|ORDER\\s+BY)\\s*$", "").trim();
+        renderedSql = renderedSql.replaceAll("(?i)\\s+(AND|OR)\\s+(ORDER\\s+BY\\b|GROUP\\s+BY\\b)", " $2");
+        // 2. 去掉空 filter/sort 留下的悬空 WHERE / AND / OR / ORDER BY / GROUP BY（尾部）
+        renderedSql = renderedSql.replaceAll("(?i)\\s+(WHERE|AND|OR|ORDER\\s+BY|GROUP\\s+BY)\\s*$", "").trim();
         return renderedSql;
     }
 
@@ -336,10 +336,22 @@ public class FilterParam implements SqlParamProvider {
     /**
      * 将列名归一化为白名单中的大小写格式。
      * 例如：白名单含 SID.SDHNUM_0，输入 SID.sdhnum_0 → 输出 SID.SDHNUM_0。
+     * 带表前缀时优先完整匹配（含别名），避免 ATE2.name 被错归一化为 ATE.name。
      * 未匹配到时原样返回（后续 validateColumns 会拦截非法列名）。
      */
     private static String normalizeColumnCase(String col, List<String> whitelist) {
         if (col == null || whitelist == null || whitelist.isEmpty()) return col;
+        // 有表前缀时，优先按完整列名（含表别名）大小写不敏感匹配
+        if (col.contains(".")) {
+            String fullMatch = whitelist.stream()
+                    .filter(w -> w.equalsIgnoreCase(col))
+                    .findFirst()
+                    .orElse(null);
+            if (fullMatch != null) return fullMatch;
+            // 完整匹配未命中 → 说明表别名不在白名单中，原样返回交由 validateColumns 报错
+            return col;
+        }
+        // 无表前缀：去掉白名单列的表前缀后再匹配（如 "id" ↔ "u.id"）
         String colPure = ColumnExtractor.stripTablePrefix(col);
         return whitelist.stream()
                 .filter(w -> ColumnExtractor.stripTablePrefix(w).equalsIgnoreCase(colPure))

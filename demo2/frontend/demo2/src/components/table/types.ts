@@ -77,6 +77,7 @@ export interface FilterItem {
   column: string
   operator: OperatorType
   value: string | [string, string] | string[]
+  variable?: boolean
 }
 
 /** 字段控件类型 */

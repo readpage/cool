@@ -88,7 +88,10 @@ export interface ColumnConfig {
   filterMode?: 'show' | 'exposed' | 'hide'
 
   /** 控件类型，缺省为 text（el-input） */
-  fieldType?: 'text' | 'date' | 'datetime' | 'daterange' | 'datetimerange' | 'select' | 'remote-select'
+  fieldType?: 'text' | 'date' | 'datetime' | 'year' | 'month' | 'daterange' | 'datetimerange' | 'select' | 'remote-select'
+
+  /** 日期控件精度（date/datetime 时生效） */
+  pickerType?: 'date' | 'datetime' | 'year' | 'month' | 'week'
 
   /** 下拉选项（fieldType='select' 时使用）。支持 { label, value } 或纯字符串 */
   options?: ({ label: string; value: string } | string)[]

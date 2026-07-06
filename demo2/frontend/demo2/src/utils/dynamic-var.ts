@@ -42,6 +42,8 @@ const BUILTIN_VARS: Record<string, VarFn> = {
   ],
 
   '$thisMonth':   () => [dt().startOf('month').format('YYYY-MM-DD'), dt().endOf('month').format('YYYY-MM-DD')],
+  '$monthStart':  () => dt().startOf('month').format('YYYY-MM-DD'),
+  '$monthEnd':    () => dt().endOf('month').format('YYYY-MM-DD'),
   '$lastMonth':   () => [
     dt().subtract(1, 'month').startOf('month').format('YYYY-MM-DD'),
     dt().subtract(1, 'month').endOf('month').format('YYYY-MM-DD'),

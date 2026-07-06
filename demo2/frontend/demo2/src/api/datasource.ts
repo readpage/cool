@@ -19,7 +19,15 @@ export interface DatasourceEntity {
   updateTime?: string
 }
 
+export interface DatasourceType {
+  label: string
+  value: number
+}
+
 export const ADatasource = {
+  /** 数据源下拉列表（轻量，仅 name/id） */
+  types: apiAxios<DatasourceType[]>('/report/datasource/types', 'get'),
+
   /** 数据源列表 — GET /report/datasource/list */
   list: apiAxios<DatasourceEntity[]>('/report/datasource/list', 'get'),
 

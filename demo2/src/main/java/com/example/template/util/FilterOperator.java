@@ -11,9 +11,16 @@ public enum FilterOperator {
 
     EQ, NE, GT, GE, LT, LE, CONTAINS, BETWEEN, IN;
 
+    /** 清洗参数名前缀：Spring NamedParameterJdbcTemplate 仅支持 [a-zA-Z0-9_] */
+    private static String sanitizeParamName(String prefix) {
+        if (prefix == null) return "";
+        return prefix.replaceAll("[^a-zA-Z0-9_]", "_");
+    }
+
     /** 生成 :column_N 命名占位符 SQL 片段 + 参数绑定 */
     public String toSql(String column, Object value, String prefix, AtomicInteger idx,
                         Map<String, Object> out) {
+        prefix = sanitizeParamName(prefix);
         return switch (this) {
             case EQ       -> one(column + " = :",  "", value, prefix, idx, out);
             case NE       -> one(column + " != :", "", value, prefix, idx, out);

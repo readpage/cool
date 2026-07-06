@@ -47,7 +47,7 @@ public class ReportController {
     private RoleService roleService;
 
     @Operation(summary = "报告摘要列表（轻量，不含 SQL 模板等敏感信息）")
-    @GetMapping("/summary")
+    @GetMapping("/user/summary")
     public R<List<ReportSummary>> summary() {
         return R.ok(reportService.listSummary(1L, List.of()));
     }
@@ -90,7 +90,7 @@ public class ReportController {
     }
 
     @Operation(summary = "导出已保存报告 Excel")
-    @PostMapping("/{tableKey}/export")
+    @PostMapping("/user/export/{tableKey}")
     public void export(@PathVariable String tableKey, @RequestBody FilterParam param,
                        HttpServletResponse response) throws IOException {
         List<Map<String, Object>> data = reportService.queryAllByTableKey(tableKey, param);
@@ -122,14 +122,14 @@ public class ReportController {
     // ==================== 权限管理 ====================
 
     @Operation(summary = "获取报表权限配置")
-    @GetMapping("/{tableKey}/permission")
-    public R<ReportPermissionDto> getPermission(@PathVariable String tableKey) {
+    @GetMapping("/access/config")
+    public R<ReportPermissionDto> getPermission(@RequestParam String tableKey) {
         return R.ok(reportService.getPermission(tableKey));
     }
 
     @Operation(summary = "更新报表权限配置")
-    @PutMapping("/{tableKey}/permission")
-    public R<String> updatePermission(@PathVariable String tableKey,
+    @PutMapping("/access/save")
+    public R<String> updatePermission(@RequestParam String tableKey,
                                        @RequestBody ReportPermissionDto dto) {
         reportService.updatePermission(tableKey, dto);
         return R.ok("权限更新成功");
@@ -142,6 +142,17 @@ public class ReportController {
     }
 
     // ==================== 数据源管理 ====================
+
+    @Operation(summary = "数据源下拉列表（轻量，仅 name/id）")
+    @GetMapping("/datasource/types")
+    public R<List<Map<String, Object>>> datasourceTypes() {
+        List<Datasource> list = datasourceService.list();
+        List<Map<String, Object>> result = new java.util.ArrayList<>();
+        for (Datasource ds : list) {
+            result.add(Map.of("label", ds.getName(), "value", ds.getId()));
+        }
+        return R.ok(result);
+    }
 
     @Operation(summary = "数据源列表")
     @GetMapping("/datasource/list")

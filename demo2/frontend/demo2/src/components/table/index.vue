@@ -34,6 +34,7 @@
     <div ref="tableWrapperRef" class="u-table-wrapper">
       <el-table
         ref="tableRef"
+        v-loading="isLoading"
         :key="reorderKey"
         :data="tableRows"
         :stripe="config.stripe"
@@ -101,6 +102,20 @@
           </template>
         </el-table-column>
         </template>
+        <!-- 操作栏：仅当父组件提供 #actions 插槽时渲染 -->
+        <el-table-column
+          v-if="$slots.actions"
+          label="操作"
+          :width="props.actionsWidth ?? 80"
+          fixed="right"
+          align="center"
+        >
+          <template #default="scope">
+            <div class="u-table-actions">
+              <slot name="actions" :row="scope.row" :index="scope.$index" />
+            </div>
+          </template>
+        </el-table-column>
       </el-table>
       <!-- 分页器：仅当 data 为 PageResult 时自动显示 -->
       <div v-if="isPaginated" class="u-table-pagination">
@@ -204,6 +219,10 @@ const props = defineProps<{
   exportText?: string
   /** 导出中文案，默认"导出中..." */
   exportLoadingText?: string
+  /** 操作栏宽度，默认 160 */
+  actionsWidth?: string | number
+  /** 外部控制的 loading 状态。不传时仅依赖内部 @query done 回调（200ms 防抖）。传入时与内部 loading OR 合并 */
+  loading?: boolean
 }>()
 
 // ==================== 智能 data 派生 ====================
@@ -238,6 +257,9 @@ const tableRowKey = computed(() => {
 
 const loadingDebounceTimer = ref<ReturnType<typeof setTimeout>>()
 const debouncedLoading = ref(false)
+
+/** 合并内部 loading（done 回调）与外部 loading prop，任一为 true 即显示遮罩 */
+const isLoading = computed(() => props.loading || debouncedLoading.value)
 
 // ==================== 内部 loading 管理（done 回调模式） ====================
 
@@ -855,6 +877,15 @@ defineExpose({ tableRef, reload, refresh: emitQuery })
       }
     }
   }
+}
+
+/* 操作栏 */
+.u-table-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  flex-wrap: nowrap;
 }
 
 .u-table-pagination {
